@@ -1,16 +1,16 @@
-import { Navbar } from '@/components/Navbar';
-import { AboutSection } from '@/components/home/AboutSection';
-import { HeroSection } from '@/components/home/HeroSection';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Mail, Phone, MapPin } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Navbar } from "@/components/Navbar";
+import { AboutSection } from "@/components/home/AboutSection";
+import { HeroSection } from "@/components/home/HeroSection";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { ArrowLeft, Mail, Phone, MapPin } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 export default function About() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       {/* Hero */}
       <section className="py-20 px-4 relative overflow-hidden">
         <div className="absolute inset-0 hero-pattern" />
@@ -21,12 +21,12 @@ export default function About() {
               Về trang chủ
             </Link>
           </Button>
-          
+
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="text-gradient">Về BonzShop</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Nền tảng mua bán tài khoản game và sản phẩm số uy tín hàng đầu Việt Nam
+            Nền tảng mua bán tài khoản game và sản phẩm số uy tín hàng đầu Việt Nam .
           </p>
         </div>
       </section>
@@ -39,9 +39,7 @@ export default function About() {
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Liên hệ với chúng tôi</h2>
-            <p className="text-muted-foreground">
-              Bạn có thắc mắc? Hãy liên hệ ngay!
-            </p>
+            <p className="text-muted-foreground">Bạn có thắc mắc? Hãy liên hệ ngay nhé!</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
