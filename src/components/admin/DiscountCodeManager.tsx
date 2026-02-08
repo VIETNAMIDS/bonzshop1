@@ -39,6 +39,7 @@ interface DiscountCode {
   is_active: boolean;
   expires_at: string | null;
   created_at: string;
+  target_user_id: string | null;
 }
 
 export function DiscountCodeManager() {
@@ -57,7 +58,10 @@ export function DiscountCodeManager() {
     min_order_amount: 0,
     max_uses: null as number | null,
     expires_at: '',
+    target_user_email: '',
   });
+  const [searchingUser, setSearchingUser] = useState(false);
+  const [foundUserId, setFoundUserId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCodes();
@@ -98,9 +102,10 @@ export function DiscountCodeManager() {
           discount_amount: newCode.discount_amount,
           discount_type: newCode.discount_type,
           min_order_amount: newCode.min_order_amount || 0,
-          max_uses: newCode.max_uses || null,
+          max_uses: 1, // Single-use by default
           expires_at: newCode.expires_at || null,
           created_by: user?.id,
+          target_user_id: foundUserId || null,
         });
 
       if (error) throw error;
@@ -118,7 +123,9 @@ export function DiscountCodeManager() {
         min_order_amount: 0,
         max_uses: null,
         expires_at: '',
+        target_user_email: '',
       });
+      setFoundUserId(null);
       fetchCodes();
     } catch (error: any) {
       toast({
@@ -275,26 +282,72 @@ export function DiscountCodeManager() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Số lần sử dụng tối đa</Label>
-                      <Input
-                        type="number"
-                        value={newCode.max_uses || ''}
-                        onChange={(e) => setNewCode({ ...newCode, max_uses: parseInt(e.target.value) || null })}
-                        placeholder="Không giới hạn"
-                        min={1}
-                      />
-                    </div>
-                    <div>
-                      <Label>Ngày hết hạn</Label>
-                      <Input
-                        type="datetime-local"
-                        value={newCode.expires_at}
-                        onChange={(e) => setNewCode({ ...newCode, expires_at: e.target.value })}
-                      />
-                    </div>
+                  <div>
+                    <Label>Ngày hết hạn (tùy chọn)</Label>
+                    <Input
+                      type="datetime-local"
+                      value={newCode.expires_at}
+                      onChange={(e) => setNewCode({ ...newCode, expires_at: e.target.value })}
+                    />
                   </div>
+
+                  <div className="border-t pt-4">
+                    <Label>Giới hạn người dùng (tùy chọn)</Label>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Nhập email để chỉ cho phép người dùng cụ thể sử dụng mã này
+                    </p>
+                    <div className="flex gap-2">
+                      <Input
+                        type="email"
+                        value={newCode.target_user_email}
+                        onChange={(e) => {
+                          setNewCode({ ...newCode, target_user_email: e.target.value });
+                          setFoundUserId(null);
+                        }}
+                        placeholder="email@example.com (để trống = ai cũng dùng được)"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={!newCode.target_user_email || searchingUser}
+                        onClick={async () => {
+                          setSearchingUser(true);
+                          try {
+                            // Search by display_name in profiles
+                            const { data, error } = await supabase
+                              .from('profiles')
+                              .select('user_id, display_name')
+                              .ilike('display_name', `%${newCode.target_user_email}%`)
+                              .limit(1)
+                              .single();
+                            
+                            if (error || !data) {
+                              toast({ title: 'Không tìm thấy người dùng với tên này', variant: 'destructive' });
+                              setFoundUserId(null);
+                            } else {
+                              setFoundUserId(data.user_id);
+                              toast({ title: `✅ Tìm thấy: ${data.display_name}` });
+                            }
+                          } catch (err) {
+                            toast({ title: 'Lỗi tìm kiếm', variant: 'destructive' });
+                          }
+                          setSearchingUser(false);
+                        }}
+                      >
+                        {searchingUser ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Tìm'}
+                      </Button>
+                    </div>
+                    {foundUserId && (
+                      <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                        <Check className="h-3 w-3" />
+                        Đã chọn người dùng - Mã sẽ chỉ dành cho người này
+                      </p>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-muted-foreground bg-secondary/50 p-2 rounded">
+                    ⚠️ Lưu ý: Mỗi mã chỉ dùng được 1 lần. Sau khi sử dụng, mã sẽ tự động bị xóa.
+                  </p>
 
                   <Button 
                     onClick={handleCreate} 

@@ -37,8 +37,8 @@ Deno.serve(async (req) => {
 
     console.log('User authenticated:', user.id);
 
-    const { accountId, productId, requiredCoins } = await req.json();
-    console.log('Purchase request:', { accountId, productId, requiredCoins });
+    const { accountId, productId, requiredCoins, discountCodeId, discountAmount } = await req.json();
+    console.log('Purchase request:', { accountId, productId, requiredCoins, discountCodeId, discountAmount });
 
     // Validate required coins
     if (!requiredCoins || requiredCoins <= 0 || !Number.isInteger(requiredCoins)) {
@@ -217,6 +217,34 @@ Deno.serve(async (req) => {
     }
 
     console.log('Order created:', order.id);
+
+    // Handle discount code usage - record use and delete the code (single-use)
+    if (discountCodeId && user.id) {
+      try {
+        // Record usage
+        await supabase.from('discount_code_uses').insert({
+          code_id: discountCodeId,
+          user_id: user.id,
+          order_id: order.id
+        });
+        console.log('Discount code use recorded:', discountCodeId);
+
+        // Delete the discount code (single-use codes)
+        const { error: deleteError } = await supabase
+          .from('discount_codes')
+          .delete()
+          .eq('id', discountCodeId);
+        
+        if (deleteError) {
+          console.error('Failed to delete discount code:', deleteError);
+        } else {
+          console.log('Discount code deleted (single-use):', discountCodeId);
+        }
+      } catch (discountError) {
+        console.error('Error processing discount code:', discountError);
+        // Don't fail the purchase if discount recording fails
+      }
+    }
 
     // Mark account as sold if applicable
     if (accountId) {

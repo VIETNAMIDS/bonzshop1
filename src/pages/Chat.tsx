@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
- import { useTaskProgress } from '@/hooks/useTaskProgress';
+ 
 import { Navbar } from '@/components/Navbar';
 import { PageWrapper } from '@/components/layout/PageWrapper';
 import { Button } from '@/components/ui/button';
@@ -37,7 +37,7 @@ export default function Chat() {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
-   const { trackAction } = useTaskProgress();
+   
   const [messages, setMessages] = useState<ChatMessageData[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -221,9 +221,6 @@ export default function Chat() {
       setNewMessage('');
       setSelectedImage(null);
       setPreviewUrl(null);
-       
-       // Track sending chat message for task
-       trackAction('send_chat');
     } catch (error: any) {
       console.error('Error sending message:', error);
       toast({
