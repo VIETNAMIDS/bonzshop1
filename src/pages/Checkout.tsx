@@ -71,6 +71,7 @@ export default function Checkout() {
   
   // Discount state
   const [appliedCode, setAppliedCode] = useState<string | null>(null);
+  const [appliedCodeId, setAppliedCodeId] = useState<string | null>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
 
   useEffect(() => {
@@ -147,14 +148,16 @@ export default function Checkout() {
     }
   };
 
-  const handleApplyDiscount = (amount: number, code: string) => {
+  const handleApplyDiscount = (amount: number, code: string, codeId: string) => {
     setDiscountAmount(amount);
     setAppliedCode(code);
+    setAppliedCodeId(codeId);
   };
 
   const handleRemoveDiscount = () => {
     setDiscountAmount(0);
     setAppliedCode(null);
+    setAppliedCodeId(null);
   };
 
   const finalPrice = item ? Math.max(0, item.price - discountAmount) : 0;
@@ -181,6 +184,8 @@ export default function Checkout() {
           accountId: type === 'account' ? item.id : undefined,
           productId: type === 'product' ? item.id : undefined,
           requiredCoins: finalPrice,
+          discountCodeId: appliedCodeId || undefined,
+          discountAmount: discountAmount || undefined,
         },
       });
 

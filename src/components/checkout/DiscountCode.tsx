@@ -9,20 +9,10 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface DiscountCodeProps {
   originalPrice: number;
-  onApply: (discountAmount: number, code: string) => void;
+  onApply: (discountAmount: number, code: string, codeId: string) => void;
   onRemove: () => void;
   appliedCode: string | null;
   discountAmount: number;
-}
-
-interface DiscountCodeData {
-  id: string;
-  code: string;
-  discount_amount: number;
-  discount_type: 'fixed' | 'percent';
-  min_order_amount: number | null;
-  max_uses: number | null;
-  used_count: number;
 }
 
 export function DiscountCode({ 
@@ -81,6 +71,13 @@ export function DiscountCode({
         return;
       }
 
+      // Check if code is targeted to a specific user
+      if (discountData.target_user_id && discountData.target_user_id !== user?.id) {
+        setError('Mã giảm giá này không dành cho bạn');
+        setLoading(false);
+        return;
+      }
+
       // Check if user already used this code
       if (user) {
         const { data: usedData } = await supabase
@@ -105,7 +102,7 @@ export function DiscountCode({
         discountValue = Math.min(discountData.discount_amount, originalPrice);
       }
       
-      onApply(discountValue, upperCode);
+      onApply(discountValue, upperCode, discountData.id);
     } catch (err) {
       setError('Có lỗi xảy ra, vui lòng thử lại');
     }

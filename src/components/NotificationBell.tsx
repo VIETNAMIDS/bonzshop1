@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
- import { useTaskProgress } from '@/hooks/useTaskProgress';
+ 
 
 interface Notification {
   id: string;
@@ -27,7 +27,7 @@ interface Notification {
 export function NotificationBell() {
   const { user } = useAuth();
   const navigate = useNavigate();
-   const { trackAction } = useTaskProgress();
+   
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -116,9 +116,6 @@ export function NotificationBell() {
   const handleNotificationClick = (notification: Notification) => {
     markAsRead(notification.id);
     setOpen(false);
-     
-     // Track viewing notification for task
-     trackAction('view_notification');
 
     // Navigate based on notification type
     switch (notification.type) {

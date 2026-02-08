@@ -3,7 +3,7 @@ import DOMPurify from 'dompurify';
 import { Navbar } from '@/components/Navbar';
 import { PageWrapper } from '@/components/layout/PageWrapper';
 import { supabase } from '@/integrations/supabase/client';
- import { useTaskProgress } from '@/hooks/useTaskProgress';
+ 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -43,7 +43,7 @@ interface PostComment {
 export default function Posts() {
   const { user } = useAuth();
   const navigate = useNavigate();
-   const { trackAction } = useTaskProgress();
+   
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [likes, setLikes] = useState<Record<string, PostLike[]>>({});
@@ -56,11 +56,7 @@ export default function Posts() {
 
   useEffect(() => {
     fetchPosts();
-     // Track viewing posts for task
-     if (user) {
-       trackAction('view_post');
-     }
-   }, [user, trackAction]);
+  }, []);
 
   const fetchPosts = async () => {
     setLoading(true);

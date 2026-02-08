@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
- import { useTaskProgress } from '@/hooks/useTaskProgress';
+ 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,7 +26,7 @@ interface UserProfileData {
 export default function UserProfile() {
   const { user, isAdmin, sellerProfile, refreshSellerProfile } = useAuth();
   const navigate = useNavigate();
-   const { trackAction } = useTaskProgress();
+   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -149,8 +149,6 @@ export default function UserProfile() {
       toast.success(updatePayload.email ? 'Đã cập nhật hồ sơ! Vui lòng kiểm tra email để xác nhận thay đổi.' : 'Đã cập nhật hồ sơ!');
       setEditing(false);
        
-       // Track completing profile for task
-       trackAction('complete_profile');
        
       setFormData(prev => ({
         ...prev,
