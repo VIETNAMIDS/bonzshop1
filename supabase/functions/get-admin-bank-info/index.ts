@@ -18,35 +18,50 @@ Deno.serve(async (req) => {
     // Use service role to bypass RLS
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Get the specific admin bank account for coin purchases
-    // Find the first admin with complete bank info
-    const { data: adminRoles, error: rolesError } = await supabase
-      .from('user_roles')
-      .select('user_id')
-      .eq('role', 'admin');
+    // First, get primary admin user id from site_settings
+    const { data: primaryAdminSetting, error: settingError } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'primary_admin_user_id')
+      .maybeSingle();
 
-    if (rolesError) {
-      console.error('Error fetching admin roles:', rolesError);
-      throw rolesError;
+    if (settingError) {
+      console.error('Error fetching primary admin setting:', settingError);
     }
 
-    if (!adminRoles || adminRoles.length === 0) {
+    let targetUserId = primaryAdminSetting?.value;
+    console.log('Primary admin user_id from settings:', targetUserId);
+
+    // If no primary admin set, fallback to first admin created
+    if (!targetUserId) {
+      const { data: firstAdmin, error: adminError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin')
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (adminError) {
+        console.error('Error fetching first admin:', adminError);
+      }
+
+      targetUserId = firstAdmin?.user_id;
+      console.log('Fallback to first admin user_id:', targetUserId);
+    }
+
+    if (!targetUserId) {
       return new Response(
         JSON.stringify({ bankInfo: null, message: 'No admin found' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    const adminUserIds = adminRoles.map(r => r.user_id);
     
-    // Get admin's seller profile with bank info
+    // Get the specific admin's seller profile with bank info
     const { data: seller, error: sellerError } = await supabase
       .from('sellers')
       .select('bank_name, bank_account_name, bank_account_number, bank_qr_url')
-      .in('user_id', adminUserIds)
-      .not('bank_name', 'is', null)
-      .not('bank_account_number', 'is', null)
-      .limit(1)
+      .eq('user_id', targetUserId)
       .maybeSingle();
 
     if (sellerError) {
@@ -54,9 +69,11 @@ Deno.serve(async (req) => {
       throw sellerError;
     }
 
-    if (!seller) {
+    if (!seller || !seller.bank_account_number) {
+      // If primary admin has no bank info, don't fallback to other admins
+      console.log('Primary admin has no bank info configured');
       return new Response(
-        JSON.stringify({ bankInfo: null, message: 'No bank info found' }),
+        JSON.stringify({ bankInfo: null, message: 'No bank info found for primary admin' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
