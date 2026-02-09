@@ -91,6 +91,8 @@ Deno.serve(async (req) => {
             created_by: user.id,
             seller_id: createSellerId,
             is_free: data.is_free || false,
+            platform: data.platform || data.category || 'other',
+            account_type: data.account_type || 'standard',
           })
           .select()
           .single();
