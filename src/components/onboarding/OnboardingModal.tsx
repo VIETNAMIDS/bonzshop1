@@ -1,10 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { ChevronRight, ChevronLeft, Sparkles, ShoppingBag, MessageCircle, Coins, Check } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Sparkles, ShoppingBag, MessageCircle, Coins, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+const OnboardingScene3D = lazy(() => 
+  import('./OnboardingScene3D').then(m => ({ default: m.OnboardingScene3D }))
+);
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -47,10 +51,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
       try {
         await supabase
           .from('user_onboarding')
-          .upsert({
-            user_id: user.id,
-            completed_at: new Date().toISOString()
-          });
+          .upsert({ user_id: user.id, completed_at: new Date().toISOString() });
       } catch (error) {
         console.error('Error saving onboarding:', error);
       }
@@ -63,10 +64,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
       try {
         await supabase
           .from('user_onboarding')
-          .upsert({
-            user_id: user.id,
-            skipped: true
-          });
+          .upsert({ user_id: user.id, skipped: true });
       } catch (error) {
         console.error('Error saving onboarding:', error);
       }
@@ -89,11 +87,10 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
   };
 
   const step = STEPS[currentStep];
-  const Icon = step.icon;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleSkip()}>
-      <DialogContent className="glass-strong border-primary/20 sm:max-w-md p-0 overflow-hidden">
+      <DialogContent className="glass-strong border-primary/20 sm:max-w-lg p-0 overflow-hidden">
         {/* Background decoration */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className={cn(
@@ -106,70 +103,70 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
           )} />
         </div>
 
-        <div className="relative p-6 text-center">
+        <div className="relative">
           {/* Skip button */}
           <button
             onClick={handleSkip}
-            className="absolute top-4 right-4 text-sm text-muted-foreground hover:text-foreground"
+            className="absolute top-4 right-4 z-10 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             Bỏ qua
           </button>
 
-          {/* Icon */}
-          <div className={cn(
-            "mx-auto w-20 h-20 rounded-2xl flex items-center justify-center mb-6 bg-gradient-to-r",
-            step.gradient
-          )}>
-            <Icon className="h-10 w-10 text-white" />
-          </div>
+          {/* 3D Scene */}
+          <Suspense fallback={
+            <div className="w-full h-48 sm:h-56 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          }>
+            <OnboardingScene3D step={currentStep} />
+          </Suspense>
 
           {/* Content */}
-          <h2 className="text-2xl font-bold mb-3">{step.title}</h2>
-          <p className="text-muted-foreground mb-8">{step.description}</p>
+          <div className="px-6 pb-6 text-center">
+            <h2 className="text-2xl font-bold mb-3">{step.title}</h2>
+            <p className="text-muted-foreground mb-8">{step.description}</p>
 
-          {/* Progress dots */}
-          <div className="flex justify-center gap-2 mb-6">
-            {STEPS.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentStep(index)}
-                className={cn(
-                  "w-2.5 h-2.5 rounded-full transition-all",
-                  index === currentStep 
-                    ? `bg-gradient-to-r ${step.gradient} w-8`
-                    : "bg-muted hover:bg-muted-foreground/50"
+            {/* Progress dots */}
+            <div className="flex justify-center gap-2 mb-6">
+              {STEPS.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentStep(index)}
+                  className={cn(
+                    "w-2.5 h-2.5 rounded-full transition-all",
+                    index === currentStep
+                      ? `bg-gradient-to-r ${step.gradient} w-8`
+                      : "bg-muted hover:bg-muted-foreground/50"
+                  )}
+                />
+              ))}
+            </div>
+
+            {/* Navigation */}
+            <div className="flex gap-3">
+              {currentStep > 0 && (
+                <Button variant="outline" onClick={prevStep} className="flex-1">
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Trước
+                </Button>
+              )}
+              <Button
+                onClick={nextStep}
+                className={cn("flex-1 bg-gradient-to-r text-white", step.gradient)}
+              >
+                {currentStep === STEPS.length - 1 ? (
+                  <>
+                    <Check className="h-4 w-4 mr-1" />
+                    Bắt đầu
+                  </>
+                ) : (
+                  <>
+                    Tiếp theo
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </>
                 )}
-              />
-            ))}
-          </div>
-
-          {/* Navigation */}
-          <div className="flex gap-3">
-            {currentStep > 0 && (
-              <Button variant="outline" onClick={prevStep} className="flex-1">
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Trước
               </Button>
-            )}
-            <Button 
-              onClick={nextStep}
-              className={cn(
-                "flex-1 bg-gradient-to-r text-white",
-                step.gradient
-              )}
-            >
-              {currentStep === STEPS.length - 1 ? (
-                <>
-                  <Check className="h-4 w-4 mr-1" />
-                  Bắt đầu
-                </>
-              ) : (
-                <>
-                  Tiếp theo
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </>
-              )}
-            </Button>
+            </div>
           </div>
         </div>
       </DialogContent>
