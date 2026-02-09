@@ -123,10 +123,10 @@ export default function Auth() {
   }, []);
 
   useEffect(() => {
-    if (user) {
+    if (user && !showOnboarding) {
       navigate('/');
     }
-  }, [user, navigate]);
+  }, [user, navigate, showOnboarding]);
 
   // Xử lý cảnh báo leo thang
   const handleSpecialCharViolation = useCallback(() => {
