@@ -467,11 +467,93 @@ serve(async (req) => {
           );
         }
 
+        // Clean up all related data before deleting auth user
+        console.log('[admin-users] Cleaning up related data for user:', data.userId);
+
+        // Get seller id if user is a seller
+        const { data: sellerData } = await supabaseAdmin
+          .from('sellers')
+          .select('id')
+          .eq('user_id', data.userId)
+          .maybeSingle();
+
+        // Delete child website products first (depends on child_websites)
+        if (true) {
+          const { data: websites } = await supabaseAdmin
+            .from('child_websites')
+            .select('id')
+            .eq('owner_id', data.userId);
+          if (websites && websites.length > 0) {
+            const websiteIds = websites.map(w => w.id);
+            await supabaseAdmin.from('child_website_products').delete().in('website_id', websiteIds);
+          }
+        }
+
+        // Delete in order - child tables first
+        const cleanupTables = [
+          { table: 'chat_messages', column: 'user_id' },
+          { table: 'private_messages', column: 'sender_id' },
+          { table: 'private_messages', column: 'receiver_id' },
+          { table: 'notifications', column: 'user_id' },
+          { table: 'post_comments', column: 'user_id' },
+          { table: 'post_likes', column: 'user_id' },
+          { table: 'friendships', column: 'user_id' },
+          { table: 'friendships', column: 'friend_id' },
+          { table: 'coin_history', column: 'user_id' },
+          { table: 'coin_purchases', column: 'user_id' },
+          { table: 'coin_transactions', column: 'user_id' },
+          { table: 'user_coins', column: 'user_id' },
+          { table: 'user_wallets', column: 'user_id' },
+          { table: 'user_warnings', column: 'user_id' },
+          { table: 'user_onboarding', column: 'user_id' },
+          { table: 'task_completions', column: 'user_id' },
+          { table: 'daily_action_progress', column: 'user_id' },
+          { table: 'resource_claims', column: 'user_id' },
+          { table: 'discount_code_uses', column: 'user_id' },
+          { table: 'referrals', column: 'referrer_id' },
+          { table: 'referrals', column: 'referred_id' },
+          { table: 'bot_rental_requests', column: 'user_id' },
+          { table: 'banned_users', column: 'user_id' },
+          { table: 'otp_codes', column: 'email' }, // skip, no user_id FK
+          { table: 'orders', column: 'buyer_id' },
+          { table: 'seller_requests', column: 'user_id' },
+        ];
+
+        for (const { table, column } of cleanupTables) {
+          if (column === 'email') continue; // skip non-uuid columns
+          try {
+            await supabaseAdmin.from(table).delete().eq(column, data.userId);
+          } catch (e) {
+            console.log(`[admin-users] Cleanup warning for ${table}.${column}:`, e);
+          }
+        }
+
+        // Delete seller-related data
+        if (sellerData) {
+          await supabaseAdmin.from('withdrawal_requests').delete().eq('seller_id', sellerData.id);
+          await supabaseAdmin.from('seller_coins').delete().eq('seller_id', sellerData.id);
+          await supabaseAdmin.from('accounts').delete().eq('seller_id', sellerData.id);
+          await supabaseAdmin.from('products').delete().eq('seller_id', sellerData.id);
+          await supabaseAdmin.from('sellers').delete().eq('user_id', data.userId);
+        }
+
+        // Set created_by to null for content tables (preserve content)
+        await supabaseAdmin.from('products').update({ created_by: null }).eq('created_by', data.userId);
+        await supabaseAdmin.from('social_accounts').update({ created_by: null }).eq('created_by', data.userId);
+        await supabaseAdmin.from('scam_reports').update({ created_by: null }).eq('created_by', data.userId);
+        await supabaseAdmin.from('discount_codes').update({ created_by: null }).eq('created_by', data.userId);
+        await supabaseAdmin.from('posts').update({ created_by: null }).eq('created_by', data.userId);
+        await supabaseAdmin.from('free_resources').update({ created_by: null }).eq('created_by', data.userId);
+
+        // Now delete the auth user (profiles & user_roles cascade automatically)
         const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
 
-        if (error) throw error;
+        if (error) {
+          console.error('[admin-users] Error deleting auth user:', error);
+          throw new Error('Database error deleting user');
+        }
 
-        console.log('[admin-users] User deleted:', data.userId);
+        console.log('[admin-users] User deleted successfully:', data.userId);
         return new Response(
           JSON.stringify({ success: true }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
