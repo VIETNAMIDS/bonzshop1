@@ -102,6 +102,26 @@ Deno.serve(async (req) => {
           throw createError;
         }
         console.log('Account created:', newAccount.id);
+
+        // Send Telegram notification for new account
+        try {
+          const supabaseUrl2 = Deno.env.get('SUPABASE_URL') ?? '';
+          const supabaseAnonKey2 = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+          await fetch(`${supabaseUrl2}/functions/v1/send-telegram-notification`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseAnonKey2}` },
+            body: JSON.stringify({
+              type: 'new_account',
+              productTitle: newAccount.title,
+              amount: newAccount.price,
+              productType: newAccount.category,
+              receiptUrl: newAccount.image_url || null,
+            }),
+          });
+        } catch (e) {
+          console.log('[admin-accounts] Telegram notification error (non-blocking):', e);
+        }
+
         result = newAccount;
         break;
 

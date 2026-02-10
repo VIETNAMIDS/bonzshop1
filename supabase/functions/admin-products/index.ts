@@ -106,6 +106,26 @@ serve(async (req) => {
         }
 
         console.log('[admin-products] Product created:', newProduct.id);
+
+        // Send Telegram notification for new product
+        try {
+          const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+          const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+          await fetch(`${supabaseUrl}/functions/v1/send-telegram-notification`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseAnonKey}` },
+            body: JSON.stringify({
+              type: 'new_product',
+              productTitle: newProduct.title,
+              amount: newProduct.price,
+              productType: newProduct.category,
+              receiptUrl: newProduct.image_url || null,
+            }),
+          });
+        } catch (e) {
+          console.log('[admin-products] Telegram notification error (non-blocking):', e);
+        }
+
         return new Response(
           JSON.stringify({ success: true, data: newProduct }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

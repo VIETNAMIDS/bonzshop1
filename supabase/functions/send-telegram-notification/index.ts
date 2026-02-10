@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
  interface TelegramPayload {
-   type: 'new_registration' | 'coin_purchase' | 'product_purchase' | 'account_purchase' | 'seller_upload' | 'seller_sale' | 'withdrawal_request' | 'bot_rental';
+   type: 'new_registration' | 'coin_purchase' | 'product_purchase' | 'account_purchase' | 'seller_upload' | 'seller_sale' | 'withdrawal_request' | 'bot_rental' | 'new_post' | 'new_product' | 'new_account';
   userEmail?: string;
   userName?: string;
   amount?: number;
@@ -176,6 +176,34 @@ Deno.serve(async (req) => {
         `💵 Giá: ${payload.price?.toLocaleString('vi-VN') || 0} VNĐ\n` +
         `🕐 Thời gian: ${now}`;
       
+      if (payload.receiptUrl) {
+        photoUrl = payload.receiptUrl;
+      }
+    } else if (payload.type === 'new_post') {
+      message = `📝 *BÀI VIẾT MỚI*\n\n` +
+        `📌 Tiêu đề: *${payload.productTitle || 'Không rõ'}*\n` +
+        `🕐 Thời gian: ${now}\n\n` +
+        `👉 Xem ngay tại BonzShop!`;
+      if (payload.receiptUrl) {
+        photoUrl = payload.receiptUrl;
+      }
+    } else if (payload.type === 'new_product') {
+      message = `🆕 *SẢN PHẨM MỚI*\n\n` +
+        `📦 Tên: *${payload.productTitle || 'Không rõ'}*\n` +
+        `🪙 Giá: ${payload.amount?.toLocaleString('vi-VN') || 0} xu\n` +
+        `📂 Danh mục: ${payload.productType || 'Khác'}\n` +
+        `🕐 Thời gian: ${now}\n\n` +
+        `👉 Mua ngay tại BonzShop!`;
+      if (payload.receiptUrl) {
+        photoUrl = payload.receiptUrl;
+      }
+    } else if (payload.type === 'new_account') {
+      message = `🆕 *TÀI KHOẢN MỚI*\n\n` +
+        `📦 Tên: *${payload.productTitle || 'Không rõ'}*\n` +
+        `🪙 Giá: ${payload.amount?.toLocaleString('vi-VN') || 0} xu\n` +
+        `📂 Danh mục: ${payload.productType || 'Khác'}\n` +
+        `🕐 Thời gian: ${now}\n\n` +
+        `👉 Mua ngay tại BonzShop!`;
       if (payload.receiptUrl) {
         photoUrl = payload.receiptUrl;
       }

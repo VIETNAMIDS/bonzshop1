@@ -108,11 +108,12 @@ export default function AdminPosts() {
     setShowForm(false);
   };
 
-  const sendPostNotification = async (postId: string, postTitle: string) => {
+  const sendPostNotification = async (postId: string, postTitle: string, postImageUrl?: string | null) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) return;
 
+      // Send in-app notification
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-post-notification`,
         {
@@ -129,6 +130,23 @@ export default function AdminPosts() {
       if (result.success) {
         console.log(`Sent notifications to ${result.count} users`);
       }
+
+      // Send Telegram notification
+      await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-telegram-notification`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            type: 'new_post',
+            productTitle: postTitle,
+            receiptUrl: postImageUrl || null,
+          }),
+        }
+      );
     } catch (err) {
       console.error('Error sending notifications:', err);
     }
@@ -160,7 +178,7 @@ export default function AdminPosts() {
         
         // Send notification if just published
         if (!wasPublished && isPublished) {
-          await sendPostNotification(editing.id, title.trim());
+          await sendPostNotification(editing.id, title.trim(), imageUrl.trim() || null);
         }
         
         toast.success('Cập nhật bài viết thành công');
@@ -181,7 +199,7 @@ export default function AdminPosts() {
         
         // Send notification if published immediately
         if (isPublished && newPost) {
-          await sendPostNotification(newPost.id, title.trim());
+          await sendPostNotification(newPost.id, title.trim(), imageUrl.trim() || null);
         }
         
         toast.success('Đăng bài viết thành công');
@@ -228,7 +246,7 @@ export default function AdminPosts() {
       
       // Send notification if publishing
       if (newPublishedState) {
-        await sendPostNotification(post.id, post.title);
+        await sendPostNotification(post.id, post.title, post.image_url);
       }
       
       toast.success(post.is_published ? 'Đã ẩn bài viết' : 'Đã xuất bản bài viết');
