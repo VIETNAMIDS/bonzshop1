@@ -38,6 +38,7 @@ import MyWebsites from "./pages/MyWebsites";
 import ChildWebsiteRouter from "./pages/ChildWebsiteRouter";
 
 import About from "./pages/About";
+import Welcome from "./pages/Welcome";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -85,6 +86,7 @@ const App = () => (
               <Route path="/coin-history" element={<CoinHistory />} />
               <Route path="/my-websites" element={<MyWebsites />} />
               <Route path="/store/:slug/*" element={<ChildWebsiteRouter />} />
+              <Route path="/welcome" element={<Welcome />} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>
