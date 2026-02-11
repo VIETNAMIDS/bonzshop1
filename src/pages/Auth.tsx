@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import OtpVerification from '@/components/OtpVerification';
 import ForgotPassword from '@/components/ForgotPassword';
-import { OnboardingModal } from '@/components/onboarding/OnboardingModal';
+
 import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
 import { toast as sonnerToast } from 'sonner';
@@ -99,7 +99,7 @@ export default function Auth() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isBlocked, setIsBlocked] = useState(false);
   const [pendingSignup, setPendingSignup] = useState<{ email: string; password: string; displayName: string } | null>(null);
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [redirectToWelcome, setRedirectToWelcome] = useState(false);
    const [searchParams] = useSearchParams();
    const referralCode = searchParams.get('ref');
 
@@ -123,10 +123,13 @@ export default function Auth() {
   }, []);
 
   useEffect(() => {
-    if (user && !showOnboarding) {
+    if (user && !redirectToWelcome) {
       navigate('/');
     }
-  }, [user, navigate, showOnboarding]);
+    if (user && redirectToWelcome) {
+      navigate('/welcome');
+    }
+  }, [user, navigate, redirectToWelcome]);
 
   // Xử lý cảnh báo leo thang
   const handleSpecialCharViolation = useCallback(() => {
@@ -318,8 +321,8 @@ export default function Auth() {
           console.log('Telegram notification failed (non-critical):', telegramError);
         }
         
-        // Show onboarding for new users
-        setShowOnboarding(true);
+        // Redirect to welcome page for new users
+        setRedirectToWelcome(true);
       }
     } finally {
       setIsLoading(false);
@@ -439,11 +442,7 @@ export default function Auth() {
      }
    };
  
-  // Handle onboarding complete
-  const handleOnboardingClose = () => {
-    setShowOnboarding(false);
-    navigate('/');
-  };
+  // (onboarding is now on /welcome page)
 
   // Handle back from OTP
   const handleOtpBack = () => {
@@ -767,11 +766,6 @@ export default function Auth() {
         </div>
       </div>
 
-      {/* Onboarding Modal for new users */}
-      <OnboardingModal 
-        isOpen={showOnboarding} 
-        onClose={handleOnboardingClose} 
-      />
     </div>
   );
 }
