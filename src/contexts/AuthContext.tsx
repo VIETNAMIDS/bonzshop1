@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useSessionHeartbeat, deactivateCurrentSession } from '@/hooks/useSessionManager';
 
 interface Profile {
   id: string;
@@ -363,12 +364,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    await deactivateCurrentSession();
     await supabase.auth.signOut();
     setIsAdmin(false);
     setSellerProfile(null);
     setNeedsSellerSetup(false);
     setUserProfile(null);
   };
+
+  // Session heartbeat - keeps session alive and detects kicks
+  useSessionHeartbeat(user?.id ?? null);
 
   return (
     <AuthContext.Provider value={{ 
