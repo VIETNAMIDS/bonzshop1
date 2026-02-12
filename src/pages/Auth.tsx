@@ -13,6 +13,16 @@ import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
 import { toast as sonnerToast } from 'sonner';
 import bonzshopLogo from '@/assets/bonzshop-logo.png';
+import SessionConflictDialog from '@/components/SessionConflictDialog';
+import { getDeviceInfo } from '@/lib/deviceFingerprint';
+import {
+  checkExistingSession,
+  registerSession,
+  forceDeactivateSession,
+  checkDeviceRegistration,
+  registerDevice,
+  type ActiveSession,
+} from '@/hooks/useSessionManager';
 
 // Ký tự không được phép
 const specialCharRegex = /[<>{}[\]\\\/`~!#$%^&*()+|=;:'",?]/;
@@ -100,6 +110,10 @@ export default function Auth() {
   const [isBlocked, setIsBlocked] = useState(false);
   const [pendingSignup, setPendingSignup] = useState<{ email: string; password: string; displayName: string } | null>(null);
   const [redirectToWelcome, setRedirectToWelcome] = useState(false);
+  const [sessionConflict, setSessionConflict] = useState<ActiveSession | null>(null);
+  const [showSessionDialog, setShowSessionDialog] = useState(false);
+  const [currentDeviceName, setCurrentDeviceName] = useState('');
+  const [pendingLoginResolve, setPendingLoginResolve] = useState<(() => void) | null>(null);
    const [searchParams] = useSearchParams();
    const referralCode = searchParams.get('ref');
 
@@ -115,21 +129,33 @@ export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Kiểm tra block khi load trang
+  // Kiểm tra block khi load trang + kicked notification
   useEffect(() => {
     if (isUserBlocked()) {
       setIsBlocked(true);
     }
+    if (searchParams.get('kicked') === 'true') {
+      toast({
+        title: '⚠️ Phiên đã bị kết thúc',
+        description: 'Tài khoản của bạn đã đăng nhập trên thiết bị khác.',
+        variant: 'destructive',
+      });
+    }
+  }, []);
+
+  // Load current device name
+  useEffect(() => {
+    getDeviceInfo().then(info => setCurrentDeviceName(info.deviceName));
   }, []);
 
   useEffect(() => {
-    if (user && !redirectToWelcome) {
+    if (user && !redirectToWelcome && !showSessionDialog) {
       navigate('/');
     }
     if (user && redirectToWelcome) {
       navigate('/welcome');
     }
-  }, [user, navigate, redirectToWelcome]);
+  }, [user, navigate, redirectToWelcome, showSessionDialog]);
 
   // Xử lý cảnh báo leo thang
   const handleSpecialCharViolation = useCallback(() => {
@@ -227,6 +253,41 @@ export default function Auth() {
     checkSpecialChars(value, 'displayName');
   };
 
+  // Session conflict handlers
+  const handleKeepExisting = async () => {
+    // User chose to keep old session, cancel login here
+    setShowSessionDialog(false);
+    setSessionConflict(null);
+    await supabase.auth.signOut();
+    toast({
+      title: 'Đã hủy đăng nhập',
+      description: 'Phiên đăng nhập cũ được giữ lại.',
+    });
+  };
+
+  const handleUseThisDevice = async () => {
+    if (!sessionConflict) return;
+    setIsLoading(true);
+    try {
+      // Deactivate old session
+      await forceDeactivateSession(sessionConflict.id);
+      // Register new session
+      const { data } = await supabase.auth.getUser();
+      if (data.user) {
+        await registerSession(data.user.id);
+      }
+      setShowSessionDialog(false);
+      setSessionConflict(null);
+      toast({
+        title: 'Đăng nhập thành công',
+        description: 'Thiết bị cũ đã bị đăng xuất.',
+      });
+      navigate('/');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -245,7 +306,7 @@ export default function Auth() {
 
     try {
       if (view === 'login') {
-        const { error } = await signIn(email, password);
+        const { error, data } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
           toast({
             title: 'Đăng nhập thất bại',
@@ -254,14 +315,36 @@ export default function Auth() {
               : error.message,
             variant: 'destructive',
           });
-        } else {
-          toast({
-            title: 'Đăng nhập thành công',
-            description: 'Chào mừng bạn trở lại!',
-          });
-          navigate('/');
+        } else if (data.user) {
+          // Check for existing session on another device
+          const existingSession = await checkExistingSession(data.user.id);
+          if (existingSession) {
+            // Show conflict dialog
+            setSessionConflict(existingSession);
+            setShowSessionDialog(true);
+          } else {
+            // No conflict, register session and proceed
+            await registerSession(data.user.id);
+            toast({
+              title: 'Đăng nhập thành công',
+              description: 'Chào mừng bạn trở lại!',
+            });
+            navigate('/');
+          }
         }
       } else if (view === 'signup') {
+        // Check device registration limit
+        const deviceCheck = await checkDeviceRegistration();
+        if (deviceCheck.registered) {
+          toast({
+            title: '🚫 Thiết bị đã được đăng ký',
+            description: 'Mỗi thiết bị chỉ được tạo 1 tài khoản. Thiết bị này đã có tài khoản.',
+            variant: 'destructive',
+            duration: 10000,
+          });
+          return;
+        }
+        
         // Save pending signup data and show OTP verification
         setPendingSignup({ email, password, displayName });
         setView('otp');
@@ -297,6 +380,17 @@ export default function Auth() {
           title: '🎉 Đăng ký thành công',
           description: 'Tài khoản của bạn đã được tạo và xác thực!',
         });
+        
+        // Register device for this account
+        try {
+          const { data: currentUser } = await supabase.auth.getUser();
+          if (currentUser.user) {
+            await registerDevice(currentUser.user.id);
+            await registerSession(currentUser.user.id);
+          }
+        } catch (devErr) {
+          console.log('Device registration failed (non-critical):', devErr);
+        }
         
         // Send Telegram notification to admin
         try {
@@ -766,6 +860,20 @@ export default function Auth() {
         </div>
       </div>
 
+      {/* Session Conflict Dialog */}
+      <SessionConflictDialog
+        open={showSessionDialog}
+        existingSession={sessionConflict ? {
+          deviceName: sessionConflict.deviceName,
+          os: sessionConflict.os,
+          browser: sessionConflict.browser,
+          lastActiveAt: sessionConflict.lastActiveAt,
+        } : null}
+        currentDevice={currentDeviceName}
+        onKeepExisting={handleKeepExisting}
+        onUseThisDevice={handleUseThisDevice}
+        isLoading={isLoading}
+      />
     </div>
   );
 }

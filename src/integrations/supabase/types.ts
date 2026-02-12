@@ -579,6 +579,39 @@ export type Database = {
         }
         Relationships: []
       }
+      device_registrations: {
+        Row: {
+          browser: string | null
+          device_fingerprint: string
+          device_name: string | null
+          id: string
+          os: string | null
+          registered_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          browser?: string | null
+          device_fingerprint: string
+          device_name?: string | null
+          id?: string
+          os?: string | null
+          registered_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          browser?: string | null
+          device_fingerprint?: string
+          device_name?: string | null
+          id?: string
+          os?: string | null
+          registered_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       discount_code_uses: {
         Row: {
           code_id: string
@@ -1571,6 +1604,48 @@ export type Database = {
           id?: string
           protected?: boolean | null
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_sessions: {
+        Row: {
+          browser: string | null
+          created_at: string
+          device_fingerprint: string
+          device_name: string | null
+          id: string
+          ip_address: string | null
+          is_active: boolean
+          last_active_at: string
+          os: string | null
+          session_token: string
+          user_id: string
+        }
+        Insert: {
+          browser?: string | null
+          created_at?: string
+          device_fingerprint: string
+          device_name?: string | null
+          id?: string
+          ip_address?: string | null
+          is_active?: boolean
+          last_active_at?: string
+          os?: string | null
+          session_token: string
+          user_id: string
+        }
+        Update: {
+          browser?: string | null
+          created_at?: string
+          device_fingerprint?: string
+          device_name?: string | null
+          id?: string
+          ip_address?: string | null
+          is_active?: boolean
+          last_active_at?: string
+          os?: string | null
+          session_token?: string
           user_id?: string
         }
         Relationships: []
