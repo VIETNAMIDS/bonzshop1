@@ -158,6 +158,7 @@ export async function registerDevice(userId: string): Promise<void> {
 // Hook: keeps session alive with heartbeat and listens for kicks
 export function useSessionHeartbeat(userId: string | null) {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const registeredRef = useRef(false);
 
   const heartbeat = useCallback(async () => {
     if (!userId) return;
@@ -173,8 +174,13 @@ export function useSessionHeartbeat(userId: string | null) {
   useEffect(() => {
     if (!userId) return;
 
-    // Initial heartbeat
-    heartbeat();
+    // Always register/re-register session on mount (handles page refresh, restored sessions)
+    if (!registeredRef.current) {
+      registeredRef.current = true;
+      registerSession(userId).then(() => heartbeat());
+    } else {
+      heartbeat();
+    }
     
     // Set interval
     intervalRef.current = setInterval(heartbeat, HEARTBEAT_INTERVAL);
