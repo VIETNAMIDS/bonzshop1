@@ -40,6 +40,7 @@ import ChildWebsiteRouter from "./pages/ChildWebsiteRouter";
 import About from "./pages/About";
 import Welcome from "./pages/Welcome";
 import NotFound from "./pages/NotFound";
+import ApiDocs from "./pages/ApiDocs";
 
 const queryClient = new QueryClient();
 
@@ -87,6 +88,7 @@ const App = () => (
               <Route path="/my-websites" element={<MyWebsites />} />
               <Route path="/store/:slug/*" element={<ChildWebsiteRouter />} />
               <Route path="/welcome" element={<Welcome />} />
+              <Route path="/api" element={<ApiDocs />} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>
