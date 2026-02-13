@@ -13,15 +13,11 @@ import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
 import { toast as sonnerToast } from 'sonner';
 import bonzshopLogo from '@/assets/bonzshop-logo.png';
-import SessionConflictDialog from '@/components/SessionConflictDialog';
-import { getDeviceInfo } from '@/lib/deviceFingerprint';
+
 import {
-  checkExistingSession,
   registerSession,
-  forceDeactivateSession,
   checkDeviceRegistration,
   registerDevice,
-  type ActiveSession,
 } from '@/hooks/useSessionManager';
 
 // Ký tự không được phép
@@ -110,10 +106,6 @@ export default function Auth() {
   const [isBlocked, setIsBlocked] = useState(false);
   const [pendingSignup, setPendingSignup] = useState<{ email: string; password: string; displayName: string } | null>(null);
   const [redirectToWelcome, setRedirectToWelcome] = useState(false);
-  const [sessionConflict, setSessionConflict] = useState<ActiveSession | null>(null);
-  const [showSessionDialog, setShowSessionDialog] = useState(false);
-  const [currentDeviceName, setCurrentDeviceName] = useState('');
-  const [pendingLoginResolve, setPendingLoginResolve] = useState<(() => void) | null>(null);
    const [searchParams] = useSearchParams();
    const referralCode = searchParams.get('ref');
 
@@ -143,19 +135,15 @@ export default function Auth() {
     }
   }, []);
 
-  // Load current device name
-  useEffect(() => {
-    getDeviceInfo().then(info => setCurrentDeviceName(info.deviceName));
-  }, []);
 
   useEffect(() => {
-    if (user && !redirectToWelcome && !showSessionDialog) {
+    if (user && !redirectToWelcome) {
       navigate('/');
     }
     if (user && redirectToWelcome) {
       navigate('/welcome');
     }
-  }, [user, navigate, redirectToWelcome, showSessionDialog]);
+  }, [user, navigate, redirectToWelcome]);
 
   // Xử lý cảnh báo leo thang
   const handleSpecialCharViolation = useCallback(() => {
@@ -253,40 +241,6 @@ export default function Auth() {
     checkSpecialChars(value, 'displayName');
   };
 
-  // Session conflict handlers
-  const handleKeepExisting = async () => {
-    // User chose to keep old session, cancel login here
-    setShowSessionDialog(false);
-    setSessionConflict(null);
-    await supabase.auth.signOut();
-    toast({
-      title: 'Đã hủy đăng nhập',
-      description: 'Phiên đăng nhập cũ được giữ lại.',
-    });
-  };
-
-  const handleUseThisDevice = async () => {
-    if (!sessionConflict) return;
-    setIsLoading(true);
-    try {
-      // Deactivate old session
-      await forceDeactivateSession(sessionConflict.id);
-      // Register new session
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
-        await registerSession(data.user.id);
-      }
-      setShowSessionDialog(false);
-      setSessionConflict(null);
-      toast({
-        title: 'Đăng nhập thành công',
-        description: 'Thiết bị cũ đã bị đăng xuất.',
-      });
-      navigate('/');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -316,21 +270,13 @@ export default function Auth() {
             variant: 'destructive',
           });
         } else if (data.user) {
-          // Check for existing session on another device
-          const existingSession = await checkExistingSession(data.user.id);
-          if (existingSession) {
-            // Show conflict dialog
-            setSessionConflict(existingSession);
-            setShowSessionDialog(true);
-          } else {
-            // No conflict, register session and proceed
-            await registerSession(data.user.id);
-            toast({
-              title: 'Đăng nhập thành công',
-              description: 'Chào mừng bạn trở lại!',
-            });
-            navigate('/');
-          }
+          // Force register session - auto kicks any existing session on other devices
+          await registerSession(data.user.id);
+          toast({
+            title: 'Đăng nhập thành công',
+            description: 'Chào mừng bạn trở lại!',
+          });
+          navigate('/');
         }
       } else if (view === 'signup') {
         // Check device registration limit
@@ -860,20 +806,6 @@ export default function Auth() {
         </div>
       </div>
 
-      {/* Session Conflict Dialog */}
-      <SessionConflictDialog
-        open={showSessionDialog}
-        existingSession={sessionConflict ? {
-          deviceName: sessionConflict.deviceName,
-          os: sessionConflict.os,
-          browser: sessionConflict.browser,
-          lastActiveAt: sessionConflict.lastActiveAt,
-        } : null}
-        currentDevice={currentDeviceName}
-        onKeepExisting={handleKeepExisting}
-        onUseThisDevice={handleUseThisDevice}
-        isLoading={isLoading}
-      />
     </div>
   );
 }
