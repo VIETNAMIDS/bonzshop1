@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Shield, User, FolderOpen, Gift, Menu, X, ShoppingBag, Coins, Store, FileText, Sparkles, MessageCircle, Skull, History, ChevronLeft, ChevronRight, Home, Globe } from 'lucide-react';
+import { LogOut, Shield, User, FolderOpen, Gift, Menu, X, ShoppingBag, Coins, Store, FileText, Sparkles, MessageCircle, Skull, History, ChevronLeft, ChevronRight, Home, Globe, Code } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -62,6 +62,7 @@ export function Navbar() {
     { to: '/my-websites', label: 'Web Con', icon: Globe, requireAuth: true },
     { to: '/categories', label: 'Danh mục', icon: FolderOpen },
     { to: '/free', label: 'Miễn phí', icon: Gift },
+    { to: '/api', label: 'API', icon: Code },
     { to: '/contact', label: 'Liên hệ', icon: MessageCircle },
   ];
 
