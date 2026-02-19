@@ -8,6 +8,8 @@ import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import OtpVerification from '@/components/OtpVerification';
 import ForgotPassword from '@/components/ForgotPassword';
+import QrLoginDesktop from '@/components/QrLoginDesktop';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
@@ -108,6 +110,8 @@ export default function Auth() {
   const [redirectToWelcome, setRedirectToWelcome] = useState(false);
    const [searchParams] = useSearchParams();
    const referralCode = searchParams.get('ref');
+   const qrToken = searchParams.get('qr_token');
+   const isMobile = useIsMobile();
 
   // Save referral code to localStorage on mount (for OAuth redirects)
   useEffect(() => {
@@ -498,6 +502,11 @@ export default function Auth() {
       description: 'Vui lòng đăng nhập với mật khẩu mới.',
     });
   };
+
+  // Desktop without QR token: show QR login screen
+  if (!isMobile && !qrToken && !user) {
+    return <QrLoginDesktop onLoginSuccess={() => navigate('/')} />;
+  }
 
   // Màn hình blocked
   if (isBlocked) {

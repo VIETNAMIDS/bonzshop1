@@ -1276,6 +1276,39 @@ export type Database = {
         }
         Relationships: []
       }
+      qr_login_sessions: {
+        Row: {
+          confirmed_at: string | null
+          confirmed_by: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          session_data: Json | null
+          status: string
+          token: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          session_data?: Json | null
+          status?: string
+          token?: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          session_data?: Json | null
+          status?: string
+          token?: string
+        }
+        Relationships: []
+      }
       referrals: {
         Row: {
           coins_rewarded: number | null
