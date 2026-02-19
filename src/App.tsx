@@ -42,6 +42,7 @@ import Welcome from "./pages/Welcome";
 import NotFound from "./pages/NotFound";
 import ApiDocs from "./pages/ApiDocs";
 import QrConfirm from "./pages/QrConfirm";
+import QrScanner from "./pages/QrScanner";
 
 const queryClient = new QueryClient();
 
@@ -91,6 +92,7 @@ const App = () => (
               <Route path="/welcome" element={<Welcome />} />
               <Route path="/api" element={<ApiDocs />} />
               <Route path="/qr-confirm" element={<QrConfirm />} />
+              <Route path="/qr-scan" element={<QrScanner />} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>
