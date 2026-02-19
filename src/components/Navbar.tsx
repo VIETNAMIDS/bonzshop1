@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Shield, User, FolderOpen, Gift, Menu, X, ShoppingBag, Coins, Store, FileText, Sparkles, MessageCircle, Skull, History, ChevronLeft, ChevronRight, Home, Globe, Code } from 'lucide-react';
+import { LogOut, Shield, User, FolderOpen, Gift, Menu, X, ShoppingBag, Coins, Store, FileText, Sparkles, MessageCircle, Skull, History, ChevronLeft, ChevronRight, Home, Globe, Code, ScanLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -58,6 +58,7 @@ export function Navbar() {
     { to: '/posts', label: 'Bài viết', icon: FileText },
     { to: '/scam-reports', label: 'Scam', icon: Skull },
     { to: '/chat', label: 'Chat', icon: MessageCircle, requireAuth: true },
+    { to: '/qr-scan', label: 'Quét QR', icon: ScanLine, requireAuth: true, mobileOnly: true },
     { to: '/my-orders', label: 'Đơn hàng', icon: ShoppingBag, requireAuth: true },
     { to: '/my-websites', label: 'Web Con', icon: Globe, requireAuth: true },
     { to: '/categories', label: 'Danh mục', icon: FolderOpen },
@@ -104,7 +105,7 @@ export function Navbar() {
             <div className="py-4 border-t border-border/50 animate-fade-in">
               <div className="flex flex-col gap-1">
                 {navLinks
-                  .filter(link => !link.requireAuth || user)
+                  .filter(link => (!link.requireAuth || user) && (!link.mobileOnly || isMobile))
                   .map((link) => (
                   <Link
                     key={link.to}
@@ -264,7 +265,7 @@ export function Navbar() {
         {/* Navigation Links */}
         <nav className="flex-1 space-y-1 overflow-y-auto">
           {navLinks
-            .filter(link => !link.requireAuth || user)
+            .filter(link => (!link.requireAuth || user) && (!link.mobileOnly || isMobile))
             .map((link) => (
             <Link
               key={link.to}
