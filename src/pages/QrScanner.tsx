@@ -1,74 +1,101 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, CheckCircle, XCircle, Loader2, ShieldCheck, QrCode } from 'lucide-react';
+import { Camera, CheckCircle, XCircle, Loader2, ShieldCheck, QrCode, Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import bonzshopLogo from '@/assets/bonzshop-logo.png';
 
-type ScanState = 'scanning' | 'confirm' | 'confirming' | 'success' | 'error';
+type ScanState = 'scanning' | 'confirm' | 'confirming' | 'success' | 'error' | 'manual';
 
 export default function QrScannerPage() {
   const [state, setState] = useState<ScanState>('scanning');
   const [scannedToken, setScannedToken] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [manualUrl, setManualUrl] = useState('');
   const scannerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const extractToken = (text: string): string | null => {
+    try {
+      // Try as URL first
+      const url = new URL(text);
+      const token = url.searchParams.get('qr_token');
+      if (token) return token;
+    } catch {
+      // Not a URL
+    }
+    // Try as raw token (hex string)
+    if (/^[a-f0-9]{64}$/i.test(text.trim())) {
+      return text.trim();
+    }
+    // Try to extract qr_token from partial URL
+    const match = text.match(/qr_token=([a-f0-9]+)/i);
+    if (match) return match[1];
+    return null;
+  };
+
   // Initialize scanner
   useEffect(() => {
     if (state !== 'scanning') return;
 
     let html5QrcodeScanner: any = null;
+    let stopped = false;
 
     const initScanner = async () => {
-      const { Html5Qrcode } = await import('html5-qrcode');
-      
-      if (!containerRef.current) return;
-
-      html5QrcodeScanner = new Html5Qrcode('qr-reader');
-      scannerRef.current = html5QrcodeScanner;
-
       try {
+        const { Html5Qrcode } = await import('html5-qrcode');
+        
+        if (stopped || !containerRef.current) return;
+
+        html5QrcodeScanner = new Html5Qrcode('qr-reader');
+        scannerRef.current = html5QrcodeScanner;
+
+        // Get available cameras
+        const cameras = await Html5Qrcode.getCameras();
+        if (!cameras || cameras.length === 0) {
+          setErrorMsg('Không tìm thấy camera. Hãy thử nhập link thủ công.');
+          setState('error');
+          return;
+        }
+
         await html5QrcodeScanner.start(
           { facingMode: 'environment' },
           {
-            fps: 10,
+            fps: 15,
             qrbox: { width: 250, height: 250 },
+            aspectRatio: 1,
           },
           (decodedText: string) => {
-            // Parse the QR URL to extract token
-            try {
-              const url = new URL(decodedText);
-              const token = url.searchParams.get('qr_token');
-              if (token) {
-                setScannedToken(token);
-                setState('confirm');
-                // Stop scanner
-                html5QrcodeScanner.stop().catch(() => {});
-              }
-            } catch {
-              // Not a valid URL, ignore
+            const token = extractToken(decodedText);
+            if (token) {
+              setScannedToken(token);
+              setState('confirm');
+              html5QrcodeScanner.stop().catch(() => {});
             }
           },
-          () => {
-            // QR code scan error (ignore, keep scanning)
-          }
+          () => {}
         );
       } catch (err: any) {
         console.error('Camera error:', err);
-        setErrorMsg('Không thể mở camera. Vui lòng cấp quyền truy cập camera.');
-        setState('error');
+        if (!stopped) {
+          setErrorMsg('Không thể mở camera. Vui lòng cấp quyền camera hoặc nhập link thủ công.');
+          setState('error');
+        }
       }
     };
 
-    initScanner();
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(initScanner, 300);
 
     return () => {
+      stopped = true;
+      clearTimeout(timer);
       if (html5QrcodeScanner) {
         html5QrcodeScanner.stop().catch(() => {});
       }
@@ -102,9 +129,24 @@ export default function QrScannerPage() {
     }
   };
 
+  const handleManualSubmit = () => {
+    const token = extractToken(manualUrl);
+    if (token) {
+      setScannedToken(token);
+      setState('confirm');
+    } else {
+      toast({
+        title: 'Link không hợp lệ',
+        description: 'Vui lòng dán đúng link từ mã QR',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const handleRetry = () => {
     setScannedToken(null);
     setErrorMsg('');
+    setManualUrl('');
     setState('scanning');
   };
 
@@ -149,15 +191,52 @@ export default function QrScannerPage() {
                 id="qr-reader"
                 ref={containerRef}
                 className="rounded-xl overflow-hidden border-2 border-primary/30"
+                style={{ minHeight: '280px' }}
               />
 
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={() => navigate(-1)}
-              >
-                Hủy
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => navigate(-1)}
+                >
+                  Hủy
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 gap-1"
+                  onClick={() => setState('manual')}
+                >
+                  <Keyboard className="h-4 w-4" />
+                  Nhập link
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Manual Input State */}
+          {state === 'manual' && (
+            <div className="space-y-4 py-2">
+              <div className="text-center">
+                <Keyboard className="h-8 w-8 text-primary mx-auto mb-2" />
+                <h2 className="text-lg font-bold">Nhập link QR</h2>
+                <p className="text-xs text-muted-foreground">
+                  Nếu không quét được, hãy copy link từ mã QR và dán vào đây
+                </p>
+              </div>
+              <Input
+                placeholder="Dán link QR tại đây..."
+                value={manualUrl}
+                onChange={(e) => setManualUrl(e.target.value)}
+                autoFocus
+              />
+              <Button onClick={handleManualSubmit} variant="gradient" className="w-full">
+                Xác nhận
+              </Button>
+              <Button variant="outline" className="w-full" onClick={handleRetry}>
+                Quay lại quét
               </Button>
             </div>
           )}
@@ -222,7 +301,11 @@ export default function QrScannerPage() {
               <Button onClick={handleRetry} variant="gradient" className="w-full">
                 Thử lại
               </Button>
-              <Button onClick={() => navigate('/')} variant="outline" className="w-full">
+              <Button onClick={() => setState('manual')} variant="outline" className="w-full gap-1">
+                <Keyboard className="h-4 w-4" />
+                Nhập link thủ công
+              </Button>
+              <Button onClick={() => navigate('/')} variant="ghost" className="w-full">
                 Về trang chủ
               </Button>
             </div>

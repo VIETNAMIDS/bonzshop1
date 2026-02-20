@@ -120,8 +120,10 @@ export default function QrLoginDesktop({ onLoginSuccess }: QrLoginDesktopProps) 
     return () => clearInterval(interval);
   }, [expiresAt]);
 
+  // Use published URL if available, otherwise current origin
+  const baseUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
   const qrUrl = qrToken
-    ? `${window.location.origin}/qr-confirm?qr_token=${qrToken}`
+    ? `${baseUrl}/qr-confirm?qr_token=${qrToken}`
     : '';
 
   const isExpired = timeLeft <= 0 && !isLoading;
