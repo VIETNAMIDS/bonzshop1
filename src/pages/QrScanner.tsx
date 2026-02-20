@@ -15,26 +15,23 @@ export default function QrScannerPage() {
   const [scannedToken, setScannedToken] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [manualUrl, setManualUrl] = useState('');
+  const [cameraReady, setCameraReady] = useState(false);
   const scannerRef = useRef<any>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const extractToken = (text: string): string | null => {
     try {
-      // Try as URL first
       const url = new URL(text);
       const token = url.searchParams.get('qr_token');
       if (token) return token;
     } catch {
       // Not a URL
     }
-    // Try as raw token (hex string)
     if (/^[a-f0-9]{64}$/i.test(text.trim())) {
       return text.trim();
     }
-    // Try to extract qr_token from partial URL
     const match = text.match(/qr_token=([a-f0-9]+)/i);
     if (match) return match[1];
     return null;
@@ -44,43 +41,40 @@ export default function QrScannerPage() {
   useEffect(() => {
     if (state !== 'scanning') return;
 
-    let html5QrcodeScanner: any = null;
+    let html5QrcodeInstance: any = null;
     let stopped = false;
 
     const initScanner = async () => {
       try {
         const { Html5Qrcode } = await import('html5-qrcode');
         
-        if (stopped || !containerRef.current) return;
+        if (stopped) return;
 
-        html5QrcodeScanner = new Html5Qrcode('qr-reader');
-        scannerRef.current = html5QrcodeScanner;
+        // Ensure the container exists
+        const container = document.getElementById('qr-reader-container');
+        if (!container) return;
 
-        // Get available cameras
-        const cameras = await Html5Qrcode.getCameras();
-        if (!cameras || cameras.length === 0) {
-          setErrorMsg('Không tìm thấy camera. Hãy thử nhập link thủ công.');
-          setState('error');
-          return;
-        }
+        html5QrcodeInstance = new Html5Qrcode('qr-reader-container');
+        scannerRef.current = html5QrcodeInstance;
 
-        await html5QrcodeScanner.start(
+        await html5QrcodeInstance.start(
           { facingMode: 'environment' },
           {
-            fps: 15,
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1,
+            fps: 10,
+            qrbox: { width: 220, height: 220 },
           },
           (decodedText: string) => {
             const token = extractToken(decodedText);
             if (token) {
               setScannedToken(token);
               setState('confirm');
-              html5QrcodeScanner.stop().catch(() => {});
+              html5QrcodeInstance.stop().catch(() => {});
             }
           },
           () => {}
         );
+
+        setCameraReady(true);
       } catch (err: any) {
         console.error('Camera error:', err);
         if (!stopped) {
@@ -90,15 +84,16 @@ export default function QrScannerPage() {
       }
     };
 
-    // Small delay to ensure DOM is ready
-    const timer = setTimeout(initScanner, 300);
+    // Longer delay to ensure DOM is fully ready
+    const timer = setTimeout(initScanner, 500);
 
     return () => {
       stopped = true;
       clearTimeout(timer);
-      if (html5QrcodeScanner) {
-        html5QrcodeScanner.stop().catch(() => {});
+      if (html5QrcodeInstance) {
+        html5QrcodeInstance.stop().catch(() => {});
       }
+      setCameraReady(false);
     };
   }, [state]);
 
@@ -170,7 +165,6 @@ export default function QrScannerPage() {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-sm mx-auto pt-4">
-        {/* Header */}
         <div className="flex justify-center mb-4">
           <img src={bonzshopLogo} alt="BonzShop" className="h-16 w-auto object-contain" />
         </div>
@@ -187,19 +181,48 @@ export default function QrScannerPage() {
                 </p>
               </div>
 
-              <div
-                id="qr-reader"
-                ref={containerRef}
-                className="rounded-xl overflow-hidden border-2 border-primary/30"
-                style={{ minHeight: '280px' }}
-              />
+              {/* Camera container with proper styling */}
+              <div className="relative rounded-xl overflow-hidden border-2 border-primary/30 bg-black" style={{ minHeight: '300px' }}>
+                {!cameraReady && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-black">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+                    <p className="text-xs text-muted-foreground">Đang mở camera...</p>
+                  </div>
+                )}
+                <div 
+                  id="qr-reader-container" 
+                  style={{ width: '100%', minHeight: '300px' }}
+                />
+              </div>
+
+              {/* Force video to show properly */}
+              <style>{`
+                #qr-reader-container video {
+                  width: 100% !important;
+                  height: auto !important;
+                  object-fit: cover !important;
+                  border-radius: 0.75rem;
+                }
+                #qr-reader-container img[alt="Info icon"] {
+                  display: none !important;
+                }
+                #qr-reader-container > div {
+                  border: none !important;
+                }
+                #qr-reader-container #qr-shaded-region {
+                  border-color: hsl(var(--primary)) !important;
+                }
+              `}</style>
 
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   className="flex-1"
-                  onClick={() => navigate(-1)}
+                  onClick={() => {
+                    if (scannerRef.current) scannerRef.current.stop().catch(() => {});
+                    navigate(-1);
+                  }}
                 >
                   Hủy
                 </Button>
@@ -207,7 +230,10 @@ export default function QrScannerPage() {
                   variant="outline"
                   size="sm"
                   className="flex-1 gap-1"
-                  onClick={() => setState('manual')}
+                  onClick={() => {
+                    if (scannerRef.current) scannerRef.current.stop().catch(() => {});
+                    setState('manual');
+                  }}
                 >
                   <Keyboard className="h-4 w-4" />
                   Nhập link
@@ -253,18 +279,10 @@ export default function QrScannerPage() {
               <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground">
                 ⚠️ Chỉ xác nhận nếu bạn là người mở mã QR trên máy tính
               </div>
-              <Button
-                onClick={handleConfirm}
-                variant="gradient"
-                className="w-full"
-              >
+              <Button onClick={handleConfirm} variant="gradient" className="w-full">
                 Xác nhận đăng nhập
               </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleRetry}
-              >
+              <Button variant="outline" className="w-full" onClick={handleRetry}>
                 Quét lại
               </Button>
             </div>

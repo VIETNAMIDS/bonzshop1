@@ -59,6 +59,69 @@ interface AccountCredentials {
 const DEFAULT_BANK_ACCOUNT = "0762694589";
 const DEFAULT_BANK_NAME = "MB BANK";
 
+// Full app catalog - all platforms with icons and colors
+const APP_CATALOG = [
+  // Mạng xã hội
+  { name: 'Facebook', icon: '📘', color: '#1877F2', group: 'Mạng xã hội' },
+  { name: 'Instagram', icon: '📸', color: '#E4405F', group: 'Mạng xã hội' },
+  { name: 'TikTok', icon: '🎵', color: '#010101', group: 'Mạng xã hội' },
+  { name: 'Twitter', icon: '🐦', color: '#1DA1F2', group: 'Mạng xã hội' },
+  { name: 'Threads', icon: '🧵', color: '#000000', group: 'Mạng xã hội' },
+  { name: 'Snapchat', icon: '👻', color: '#FFFC00', group: 'Mạng xã hội' },
+  { name: 'Pinterest', icon: '📌', color: '#E60023', group: 'Mạng xã hội' },
+  { name: 'Reddit', icon: '🟠', color: '#FF4500', group: 'Mạng xã hội' },
+  { name: 'Zalo', icon: '💙', color: '#0068FF', group: 'Mạng xã hội' },
+  { name: 'Telegram', icon: '✈️', color: '#0088CC', group: 'Mạng xã hội' },
+  { name: 'Discord', icon: '💬', color: '#5865F2', group: 'Mạng xã hội' },
+  { name: 'LinkedIn', icon: '💼', color: '#0A66C2', group: 'Mạng xã hội' },
+  // Giải trí & Streaming
+  { name: 'Netflix', icon: '🎬', color: '#E50914', group: 'Giải trí' },
+  { name: 'Spotify', icon: '🎧', color: '#1DB954', group: 'Giải trí' },
+  { name: 'YouTube', icon: '▶️', color: '#FF0000', group: 'Giải trí' },
+  { name: 'YouTube Premium', icon: '🔴', color: '#FF0000', group: 'Giải trí' },
+  { name: 'Disney+', icon: '🏰', color: '#113CCF', group: 'Giải trí' },
+  { name: 'HBO Max', icon: '🎭', color: '#5822B4', group: 'Giải trí' },
+  { name: 'Apple Music', icon: '🍎', color: '#FA2D48', group: 'Giải trí' },
+  { name: 'SoundCloud', icon: '🔊', color: '#FF5500', group: 'Giải trí' },
+  // Game
+  { name: 'Steam', icon: '🎮', color: '#1B2838', group: 'Game' },
+  { name: 'Epic Games', icon: '🕹️', color: '#313131', group: 'Game' },
+  { name: 'Riot Games', icon: '⚔️', color: '#D32936', group: 'Game' },
+  { name: 'Valorant', icon: '🔫', color: '#FF4655', group: 'Game' },
+  { name: 'League of Legends', icon: '🏆', color: '#C89B3C', group: 'Game' },
+  { name: 'Genshin Impact', icon: '⭐', color: '#4B7FBF', group: 'Game' },
+  { name: 'Roblox', icon: '🧱', color: '#E2231A', group: 'Game' },
+  { name: 'Minecraft', icon: '⛏️', color: '#62B47A', group: 'Game' },
+  { name: 'PUBG', icon: '🪖', color: '#F2A900', group: 'Game' },
+  { name: 'Free Fire', icon: '🔥', color: '#FF6F00', group: 'Game' },
+  { name: 'Liên Quân', icon: '⚡', color: '#FF6600', group: 'Game' },
+  { name: 'PlayStation', icon: '🎯', color: '#003087', group: 'Game' },
+  { name: 'Xbox', icon: '🟢', color: '#107C10', group: 'Game' },
+  { name: 'Nintendo', icon: '🍄', color: '#E60012', group: 'Game' },
+  // Công cụ & Phần mềm
+  { name: 'Canva', icon: '🎨', color: '#00C4CC', group: 'Công cụ' },
+  { name: 'ChatGPT', icon: '🤖', color: '#10A37F', group: 'Công cụ' },
+  { name: 'Adobe', icon: '🖌️', color: '#FF0000', group: 'Công cụ' },
+  { name: 'Microsoft', icon: '🪟', color: '#0078D4', group: 'Công cụ' },
+  { name: 'Google', icon: '🔍', color: '#4285F4', group: 'Công cụ' },
+  { name: 'Notion', icon: '📝', color: '#000000', group: 'Công cụ' },
+  { name: 'Figma', icon: '🎯', color: '#F24E1E', group: 'Công cụ' },
+  { name: 'Grammarly', icon: '✍️', color: '#15C39A', group: 'Công cụ' },
+  { name: 'VPN', icon: '🔒', color: '#4A90D9', group: 'Công cụ' },
+  // Mua sắm
+  { name: 'Shopee', icon: '🛒', color: '#EE4D2D', group: 'Mua sắm' },
+  { name: 'Lazada', icon: '🛍️', color: '#0F146D', group: 'Mua sắm' },
+  { name: 'Tiki', icon: '📦', color: '#1A94FF', group: 'Mua sắm' },
+  { name: 'Amazon', icon: '📦', color: '#FF9900', group: 'Mua sắm' },
+  { name: 'Grab', icon: '🚗', color: '#00B14F', group: 'Mua sắm' },
+  // Khác
+  { name: 'Email', icon: '📧', color: '#EA4335', group: 'Khác' },
+  { name: 'Apple', icon: '🍎', color: '#555555', group: 'Khác' },
+  { name: 'Khác', icon: '📱', color: '#888888', group: 'Khác' },
+];
+
+const APP_GROUPS = ['Mạng xã hội', 'Giải trí', 'Game', 'Công cụ', 'Mua sắm', 'Khác'];
+
 const Accounts = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -68,6 +131,7 @@ const Accounts = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedApp, setSelectedApp] = useState<string | null>(null);
   const [showSold, setShowSold] = useState(false);
   
   // Payment modal
@@ -467,39 +531,9 @@ const Accounts = () => {
     }
   };
 
-  // Platform icon mapping
-  const platformIcons: Record<string, string> = {
-    'Facebook': '📘',
-    'Google': '🔍',
-    'Netflix': '🎬',
-    'Spotify': '🎵',
-    'YouTube': '▶️',
-    'Instagram': '📸',
-    'TikTok': '🎶',
-    'Twitter': '🐦',
-    'Discord': '💬',
-    'Telegram': '✈️',
-    'Steam': '🎮',
-    'Shopee': '🛒',
-    'Lazada': '🛍️',
-    'Zalo': '💙',
-    'Canva': '🎨',
-    'ChatGPT': '🤖',
-    'Adobe': '🖌️',
-    'Microsoft': '🪟',
-    'Apple': '🍎',
-    'Amazon': '📦',
-    'Grab': '🚗',
-    'VPN': '🔒',
-    'Email': '📧',
-    'Game': '🕹️',
-  };
-
   const getPlatformIcon = (category: string) => {
-    for (const [key, icon] of Object.entries(platformIcons)) {
-      if (category.toLowerCase().includes(key.toLowerCase())) return icon;
-    }
-    return '📱';
+    const app = APP_CATALOG.find(a => a.name.toLowerCase() === category?.toLowerCase());
+    return app?.icon || '📱';
   };
 
   const filteredAccounts = accounts.filter((account) => {
@@ -508,18 +542,19 @@ const Accounts = () => {
       (account.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
     
     const matchesCategory = selectedCategory === "all" || account.category === selectedCategory;
+    const matchesApp = !selectedApp || account.category?.toLowerCase() === selectedApp.toLowerCase();
     const matchesSoldStatus = showSold || !account.is_sold;
 
-    return matchesSearch && matchesCategory && matchesSoldStatus;
+    return matchesSearch && matchesCategory && matchesApp && matchesSoldStatus;
   });
 
-  // Group accounts by category/platform
-  const groupedAccounts = filteredAccounts.reduce<Record<string, Account[]>>((groups, account) => {
-    const key = account.category || 'Khác';
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(account);
-    return groups;
+  // Count accounts per app
+  const accountCountByApp = accounts.reduce<Record<string, number>>((counts, acc) => {
+    const cat = acc.category || 'Khác';
+    counts[cat] = (counts[cat] || 0) + 1;
+    return counts;
   }, {});
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -549,8 +584,8 @@ const Accounts = () => {
           )}
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
+        {/* Search */}
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -560,20 +595,6 @@ const Accounts = () => {
               className="pl-10"
             />
           </div>
-          
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full md:w-[200px]">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Danh mục" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả danh mục</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
           <Button
             variant={showSold ? "default" : "outline"}
             onClick={() => setShowSold(!showSold)}
@@ -583,6 +604,69 @@ const Accounts = () => {
           </Button>
         </div>
 
+        {/* App Catalog Grid */}
+        {!selectedApp && !searchTerm && (
+          <div className="mb-8 space-y-6">
+            {APP_GROUPS.map(group => {
+              const appsInGroup = APP_CATALOG.filter(a => a.group === group);
+              if (appsInGroup.length === 0) return null;
+              return (
+                <div key={group}>
+                  <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                    {group === 'Mạng xã hội' && '💬'}
+                    {group === 'Giải trí' && '🎬'}
+                    {group === 'Game' && '🎮'}
+                    {group === 'Công cụ' && '🛠️'}
+                    {group === 'Mua sắm' && '🛒'}
+                    {group === 'Khác' && '📱'}
+                    {group}
+                  </h3>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+                    {appsInGroup.map(app => {
+                      const count = accountCountByApp[app.name] || 0;
+                      return (
+                        <button
+                          key={app.name}
+                          onClick={() => {
+                            setSelectedApp(app.name);
+                            setSelectedCategory(app.name);
+                          }}
+                          className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-border bg-card hover:bg-accent/50 hover:border-primary/40 transition-all duration-200 group/app relative"
+                        >
+                          <span className="text-3xl">{app.icon}</span>
+                          <span className="text-xs font-medium text-foreground truncate w-full text-center">{app.name}</span>
+                          {count > 0 && (
+                            <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                              {count}
+                            </span>
+                          )}
+                          {count === 0 && (
+                            <span className="text-[10px] text-muted-foreground">Sắp có</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Selected App Filter Bar */}
+        {selectedApp && (
+          <div className="flex items-center gap-3 mb-6 p-3 rounded-xl bg-secondary/50 border border-border">
+            <span className="text-2xl">{APP_CATALOG.find(a => a.name === selectedApp)?.icon || '📱'}</span>
+            <div className="flex-1">
+              <h3 className="font-bold text-foreground">{selectedApp}</h3>
+              <p className="text-xs text-muted-foreground">{filteredAccounts.length} tài khoản có sẵn</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => { setSelectedApp(null); setSelectedCategory('all'); }}>
+              ← Tất cả app
+            </Button>
+          </div>
+        )}
+
         {/* Loading */}
         {loading && (
           <div className="flex items-center justify-center py-20">
@@ -591,122 +675,109 @@ const Accounts = () => {
         )}
 
         {/* Empty state */}
-        {!loading && filteredAccounts.length === 0 && (
+        {!loading && (selectedApp || searchTerm) && filteredAccounts.length === 0 && (
           <div className="text-center py-20">
             <User className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-xl font-semibold text-foreground mb-2">
-              Không tìm thấy tài khoản
+              {selectedApp ? `Chưa có tài khoản ${selectedApp}` : 'Không tìm thấy tài khoản'}
             </h3>
             <p className="text-muted-foreground">
-              Thử thay đổi bộ lọc hoặc tìm kiếm khác
+              {selectedApp ? 'Tài khoản sẽ được cập nhật sớm!' : 'Thử thay đổi bộ lọc hoặc tìm kiếm khác'}
             </p>
           </div>
         )}
 
-        {/* Accounts Grid - Grouped by Platform */}
-        <div className="space-y-10">
-          {Object.entries(groupedAccounts).map(([category, categoryAccounts]) => (
-            <div key={category}>
-              {/* Platform Header */}
-              <div className="flex items-center gap-3 mb-4 pb-2 border-b border-border">
-                <span className="text-3xl">{getPlatformIcon(category)}</span>
-                <div>
-                  <h2 className="text-xl font-bold text-foreground">{category}</h2>
-                  <p className="text-sm text-muted-foreground">{categoryAccounts.length} tài khoản</p>
-                </div>
-              </div>
+        {/* Accounts List - shown when app selected or searching */}
+        {(selectedApp || searchTerm) && filteredAccounts.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredAccounts.map((account) => (
+              <Card 
+                key={account.id} 
+                className={`group hover:shadow-lg transition-all duration-300 ${
+                  account.is_sold ? "opacity-60" : ""
+                }`}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-start gap-3">
+                    {account.image_url ? (
+                      <img 
+                        src={account.image_url} 
+                        alt={account.title}
+                        className="w-12 h-12 rounded-xl object-cover shrink-0"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center text-2xl shrink-0">
+                        {getPlatformIcon(account.category)}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-base line-clamp-1">
+                        {account.title}
+                      </CardTitle>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="secondary" className="text-xs">
+                          {account.category}
+                        </Badge>
+                        {account.is_sold && (
+                          <Badge variant="destructive" className="text-xs">
+                            Đã bán
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {categoryAccounts.map((account) => (
-                  <Card 
-                    key={account.id} 
-                    className={`group hover:shadow-lg transition-all duration-300 ${
-                      account.is_sold ? "opacity-60" : ""
-                    }`}
+                <CardContent className="space-y-3 pt-0">
+                  {account.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {account.description}
+                    </p>
+                  )}
+
+                  <div className="flex items-center gap-2 text-sm">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-mono">{account.account_username}</span>
+                  </div>
+
+                  {account.sellers && (
+                    <div className="text-xs text-muted-foreground">
+                      Người bán: <span className="font-medium text-foreground">{account.sellers.display_name}</span>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-1">
+                    {account.is_free ? (
+                      <div className="text-2xl font-bold text-green-500">
+                        Miễn phí
+                      </div>
+                    ) : (
+                      <>
+                        <div className="text-2xl font-bold text-primary">
+                          {formatPrice(account.price)}
+                        </div>
+                        <div className="text-sm font-bold text-orange-600">
+                          {Math.ceil(account.price / 1000)} xu
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+
+                <CardFooter>
+                  <Button 
+                    className="w-full" 
+                    disabled={account.is_sold}
+                    onClick={() => handleViewProduct(account)}
                   >
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start gap-3">
-                        {account.image_url ? (
-                          <img 
-                            src={account.image_url} 
-                            alt={account.title}
-                            className="w-12 h-12 rounded-xl object-cover shrink-0"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center text-2xl shrink-0">
-                            {getPlatformIcon(account.category)}
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-base line-clamp-1">
-                            {account.title}
-                          </CardTitle>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="secondary" className="text-xs">
-                              {account.category}
-                            </Badge>
-                            {account.is_sold && (
-                              <Badge variant="destructive" className="text-xs">
-                                Đã bán
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="space-y-3 pt-0">
-                      {account.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {account.description}
-                        </p>
-                      )}
-
-                      <div className="flex items-center gap-2 text-sm">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-mono">{account.account_username}</span>
-                      </div>
-
-                      {account.sellers && (
-                        <div className="text-xs text-muted-foreground">
-                          Người bán: <span className="font-medium text-foreground">{account.sellers.display_name}</span>
-                        </div>
-                      )}
-
-                      <div className="flex flex-col gap-1">
-                        {account.is_free ? (
-                          <div className="text-2xl font-bold text-green-500">
-                            Miễn phí
-                          </div>
-                        ) : (
-                          <>
-                            <div className="text-2xl font-bold text-primary">
-                              {formatPrice(account.price)}
-                            </div>
-                            <div className="text-sm font-bold text-orange-600">
-                              {Math.ceil(account.price / 1000)} xu
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </CardContent>
-
-                    <CardFooter>
-                      <Button 
-                        className="w-full" 
-                        disabled={account.is_sold}
-                        onClick={() => handleViewProduct(account)}
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        {account.is_sold ? "Đã bán" : "Xem chi tiết"}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+                    <Eye className="h-4 w-4 mr-2" />
+                    {account.is_sold ? "Đã bán" : "Xem chi tiết"}
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        )}
       </main>
 
       {/* Payment Modal */}
