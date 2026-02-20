@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { User, ShoppingCart, Search, Filter, Loader2, QrCode, CheckCircle, Clock, XCircle, Eye, EyeOff, Copy } from "lucide-react";
+import { User, ShoppingCart, Search, Filter, Loader2, QrCode, CheckCircle, Clock, XCircle, Eye, EyeOff, Copy, Grid3X3 } from "lucide-react";
 import { getPurchasedCredentials } from "@/hooks/useAdminApi";
 
 interface Seller {
@@ -467,6 +467,41 @@ const Accounts = () => {
     }
   };
 
+  // Platform icon mapping
+  const platformIcons: Record<string, string> = {
+    'Facebook': '📘',
+    'Google': '🔍',
+    'Netflix': '🎬',
+    'Spotify': '🎵',
+    'YouTube': '▶️',
+    'Instagram': '📸',
+    'TikTok': '🎶',
+    'Twitter': '🐦',
+    'Discord': '💬',
+    'Telegram': '✈️',
+    'Steam': '🎮',
+    'Shopee': '🛒',
+    'Lazada': '🛍️',
+    'Zalo': '💙',
+    'Canva': '🎨',
+    'ChatGPT': '🤖',
+    'Adobe': '🖌️',
+    'Microsoft': '🪟',
+    'Apple': '🍎',
+    'Amazon': '📦',
+    'Grab': '🚗',
+    'VPN': '🔒',
+    'Email': '📧',
+    'Game': '🕹️',
+  };
+
+  const getPlatformIcon = (category: string) => {
+    for (const [key, icon] of Object.entries(platformIcons)) {
+      if (category.toLowerCase().includes(key.toLowerCase())) return icon;
+    }
+    return '📱';
+  };
+
   const filteredAccounts = accounts.filter((account) => {
     const matchesSearch = account.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       account.account_username.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -477,6 +512,14 @@ const Accounts = () => {
 
     return matchesSearch && matchesCategory && matchesSoldStatus;
   });
+
+  // Group accounts by category/platform
+  const groupedAccounts = filteredAccounts.reduce<Record<string, Account[]>>((groups, account) => {
+    const key = account.category || 'Khác';
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(account);
+    return groups;
+  }, {});
 
   return (
     <div className="min-h-screen bg-background">
@@ -560,99 +603,108 @@ const Accounts = () => {
           </div>
         )}
 
-        {/* Accounts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredAccounts.map((account) => (
-            <Card 
-              key={account.id} 
-              className={`group hover:shadow-lg transition-all duration-300 ${
-                account.is_sold ? "opacity-60" : ""
-              }`}
-            >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg line-clamp-2">
-                    {account.title}
-                  </CardTitle>
-                  {account.is_sold && (
-                    <Badge variant="destructive" className="ml-2 shrink-0">
-                      Đã bán
-                    </Badge>
-                  )}
+        {/* Accounts Grid - Grouped by Platform */}
+        <div className="space-y-10">
+          {Object.entries(groupedAccounts).map(([category, categoryAccounts]) => (
+            <div key={category}>
+              {/* Platform Header */}
+              <div className="flex items-center gap-3 mb-4 pb-2 border-b border-border">
+                <span className="text-3xl">{getPlatformIcon(category)}</span>
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">{category}</h2>
+                  <p className="text-sm text-muted-foreground">{categoryAccounts.length} tài khoản</p>
                 </div>
-                <Badge variant="secondary" className="w-fit">
-                  {account.category}
-                </Badge>
-              </CardHeader>
+              </div>
 
-              <CardContent className="space-y-3">
-                {account.image_url && (
-                  <img 
-                    src={account.image_url} 
-                    alt={account.title}
-                    className="w-full h-32 object-cover rounded-md"
-                  />
-                )}
-
-                {account.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {account.description}
-                  </p>
-                )}
-
-                <div className="flex items-center gap-2 text-sm">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-mono">{account.account_username}</span>
-                </div>
-
-                {account.sellers && (
-                  <div className="text-xs text-muted-foreground">
-                    Người bán: <span className="font-medium text-foreground">{account.sellers.display_name}</span>
-                  </div>
-                )}
-
-                <div className="flex flex-col gap-1">
-                  {account.is_free ? (
-                    <div className="text-2xl font-bold text-green-500">
-                      Miễn phí
-                    </div>
-                  ) : (
-                    <>
-                      <div className="text-2xl font-bold text-primary">
-                        {formatPrice(account.price)}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {categoryAccounts.map((account) => (
+                  <Card 
+                    key={account.id} 
+                    className={`group hover:shadow-lg transition-all duration-300 ${
+                      account.is_sold ? "opacity-60" : ""
+                    }`}
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start gap-3">
+                        {account.image_url ? (
+                          <img 
+                            src={account.image_url} 
+                            alt={account.title}
+                            className="w-12 h-12 rounded-xl object-cover shrink-0"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center text-2xl shrink-0">
+                            {getPlatformIcon(account.category)}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-base line-clamp-1">
+                            {account.title}
+                          </CardTitle>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="secondary" className="text-xs">
+                              {account.category}
+                            </Badge>
+                            {account.is_sold && (
+                              <Badge variant="destructive" className="text-xs">
+                                Đã bán
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-sm font-bold text-orange-600">
-                        {Math.ceil(account.price / 1000)} xu
-                      </div>
-                    </>
-                  )}
-                </div>
-              </CardContent>
+                    </CardHeader>
 
-              <CardFooter>
-                <div className="flex gap-2 w-full">
-                  {account.is_free ? (
-                    <Button 
-                      className="flex-1" 
-                      disabled={account.is_sold}
-                      onClick={() => handleViewProduct(account)}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      {account.is_sold ? "Đã bán" : "Xem chi tiết"}
-                    </Button>
-                  ) : (
-                    <Button 
-                      className="flex-1" 
-                      disabled={account.is_sold}
-                      onClick={() => handleViewProduct(account)}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      {account.is_sold ? "Đã bán" : "Xem chi tiết"}
-                    </Button>
-                  )}
-                </div>
-              </CardFooter>
-            </Card>
+                    <CardContent className="space-y-3 pt-0">
+                      {account.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {account.description}
+                        </p>
+                      )}
+
+                      <div className="flex items-center gap-2 text-sm">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-mono">{account.account_username}</span>
+                      </div>
+
+                      {account.sellers && (
+                        <div className="text-xs text-muted-foreground">
+                          Người bán: <span className="font-medium text-foreground">{account.sellers.display_name}</span>
+                        </div>
+                      )}
+
+                      <div className="flex flex-col gap-1">
+                        {account.is_free ? (
+                          <div className="text-2xl font-bold text-green-500">
+                            Miễn phí
+                          </div>
+                        ) : (
+                          <>
+                            <div className="text-2xl font-bold text-primary">
+                              {formatPrice(account.price)}
+                            </div>
+                            <div className="text-sm font-bold text-orange-600">
+                              {Math.ceil(account.price / 1000)} xu
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </CardContent>
+
+                    <CardFooter>
+                      <Button 
+                        className="w-full" 
+                        disabled={account.is_sold}
+                        onClick={() => handleViewProduct(account)}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        {account.is_sold ? "Đã bán" : "Xem chi tiết"}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </main>
