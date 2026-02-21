@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Coins, ChevronDown, ChevronUp, Trophy, Medal, ArrowLeft } from 'lucide-react';
+import { Crown, Coins, ChevronDown, ChevronUp, Trophy, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { ScrollReveal } from '@/components/motion';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 
 interface TopUser {
   user_id: string;
-  total: number;
+  balance: number;
   display_name: string;
   avatar_url: string | null;
 }
@@ -40,26 +40,20 @@ export default function TopDeposit() {
   const fetchTopDepositors = async () => {
     setLoading(true);
     try {
-      const { data: purchases } = await supabase
-        .from('coin_purchases')
-        .select('user_id, amount')
-        .eq('status', 'approved');
+      // Fetch user_coins sorted by balance descending, top 100
+      const { data: coins, error } = await supabase
+        .from('user_coins')
+        .select('user_id, balance')
+        .gt('balance', 0)
+        .order('balance', { ascending: false })
+        .limit(100);
 
-      if (!purchases || purchases.length === 0) {
+      if (error || !coins || coins.length === 0) {
         setLoading(false);
         return;
       }
 
-      const userTotals: Record<string, number> = {};
-      purchases.forEach(p => {
-        userTotals[p.user_id] = (userTotals[p.user_id] || 0) + p.amount;
-      });
-
-      const sorted = Object.entries(userTotals)
-        .sort(([, a], [, b]) => b - a)
-        .slice(0, 100);
-
-      const userIds = sorted.map(([id]) => id);
+      const userIds = coins.map(c => c.user_id);
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, display_name, avatar_url')
@@ -70,11 +64,11 @@ export default function TopDeposit() {
         profileMap[p.user_id] = { display_name: p.display_name || 'Ẩn danh', avatar_url: p.avatar_url };
       });
 
-      const result: TopUser[] = sorted.map(([userId, total]) => ({
-        user_id: userId,
-        total,
-        display_name: profileMap[userId]?.display_name || 'Ẩn danh',
-        avatar_url: profileMap[userId]?.avatar_url || null,
+      const result: TopUser[] = coins.map(c => ({
+        user_id: c.user_id,
+        balance: c.balance,
+        display_name: profileMap[c.user_id]?.display_name || 'Ẩn danh',
+        avatar_url: profileMap[c.user_id]?.avatar_url || null,
       }));
 
       setTopUsers(result);
@@ -168,7 +162,7 @@ export default function TopDeposit() {
                       <div className="flex items-center justify-center gap-1.5">
                         <Coins className="h-4 w-4 text-warning" />
                         <span className="font-bold text-warning text-base md:text-lg">
-                          {formatAmount(u.total)}
+                          {formatAmount(u.balance)}
                         </span>
                       </div>
                       <span className="text-xs text-muted-foreground">xu</span>
@@ -214,7 +208,7 @@ export default function TopDeposit() {
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Coins className="h-3.5 w-3.5 text-warning" />
-                        <span className="text-sm font-bold text-warning">{formatAmount(user.total)}</span>
+                        <span className="text-sm font-bold text-warning">{formatAmount(user.balance)}</span>
                         <span className="text-xs text-muted-foreground">xu</span>
                       </div>
                     </motion.div>

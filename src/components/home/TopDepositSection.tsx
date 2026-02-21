@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Crown, Coins, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { ScrollReveal, CountUp } from '@/components/motion';
+import { ScrollReveal } from '@/components/motion';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 interface TopUser {
   user_id: string;
-  total: number;
+  balance: number;
   display_name: string;
   avatar_url: string | null;
 }
@@ -16,30 +17,22 @@ const rankIcons = ['🥇', '🥈', '🥉'];
 
 export function TopDepositSection() {
   const [topUsers, setTopUsers] = useState<TopUser[]>([]);
-  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     fetchTopDepositors();
   }, []);
 
   const fetchTopDepositors = async () => {
-    const { data: purchases } = await supabase
-      .from('coin_purchases')
-      .select('user_id, amount')
-      .eq('status', 'approved');
+    const { data: coins } = await supabase
+      .from('user_coins')
+      .select('user_id, balance')
+      .gt('balance', 0)
+      .order('balance', { ascending: false })
+      .limit(5);
 
-    if (!purchases || purchases.length === 0) return;
+    if (!coins || coins.length === 0) return;
 
-    const userTotals: Record<string, number> = {};
-    purchases.forEach(p => {
-      userTotals[p.user_id] = (userTotals[p.user_id] || 0) + p.amount;
-    });
-
-    const sorted = Object.entries(userTotals)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 100);
-
-    const userIds = sorted.map(([id]) => id);
+    const userIds = coins.map(c => c.user_id);
     const { data: profiles } = await supabase
       .from('profiles')
       .select('user_id, display_name, avatar_url')
@@ -50,11 +43,11 @@ export function TopDepositSection() {
       profileMap[p.user_id] = { display_name: p.display_name || 'Ẩn danh', avatar_url: p.avatar_url };
     });
 
-    const result: TopUser[] = sorted.map(([userId, total]) => ({
-      user_id: userId,
-      total,
-      display_name: profileMap[userId]?.display_name || 'Ẩn danh',
-      avatar_url: profileMap[userId]?.avatar_url || null,
+    const result: TopUser[] = coins.map(c => ({
+      user_id: c.user_id,
+      balance: c.balance,
+      display_name: profileMap[c.user_id]?.display_name || 'Ẩn danh',
+      avatar_url: profileMap[c.user_id]?.avatar_url || null,
     }));
 
     setTopUsers(result);
@@ -73,8 +66,6 @@ export function TopDepositSection() {
     return amount.toString();
   };
 
-  const displayUsers = showAll ? topUsers : topUsers.slice(0, 10);
-
   return (
     <section className="py-12 md:py-16 px-4 relative">
       <div className="absolute inset-0 pointer-events-none">
@@ -83,24 +74,29 @@ export function TopDepositSection() {
 
       <div className="container mx-auto relative">
         <ScrollReveal variant="fadeUp">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-warning/20 to-warning/10 border border-warning/30 flex items-center justify-center">
-              <Crown className="h-7 w-7 text-warning" />
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-warning/20 to-warning/10 border border-warning/30 flex items-center justify-center">
+                <Crown className="h-7 w-7 text-warning" />
+              </div>
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground">Top xu nhiều nhất</h2>
+                <p className="text-sm text-muted-foreground">Thành viên có nhiều xu nhất hệ thống</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground">Top nạp xu</h2>
-              <p className="text-sm text-muted-foreground">Bảng xếp hạng {topUsers.length} thành viên nạp xu nhiều nhất</p>
-            </div>
+            <Link to="/top-deposit">
+              <Button variant="outline" size="sm" className="rounded-full">
+                Xem tất cả
+              </Button>
+            </Link>
           </div>
         </ScrollReveal>
 
         {/* Top 3 highlight */}
         <div className="grid grid-cols-3 gap-3 md:gap-6 max-w-2xl mx-auto mb-8">
-          {topUsers.slice(0, 3).map((user, index) => {
-            const order = [1, 0, 2]; // Show #2, #1, #3 for podium effect
-            const i = order[index];
+          {[1, 0, 2].map((i, index) => {
             const u = topUsers[i];
-            if (!u) return null;
+            if (!u) return <div key={index} />;
             return (
               <motion.div
                 key={u.user_id}
@@ -124,72 +120,48 @@ export function TopDepositSection() {
                 <p className="font-semibold text-foreground text-xs md:text-sm mb-1 truncate">{maskName(u.display_name)}</p>
                 <div className="flex items-center justify-center gap-1">
                   <Coins className="h-3.5 w-3.5 text-warning" />
-                  <span className="font-bold text-warning text-sm md:text-base">{formatAmount(u.total)}</span>
+                  <span className="font-bold text-warning text-sm md:text-base">{formatAmount(u.balance)}</span>
                 </div>
               </motion.div>
             );
           })}
         </div>
 
-        {/* Full leaderboard table */}
-        <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
-          <div className="grid grid-cols-[auto_1fr_auto] gap-4 px-4 py-3 bg-secondary/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            <span className="w-10 text-center">Hạng</span>
-            <span>Thành viên</span>
-            <span className="text-right">Tổng nạp</span>
-          </div>
-          <div className="divide-y divide-border/30">
-            {displayUsers.map((user, index) => (
-              <motion.div
-                key={user.user_id}
-                className="grid grid-cols-[auto_1fr_auto] gap-4 px-4 py-3 items-center hover:bg-secondary/30 transition-colors"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: Math.min(index * 0.03, 0.5) }}
-              >
-                <div className="w-10 text-center">
-                  {index < 3 ? (
-                    <span className="text-lg">{rankIcons[index]}</span>
-                  ) : (
-                    <span className="text-sm font-bold text-muted-foreground">#{index + 1}</span>
-                  )}
-                </div>
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center text-sm shrink-0 overflow-hidden">
-                    {user.avatar_url ? (
-                      <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      '👤'
-                    )}
+        {/* Rest of users */}
+        {topUsers.length > 3 && (
+          <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
+            <div className="divide-y divide-border/30">
+              {topUsers.slice(3).map((user, index) => (
+                <motion.div
+                  key={user.user_id}
+                  className="grid grid-cols-[auto_1fr_auto] gap-4 px-4 py-3 items-center hover:bg-secondary/30 transition-colors"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: (index + 3) * 0.05 }}
+                >
+                  <div className="w-10 text-center">
+                    <span className="text-sm font-bold text-muted-foreground">#{index + 4}</span>
                   </div>
-                  <span className="text-sm font-medium text-foreground truncate">{maskName(user.display_name)}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Coins className="h-3.5 w-3.5 text-warning" />
-                  <span className="text-sm font-bold text-warning">{user.total.toLocaleString('vi-VN')}</span>
-                  <span className="text-xs text-muted-foreground">xu</span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {topUsers.length > 10 && (
-            <div className="p-4 text-center border-t border-border/30">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAll(!showAll)}
-                className="rounded-full"
-              >
-                {showAll ? (
-                  <>Thu gọn <ChevronUp className="h-4 w-4 ml-1" /></>
-                ) : (
-                  <>Xem tất cả {topUsers.length} người <ChevronDown className="h-4 w-4 ml-1" /></>
-                )}
-              </Button>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center text-sm shrink-0 overflow-hidden">
+                      {user.avatar_url ? (
+                        <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        '👤'
+                      )}
+                    </div>
+                    <span className="text-sm font-medium text-foreground truncate">{maskName(user.display_name)}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Coins className="h-3.5 w-3.5 text-warning" />
+                    <span className="text-sm font-bold text-warning">{formatAmount(user.balance)}</span>
+                    <span className="text-xs text-muted-foreground">xu</span>
+                  </div>
+                </motion.div>
+              ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </section>
   );
