@@ -25,6 +25,8 @@ interface Order {
   amount: number;
   created_at: string;
   buyer_name?: string | null;
+  buyer_email?: string | null;
+  login_credentials?: { months?: number; activation_email?: string } | null;
   seller_name?: string | null;
   seller_bank?: SellerInfo | null;
   accounts?: {
@@ -173,10 +175,7 @@ export default function AdminOrders() {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(price);
+    return new Intl.NumberFormat('vi-VN').format(price) + ' xu';
   };
 
   const getStatusBadge = (status: string) => {
@@ -279,7 +278,15 @@ export default function AdminOrders() {
                           <User className="h-4 w-4" />
                           Người mua: {order.buyer_name || order.user_id.slice(0, 8)}
                         </p>
-                        <p>TK: {order.accounts?.account_username}</p>
+                        {order.login_credentials?.activation_email ? (
+                          <>
+                            <p>📧 Email kích hoạt: <span className="text-foreground font-medium">{order.login_credentials.activation_email}</span></p>
+                            <p>⏱️ Số tháng: <span className="text-foreground font-medium">{order.login_credentials.months || 1} tháng</span></p>
+                          </>
+                        ) : (
+                          <p>TK: {order.accounts?.account_username}</p>
+                        )}
+                        <p>Tài khoản: <span className="text-foreground font-medium">{order.accounts?.title || 'N/A'}</span></p>
                         <p>Ngày đặt: {new Date(order.created_at).toLocaleString('vi-VN')}</p>
                         {order.seller_bank && (
                           <div className="mt-2 p-2 bg-secondary/50 rounded text-xs">
@@ -351,7 +358,15 @@ export default function AdminOrders() {
                           <User className="h-4 w-4" />
                           Người mua: {order.buyer_name || order.user_id.slice(0, 8)}
                         </p>
-                        <p>TK: {order.accounts?.account_username}</p>
+                        {order.login_credentials?.activation_email ? (
+                          <>
+                            <p>📧 Email kích hoạt: {order.login_credentials.activation_email}</p>
+                            <p>⏱️ Số tháng: {order.login_credentials.months || 1} tháng</p>
+                          </>
+                        ) : (
+                          <p>TK: {order.accounts?.account_username}</p>
+                        )}
+                        <p>Tài khoản: {order.accounts?.title || 'N/A'}</p>
                         <p>Ngày đặt: {new Date(order.created_at).toLocaleString('vi-VN')}</p>
                       </div>
 

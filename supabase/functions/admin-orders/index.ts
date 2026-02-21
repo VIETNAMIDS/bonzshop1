@@ -98,6 +98,8 @@ Deno.serve(async (req) => {
             user_id,
             status,
             amount,
+            buyer_email,
+            login_credentials,
             created_at,
             approved_at,
             approved_by,
