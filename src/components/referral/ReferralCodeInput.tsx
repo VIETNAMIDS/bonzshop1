@@ -121,58 +121,93 @@
          return;
        }
        
-       // Create referral record
-       const { error: refError } = await supabase
-         .from('referrals')
-         .insert({
-           referrer_id: referrerProfile.user_id,
-           referred_id: user.id,
-           referral_code: trimmedCode,
-           coins_rewarded: 5,
-           is_rewarded: true,
-           rewarded_at: new Date().toISOString()
-         });
+        // Create referral record
+        const { error: refError } = await supabase
+          .from('referrals')
+          .insert({
+            referrer_id: referrerProfile.user_id,
+            referred_id: user.id,
+            referral_code: trimmedCode,
+            coins_rewarded: 10,
+            is_rewarded: true,
+            rewarded_at: new Date().toISOString()
+          });
        
-       if (refError) throw refError;
+        if (refError) throw refError;
+        
+        // Add coins to referrer
+        const { data: referrerCoins } = await supabase
+          .from('user_coins')
+          .select('balance')
+          .eq('user_id', referrerProfile.user_id)
+          .single();
+        
+        if (referrerCoins) {
+          await supabase
+            .from('user_coins')
+            .update({ balance: referrerCoins.balance + 5 })
+            .eq('user_id', referrerProfile.user_id);
+        } else {
+          await supabase
+            .from('user_coins')
+            .insert({ user_id: referrerProfile.user_id, balance: 5 });
+        }
+        
+        // Add coins to referred user (current user)
+        const { data: myCoins } = await supabase
+          .from('user_coins')
+          .select('balance')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (myCoins) {
+          await supabase
+            .from('user_coins')
+            .update({ balance: myCoins.balance + 5 })
+            .eq('user_id', user.id);
+        } else {
+          await supabase
+            .from('user_coins')
+            .insert({ user_id: user.id, balance: 5 });
+        }
+        
+        // Log coin history for referrer
+        await supabase.from('coin_history').insert({
+          user_id: referrerProfile.user_id,
+          amount: 5,
+          type: 'referral_reward',
+          description: `Nhận thưởng giới thiệu người dùng mới`,
+          reference_id: user.id
+        });
+        
+        // Log coin history for referred user
+        await supabase.from('coin_history').insert({
+          user_id: user.id,
+          amount: 5,
+          type: 'referral_reward',
+          description: `Nhận thưởng nhập mã giới thiệu từ ${referrerProfile.display_name || 'người dùng'}`,
+          reference_id: referrerProfile.user_id
+        });
+        
+        // Create notification for referrer
+        await supabase.from('notifications').insert({
+          user_id: referrerProfile.user_id,
+          title: '🎉 Mời bạn thành công!',
+          message: `Bạn đã nhận được 5 xu thưởng vì có người sử dụng mã giới thiệu của bạn!`,
+          type: 'referral',
+        });
+        
+        // Create notification for referred user
+        await supabase.from('notifications').insert({
+          user_id: user.id,
+          title: '🎁 Nhận thưởng giới thiệu!',
+          message: `Bạn đã nhận được 5 xu thưởng khi nhập mã giới thiệu!`,
+          type: 'referral',
+        });
        
-       // Add coins to referrer
-       const { data: referrerCoins } = await supabase
-         .from('user_coins')
-         .select('balance')
-         .eq('user_id', referrerProfile.user_id)
-         .single();
-       
-       if (referrerCoins) {
-         await supabase
-           .from('user_coins')
-           .update({ balance: referrerCoins.balance + 5 })
-           .eq('user_id', referrerProfile.user_id);
-       } else {
-         await supabase
-           .from('user_coins')
-           .insert({ user_id: referrerProfile.user_id, balance: 5 });
-       }
-       
-       // Log coin history for referrer
-       await supabase.from('coin_history').insert({
-         user_id: referrerProfile.user_id,
-         amount: 5,
-         type: 'referral_reward',
-         description: `Nhận thưởng giới thiệu người dùng mới`,
-         reference_id: user.id
-       });
-       
-       // Create notification for referrer
-       await supabase.from('notifications').insert({
-         user_id: referrerProfile.user_id,
-         title: '🎉 Mời bạn thành công!',
-         message: `Bạn đã nhận được 5 xu thưởng vì có người sử dụng mã giới thiệu của bạn!`,
-         type: 'referral',
-       });
-       
-       setSuccess(true);
-       setAlreadyReferred(true);
-       toast.success('Áp dụng mã giới thiệu thành công! Người giới thiệu đã nhận 5 xu.');
+        setSuccess(true);
+        setAlreadyReferred(true);
+        toast.success('Áp dụng mã thành công! Bạn và người giới thiệu đều nhận 5 xu 🎉');
        
      } catch (error) {
        console.error('Error applying referral code:', error);
@@ -211,7 +246,7 @@
                  <Sparkles className="h-4 w-4 text-accent" />
                </CardTitle>
                <CardDescription>
-                 Nhận 5 xu khi có người dùng mã của bạn
+                  Nhận 5 xu khi có người dùng mã của bạn
                </CardDescription>
              </div>
              {referralCount > 0 && (
@@ -273,7 +308,7 @@
                  <Sparkles className="h-4 w-4 text-accent" />
                </CardTitle>
                <CardDescription>
-                 Người giới thiệu sẽ nhận 5 xu thưởng
+                 Cả hai đều nhận 5 xu thưởng
                </CardDescription>
              </div>
            </div>

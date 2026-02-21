@@ -271,54 +271,92 @@ export function AuthProvider({ children }: { children: ReactNode }) {
        
        console.log('Found referrer:', referrerProfile);
        
-       // Create referral record
-       const { error: refError } = await supabase
-         .from('referrals')
-         .insert({
-           referrer_id: referrerProfile.user_id,
-           referred_id: newUserId, 
-           referral_code: code.toUpperCase(),
-           coins_rewarded: 5,
-           is_rewarded: true,
-           rewarded_at: new Date().toISOString()
-         });
-       
-       if (refError) {
-         console.error('Error creating referral:', refError);
-         return;
-       }
-       
-       console.log('Referral record created');
-       
-       // Add coins to referrer
-       const { data: referrerCoins } = await supabase
-         .from('user_coins')
-         .select('balance')
-         .eq('user_id', referrerProfile.user_id)
-         .single();
-       
-       if (referrerCoins) {
-         await supabase
-           .from('user_coins')
-           .update({ balance: referrerCoins.balance + 5 })
-           .eq('user_id', referrerProfile.user_id);
-       } else {
-         await supabase
-           .from('user_coins')
-           .insert({ user_id: referrerProfile.user_id, balance: 5 });
-       }
-       
-       console.log('Added 5 coins to referrer');
-       
-       // Create notification for referrer
-       await supabase.from('notifications').insert({
-         user_id: referrerProfile.user_id,
-         title: '🎉 Mời bạn thành công!',
-         message: `Bạn đã mời thành công người dùng: ${newUserName || 'Người dùng mới'}. Bạn đã nhận được 5 xu thưởng!`,
-         type: 'referral',
-       });
-       
-       console.log('Referral notification created for:', referrerProfile.user_id);
+        // Create referral record
+        const { error: refError } = await supabase
+          .from('referrals')
+          .insert({
+            referrer_id: referrerProfile.user_id,
+            referred_id: newUserId, 
+            referral_code: code.toUpperCase(),
+            coins_rewarded: 10,
+            is_rewarded: true,
+            rewarded_at: new Date().toISOString()
+          });
+        
+        if (refError) {
+          console.error('Error creating referral:', refError);
+          return;
+        }
+        
+        console.log('Referral record created');
+        
+        // Add coins to referrer
+        const { data: referrerCoins } = await supabase
+          .from('user_coins')
+          .select('balance')
+          .eq('user_id', referrerProfile.user_id)
+          .single();
+        
+        if (referrerCoins) {
+          await supabase
+            .from('user_coins')
+            .update({ balance: referrerCoins.balance + 5 })
+            .eq('user_id', referrerProfile.user_id);
+        } else {
+          await supabase
+            .from('user_coins')
+            .insert({ user_id: referrerProfile.user_id, balance: 5 });
+        }
+        
+        console.log('Added 5 coins to referrer');
+        
+        // Add coins to referred user
+        const { data: referredCoins } = await supabase
+          .from('user_coins')
+          .select('balance')
+          .eq('user_id', newUserId)
+          .single();
+        
+        if (referredCoins) {
+          await supabase
+            .from('user_coins')
+            .update({ balance: referredCoins.balance + 5 })
+            .eq('user_id', newUserId);
+        } else {
+          await supabase
+            .from('user_coins')
+            .insert({ user_id: newUserId, balance: 5 });
+        }
+        
+        console.log('Added 5 coins to referred user');
+        
+        // Log coin history for referrer
+        await supabase.from('coin_history').insert({
+          user_id: referrerProfile.user_id,
+          amount: 5,
+          type: 'referral_reward',
+          description: `Nhận thưởng giới thiệu người dùng mới`,
+          reference_id: newUserId
+        });
+        
+        // Log coin history for referred user
+        await supabase.from('coin_history').insert({
+          user_id: newUserId,
+          amount: 5,
+          type: 'referral_reward',
+          description: `Nhận thưởng nhập mã giới thiệu từ ${referrerProfile.display_name || 'người dùng'}`,
+          reference_id: referrerProfile.user_id
+        });
+        
+        // Create notification for referrer
+        await supabase.from('notifications').insert({
+          user_id: referrerProfile.user_id,
+          title: '🎉 Mời bạn thành công!',
+          message: `Bạn đã mời thành công người dùng: ${newUserName || 'Người dùng mới'}. Bạn đã nhận được 5 xu thưởng!`,
+          type: 'referral',
+        });
+        
+        console.log('Referral notification created for:', referrerProfile.user_id);
        
        // Also send Telegram notification about successful referral
        try {
