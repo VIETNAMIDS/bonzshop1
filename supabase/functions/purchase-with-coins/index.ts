@@ -40,8 +40,8 @@ Deno.serve(async (req) => {
     const { accountId, productId, requiredCoins, discountCodeId, discountAmount } = await req.json();
     console.log('Purchase request:', { accountId, productId, requiredCoins, discountCodeId, discountAmount });
 
-    // Validate required coins
-    if (!requiredCoins || requiredCoins <= 0 || !Number.isInteger(requiredCoins)) {
+    // Validate required coins (allow 0 for free-priced items)
+    if (requiredCoins === undefined || requiredCoins === null || requiredCoins < 0 || !Number.isInteger(requiredCoins)) {
       return new Response(
         JSON.stringify({ error: 'Số xu không hợp lệ' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
