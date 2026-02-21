@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Shield, Zap, Users, Award, HeartHandshake, Clock } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { ScrollReveal, StaggerContainer, StaggerItem } from '@/components/motion';
 
 const FEATURES = [
   {
@@ -69,41 +71,52 @@ export function AboutSection() {
       
       <div className="container mx-auto px-4 relative z-10">
         {/* Section header */}
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            <span className="text-gradient">Tại sao chọn BonzShop?</span>
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-            {aboutContent || 'Chúng tôi cam kết mang đến trải nghiệm mua sắm an toàn và tiện lợi nhất cho bạn.'}
-          </p>
-        </div>
+        <ScrollReveal variant="fadeUp">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              <span className="text-gradient">Tại sao chọn BonzShop?</span>
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+              {aboutContent || 'Chúng tôi cam kết mang đến trải nghiệm mua sắm an toàn và tiện lợi nhất cho bạn.'}
+            </p>
+          </div>
+        </ScrollReveal>
 
         {/* Features grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6" staggerDelay={0.1}>
           {FEATURES.map((feature, index) => {
             const Icon = feature.icon;
             return (
-              <Card 
-                key={index}
-                className={cn(
-                  "glass p-6 card-hover border-primary/10",
-                  "group cursor-default"
-                )}
-              >
-                <div className={cn(
-                  "w-14 h-14 rounded-xl flex items-center justify-center mb-4",
-                  "bg-gradient-to-r",
-                  feature.gradient,
-                  "group-hover:scale-110 transition-transform"
-                )}>
-                  <Icon className="h-7 w-7 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
-              </Card>
+              <StaggerItem key={index}>
+                <motion.div
+                  whileHover={{ scale: 1.03, y: -6 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                >
+                  <Card 
+                    className={cn(
+                      "glass p-6 border-primary/10",
+                      "group cursor-default h-full"
+                    )}
+                  >
+                    <motion.div 
+                      className={cn(
+                        "w-14 h-14 rounded-xl flex items-center justify-center mb-4",
+                        "bg-gradient-to-r",
+                        feature.gradient,
+                      )}
+                      whileHover={{ rotate: 10, scale: 1.1 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <Icon className="h-7 w-7 text-white" />
+                    </motion.div>
+                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                    <p className="text-muted-foreground">{feature.description}</p>
+                  </Card>
+                </motion.div>
+              </StaggerItem>
             );
           })}
-        </div>
+        </StaggerContainer>
       </div>
     </section>
   );
