@@ -33,6 +33,7 @@ interface Account {
   created_at: string;
   seller_id: string | null;
   sellers?: Seller | null;
+  requires_buyer_email?: boolean;
 }
 
 interface Order {
@@ -63,7 +64,8 @@ interface ProductGroup {
   seller: Seller | null;
   accounts: Account[];
   availableCount: number;
-  originalPrice?: number; // for discount display
+  originalPrice?: number;
+  requires_buyer_email: boolean;
 }
 
 const Accounts = () => {
@@ -82,6 +84,7 @@ const Accounts = () => {
   const [quantity, setQuantity] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [userCoinBalance, setUserCoinBalance] = useState(0);
+  const [buyerEmail, setBuyerEmail] = useState("");
 
   // Orders
   const [userOrders, setUserOrders] = useState<Order[]>([]);
@@ -100,7 +103,7 @@ const Accounts = () => {
     try {
       const { data, error } = await supabase
         .from('accounts')
-        .select('id, title, description, account_username, price, category, image_url, is_sold, is_free, created_at, seller_id')
+        .select('id, title, description, account_username, price, category, image_url, is_sold, is_free, created_at, seller_id, requires_buyer_email')
         .eq('is_sold', false)
         .order('created_at', { ascending: false });
 
@@ -182,6 +185,7 @@ const Accounts = () => {
           seller: acc.sellers || null,
           accounts: [],
           availableCount: 0,
+          requires_buyer_email: acc.requires_buyer_email || false,
         };
       }
       grouped[key].accounts.push(acc);
@@ -201,11 +205,19 @@ const Accounts = () => {
     if (!user) { navigate("/auth"); return; }
     setSelectedProduct(product);
     setQuantity(1);
+    setBuyerEmail(user.email || "");
     setShowPurchaseModal(true);
   };
 
   const handlePurchase = async () => {
     if (!selectedProduct || !user) return;
+
+    // Validate buyer email if required
+    if (selectedProduct.requires_buyer_email && !buyerEmail.trim()) {
+      toast.error("Vui lòng nhập email để kích hoạt tài khoản!");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -235,6 +247,7 @@ const Accounts = () => {
           status: 'approved',
           approved_at: new Date().toISOString(),
           approved_by: user.id,
+          buyer_email: selectedProduct.requires_buyer_email ? buyerEmail.trim() : null,
         });
 
         await supabase.from('accounts').update({
@@ -420,6 +433,9 @@ const Accounts = () => {
                       {product.category && (
                         <Badge variant="outline" className="text-[10px] mb-2">{product.category}</Badge>
                       )}
+                      {product.requires_buyer_email && (
+                        <Badge variant="outline" className="text-[10px] mb-2 border-blue-500/30 text-blue-500">📧 Cần email</Badge>
+                      )}
 
                       {/* Price */}
                       <div className="mt-auto">
@@ -510,6 +526,20 @@ const Accounts = () => {
                       </Button>
                     </div>
                   </div>
+
+                  {/* Buyer email for activation */}
+                  {selectedProduct.requires_buyer_email && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">📧 Email kích hoạt <span className="text-destructive">*</span></label>
+                      <p className="text-xs text-muted-foreground">Tài khoản này cần Gmail/Email của bạn để kích hoạt (ví dụ: ChatGPT, Netflix...)</p>
+                      <Input
+                        type="email"
+                        placeholder="Nhập email của bạn..."
+                        value={buyerEmail}
+                        onChange={(e) => setBuyerEmail(e.target.value)}
+                      />
+                    </div>
+                  )}
 
                   {/* Summary */}
                   <div className="space-y-2 p-3 rounded-lg border border-border">

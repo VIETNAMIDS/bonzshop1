@@ -39,6 +39,7 @@ export type Database = {
           login_username: string | null
           platform: string
           price: number
+          requires_buyer_email: boolean
           seller_id: string
           sold_at: string | null
           sold_to: string | null
@@ -69,6 +70,7 @@ export type Database = {
           login_username?: string | null
           platform: string
           price?: number
+          requires_buyer_email?: boolean
           seller_id: string
           sold_at?: string | null
           sold_to?: string | null
@@ -99,6 +101,7 @@ export type Database = {
           login_username?: string | null
           platform?: string
           price?: number
+          requires_buyer_email?: boolean
           seller_id?: string
           sold_at?: string | null
           sold_to?: string | null
@@ -905,6 +908,7 @@ export type Database = {
           amount: number
           approved_at: string | null
           approved_by: string | null
+          buyer_email: string | null
           buyer_id: string
           created_at: string
           id: string
@@ -922,6 +926,7 @@ export type Database = {
           amount?: number
           approved_at?: string | null
           approved_by?: string | null
+          buyer_email?: string | null
           buyer_id: string
           created_at?: string
           id?: string
@@ -939,6 +944,7 @@ export type Database = {
           amount?: number
           approved_at?: string | null
           approved_by?: string | null
+          buyer_email?: string | null
           buyer_id?: string
           created_at?: string
           id?: string
