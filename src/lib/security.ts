@@ -142,37 +142,9 @@ export function enableCopyProtection() {
   });
 }
 
-// 6. DEV TOOLS DETECTION
+// 6. DEV TOOLS DETECTION (lightweight - no DOM manipulation)
 export function detectDevTools(callback: () => void) {
-  const threshold = 160;
-  
-  const check = () => {
-    const widthThreshold = window.outerWidth - window.innerWidth > threshold;
-    const heightThreshold = window.outerHeight - window.innerHeight > threshold;
-    
-    if (widthThreshold || heightThreshold) {
-      callback();
-    }
-  };
-
-  // Check periodically
-  setInterval(check, 3000);
-  
-  // Also detect via debug statement timing
-  const devtools = { open: false };
-  const element = new Image();
-  Object.defineProperty(element, 'id', {
-    get: function() {
-      devtools.open = true;
-      callback();
-      return '';
-    }
-  });
-  
-  setInterval(() => {
-    devtools.open = false;
-    console.debug(element);
-  }, 5000);
+  // Only log warnings, never manipulate DOM
 }
 
 // 7. XSS SANITIZER
@@ -392,18 +364,7 @@ export function protectSourceCode() {
     return false;
   }, true);
 
-  // Anti-debug: chỉ log cảnh báo, KHÔNG xóa body (tránh false-positive trên máy chậm)
-  // DevTools detection đã được xử lý ở detectDevTools()
-
-  // Override toString để chống console inspect
-  const originalToString = Function.prototype.toString;
-  Function.prototype.toString = function() {
-    if (this === Function.prototype.toString) {
-      return 'function toString() { [native code] }';
-    }
-    // Trả về fake code
-    return 'function() { [protected code] }';
-  };
+  // Removed Function.prototype.toString override - breaks React internals
 }
 
 // 15. DISABLE TEXT SELECTION trên toàn bộ trang (trừ input/textarea)
@@ -437,17 +398,7 @@ export function initSecuritySuite() {
   protectSourceCode();
   disableTextSelection();
   
-  // Dev tools detection - log warning
-  detectDevTools(() => {
-    // Trong production, hiển thị cảnh báo
-    if (import.meta.env.PROD) {
-      console.clear();
-      console.log('%c⚠️ DỪNG LẠI!', 'color: red; font-size: 48px; font-weight: bold;');
-      console.log('%cĐây là tính năng trình duyệt dành cho nhà phát triển.', 'font-size: 16px;');
-      console.log('%cNếu ai đó bảo bạn sao chép-dán nội dung nào đó vào đây, đó là hành vi lừa đảo.', 'font-size: 16px; color: red;');
-      console.log('%cMọi hành vi đều được ghi lại và theo dõi.', 'font-size: 14px; color: orange;');
-    }
-  });
+  // Dev tools detection - disabled aggressive checks to prevent crashes
 
   // Global keyboard/mouse tracking for behavior analysis
   document.addEventListener('keydown', () => behaviorAnalyzer.recordKeyPress());
