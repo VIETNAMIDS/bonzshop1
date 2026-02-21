@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, lazy, Suspense } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { Footer } from '@/components/Footer';
 import { Search, Filter, Sparkles, ShoppingCart, QrCode, CheckCircle, Loader2, Clock, XCircle, Download, TrendingUp, Users, Package, Star, ArrowRight, Zap, Shield, Rocket } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Navbar } from '@/components/Navbar';
@@ -789,6 +790,9 @@ export default function Index() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Footer */}
+      <Footer />
       </div>
     </div>
   );

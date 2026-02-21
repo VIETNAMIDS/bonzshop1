@@ -664,28 +664,26 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      {/* Background effects */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-64 md:w-96 h-64 md:h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-64 md:w-96 h-64 md:h-96 bg-accent/5 rounded-full blur-3xl" />
-      </div>
+      {/* Brutalist background */}
+      <div className="fixed inset-0 grid-pattern opacity-15 pointer-events-none" />
+      <div className="fixed top-0 left-0 w-full h-1 bg-primary pointer-events-none" />
 
-      <div className="relative w-full max-w-md animate-fade-in">
+      <div className="relative w-full max-w-md animate-scale-in">
         {/* Logo */}
         <div className="flex justify-center mb-6 md:mb-8">
           <img 
             src={bonzshopLogo} 
             alt="BonzShop" 
-            className="h-32 md:h-40 w-auto object-contain"
+            className="h-28 md:h-36 w-auto object-contain"
           />
         </div>
 
         {/* Form */}
-        <div className="glass rounded-2xl p-6 md:p-8 shadow-elevated mx-2 md:mx-0">
-          <h2 className="text-xl md:text-2xl font-bold text-center mb-2">
+        <div className="glass rounded-none p-6 md:p-8 border-2 border-border mx-2 md:mx-0">
+          <h2 className="text-2xl md:text-3xl font-black text-center mb-1 uppercase tracking-tight">
             {view === 'login' ? 'Đăng nhập' : 'Đăng ký'}
           </h2>
-          <p className="text-muted-foreground text-center text-sm md:text-base mb-6 md:mb-8">
+          <p className="text-muted-foreground text-center text-sm font-mono mb-6 md:mb-8">
             {view === 'login' ? 'Chào mừng bạn trở lại!' : 'Tạo tài khoản mới'}
           </p>
 
