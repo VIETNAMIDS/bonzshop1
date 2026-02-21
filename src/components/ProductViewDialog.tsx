@@ -75,7 +75,7 @@ export function ProductViewDialog({ product, open, onClose, onBuy, onClaimFree }
                   <span className="text-xl font-bold text-primary">{formatPrice(product.price)}</span>
                   <Badge variant="outline" className="text-orange-600 border-orange-500/50">
                     <Coins className="h-3 w-3 mr-1" />
-                    {Math.ceil(product.price / 1000)} xu
+                    {product.price.toLocaleString()} xu
                   </Badge>
                 </>
               )}

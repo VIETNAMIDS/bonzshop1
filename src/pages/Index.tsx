@@ -252,7 +252,7 @@ export default function Index() {
       return;
     }
 
-    const requiredCoin = Math.ceil(product.price / 1000);
+    const requiredCoin = product.price;
     await handleBuyProductWithCoin({ ...product });
   };
 
@@ -263,7 +263,7 @@ export default function Index() {
       return;
     }
 
-    const requiredCoin = Math.ceil(product.price / 1000);
+    const requiredCoin = product.price;
     setPendingCoinProduct(product);
     setPendingCoinRequired(requiredCoin);
     setShowCoinConfirm(true);
