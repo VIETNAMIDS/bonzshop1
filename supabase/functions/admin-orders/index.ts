@@ -214,6 +214,52 @@ Deno.serve(async (req) => {
           throw new Error('Order already processed');
         }
 
+        // Deduct coins from buyer
+        const { data: buyerCoins, error: buyerCoinsError } = await supabase
+          .from('user_coins')
+          .select('id, balance')
+          .eq('user_id', order.user_id)
+          .single();
+
+        if (buyerCoinsError || !buyerCoins) {
+          console.error('Buyer coins not found:', buyerCoinsError);
+          throw new Error('Không tìm thấy số dư xu của người mua');
+        }
+
+        if (buyerCoins.balance < order.amount) {
+          throw new Error('Người mua không đủ xu để thanh toán');
+        }
+
+        const newBuyerBalance = buyerCoins.balance - order.amount;
+        const { error: deductError } = await supabase
+          .from('user_coins')
+          .update({ 
+            balance: newBuyerBalance, 
+            updated_at: new Date().toISOString() 
+          })
+          .eq('id', buyerCoins.id)
+          .eq('balance', buyerCoins.balance); // Optimistic locking
+
+        if (deductError) {
+          console.error('Deduct coins error:', deductError);
+          throw new Error('Không thể trừ xu người mua. Vui lòng thử lại.');
+        }
+
+        console.log('Deducted', order.amount, 'coins from buyer', order.user_id, '- new balance:', newBuyerBalance);
+
+        // Log to coin_history
+        const itemTitle = order.product_id 
+          ? (order.products as any)?.title || 'Sản phẩm'
+          : (order.accounts as any)?.title || 'Tài khoản';
+
+        await supabase.from('coin_history').insert({
+          user_id: order.user_id,
+          amount: -order.amount,
+          type: 'account_purchase',
+          description: `Mua "${itemTitle}"`,
+          reference_id: data.orderId
+        });
+
         // Update order status
         const { error: approveError } = await supabase
           .from('orders')
@@ -226,6 +272,11 @@ Deno.serve(async (req) => {
 
         if (approveError) {
           console.error('Approve error:', approveError);
+          // Rollback coin deduction
+          await supabase
+            .from('user_coins')
+            .update({ balance: buyerCoins.balance })
+            .eq('id', buyerCoins.id);
           throw approveError;
         }
 
