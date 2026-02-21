@@ -571,10 +571,7 @@ export default function Auth() {
     });
   };
 
-  // Desktop without QR token: show QR login screen
-  if (!isMobile && !qrToken && !user) {
-    return <QrLoginDesktop onLoginSuccess={() => navigate('/')} />;
-  }
+  // QR login removed - show normal login form on all devices
 
   // Màn hình blocked
   if (isBlocked) {
