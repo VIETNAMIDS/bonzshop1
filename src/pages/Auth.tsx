@@ -21,6 +21,15 @@ import {
   checkDeviceRegistration,
   registerDevice,
 } from '@/hooks/useSessionManager';
+import {
+  checkLoginAttempts,
+  recordLoginAttempt,
+  resetLoginAttempts,
+  isHoneypotTriggered,
+  createFormTimer,
+  behaviorAnalyzer,
+  rateLimiter,
+} from '@/lib/security';
 
 // Ký tự không được phép
 const specialCharRegex = /[<>{}[\]\\\/`~!#$%^&*()+|=;:'",?]/;
@@ -108,10 +117,13 @@ export default function Auth() {
   const [isBlocked, setIsBlocked] = useState(false);
   const [pendingSignup, setPendingSignup] = useState<{ email: string; password: string; displayName: string } | null>(null);
   const [redirectToWelcome, setRedirectToWelcome] = useState(false);
-   const [searchParams] = useSearchParams();
-   const referralCode = searchParams.get('ref');
-   const qrToken = searchParams.get('qr_token');
-   const isMobile = useIsMobile();
+  const [honeypot, setHoneypot] = useState('');
+  const [formTimer] = useState(() => createFormTimer());
+  const [lockoutMessage, setLockoutMessage] = useState('');
+  const [searchParams] = useSearchParams();
+  const referralCode = searchParams.get('ref');
+  const qrToken = searchParams.get('qr_token');
+  const isMobile = useIsMobile();
 
   // Save referral code to localStorage on mount (for OAuth redirects)
   useEffect(() => {
@@ -258,6 +270,59 @@ export default function Auth() {
       return;
     }
 
+    // Anti-bot: Honeypot check
+    if (isHoneypotTriggered(honeypot)) {
+      // Silently reject - don't reveal detection
+      return;
+    }
+
+    // Anti-bot: Timing check
+    if (formTimer.isSuspicious()) {
+      toast({
+        title: '⚠️ Hoạt động đáng ngờ',
+        description: 'Vui lòng thử lại.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Anti-bot: Behavior analysis
+    if (behaviorAnalyzer.isLikelyBot()) {
+      toast({
+        title: '🤖 Phát hiện bot',
+        description: 'Hành vi tự động bị chặn.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Rate limiting
+    if (!rateLimiter.check('auth_submit', 5, 60000)) {
+      toast({
+        title: '⏳ Quá nhiều lần thử',
+        description: 'Vui lòng chờ 1 phút trước khi thử lại.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Brute force protection (login only)
+    if (view === 'login') {
+      const loginCheck = checkLoginAttempts();
+      if (!loginCheck.allowed) {
+        const remaining = loginCheck.lockoutEndTime 
+          ? Math.ceil((loginCheck.lockoutEndTime - Date.now()) / 60000) 
+          : 15;
+        setLockoutMessage(`Tài khoản bị khóa tạm thời. Thử lại sau ${remaining} phút.`);
+        toast({
+          title: '🔒 Tạm khóa đăng nhập',
+          description: `Quá nhiều lần thất bại. Thử lại sau ${remaining} phút.`,
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
     if (!validate()) return;
 
     setIsLoading(true);
@@ -266,15 +331,18 @@ export default function Auth() {
       if (view === 'login') {
         const { error, data } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
+          recordLoginAttempt(); // Track failed attempt
+          const loginCheck = checkLoginAttempts();
           toast({
             title: 'Đăng nhập thất bại',
             description: error.message === 'Invalid login credentials' 
-              ? 'Email hoặc mật khẩu không đúng' 
+              ? `Email hoặc mật khẩu không đúng (còn ${loginCheck.remainingAttempts} lần thử)` 
               : error.message,
             variant: 'destructive',
           });
         } else if (data.user) {
-          // Force register session - auto kicks any existing session on other devices
+          resetLoginAttempts(); // Clear on success
+          behaviorAnalyzer.reset();
           await registerSession(data.user.id);
           toast({
             title: 'Đăng nhập thành công',
@@ -624,7 +692,25 @@ export default function Auth() {
             {view === 'login' ? 'Chào mừng bạn trở lại!' : 'Tạo tài khoản mới'}
           </p>
 
+          {/* Lockout message */}
+          {lockoutMessage && (
+            <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 text-sm text-destructive text-center">
+              🔒 {lockoutMessage}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
+            {/* Honeypot - hidden from humans, bots will fill this */}
+            <div className="absolute opacity-0 pointer-events-none h-0 overflow-hidden" aria-hidden="true" tabIndex={-1}>
+              <input
+                type="text"
+                name="website_url"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                autoComplete="off"
+                tabIndex={-1}
+              />
+            </div>
             {view === 'signup' && (
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Tên hiển thị</label>
