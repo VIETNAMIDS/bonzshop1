@@ -5,6 +5,10 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { Navbar } from '@/components/Navbar';
 import { HeroBackgroundMedia } from '@/components/home/HeroBackgroundMedia';
 import { ProductCard } from '@/components/ProductCard';
+import { FlashSaleSection } from '@/components/home/FlashSaleSection';
+import { TopSellingSection } from '@/components/home/TopSellingSection';
+import { TestimonialsSection } from '@/components/home/TestimonialsSection';
+import { SocialProofPopup } from '@/components/home/SocialProofPopup';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -524,6 +528,12 @@ export default function Index() {
         </div>
       </motion.section>
 
+      {/* Flash Sale Section */}
+      <FlashSaleSection />
+
+      {/* Top Selling Section */}
+      <TopSellingSection />
+
       {/* Features Section - Stagger animation */}
       <section className="py-12 px-4 border-y border-border/50">
         <div className="container mx-auto">
@@ -702,6 +712,9 @@ export default function Index() {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <TestimonialsSection />
+
       {/* CTA Section */}
       <ScrollReveal variant="fadeUp">
         <section className="py-16 md:py-20 px-4 relative overflow-hidden">
@@ -751,6 +764,9 @@ export default function Index() {
           </div>
         </div>
       </footer>
+
+      {/* Social Proof Popup */}
+      <SocialProofPopup />
 
       {/* Coin Confirm Modal */}
       <Dialog open={showCoinConfirm} onOpenChange={setShowCoinConfirm}>
