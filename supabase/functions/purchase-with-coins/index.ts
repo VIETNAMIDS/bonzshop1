@@ -2,7 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 Deno.serve(async (req) => {
@@ -12,12 +12,12 @@ Deno.serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Authenticate user
+    // Authenticate user with anon key + auth header
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+    if (!authHeader?.startsWith('Bearer ')) {
       console.error('No authorization header');
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
@@ -25,17 +25,25 @@ Deno.serve(async (req) => {
       );
     }
 
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !user) {
-      console.error('Invalid token:', userError);
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      console.error('Invalid token:', claimsError);
       return new Response(
         JSON.stringify({ error: 'Invalid token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('User authenticated:', user.id);
+    const userId = claimsData.claims.sub;
+    console.log('User authenticated:', userId);
+
+    // Service role client for data operations (bypasses RLS)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { accountId, productId, requiredCoins, discountCodeId, discountAmount } = await req.json();
     console.log('Purchase request:', { accountId, productId, requiredCoins, discountCodeId, discountAmount });
@@ -59,7 +67,7 @@ Deno.serve(async (req) => {
     const { data: coinData, error: coinError } = await supabase
       .from('user_coins')
       .select('id, balance')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single();
 
     if (coinError || !coinData) {
@@ -113,7 +121,6 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Calculate expected coin price (price / 1000, rounded up)
       itemPrice = Math.ceil(Number(account.price) / 1000);
       sellerId = account.seller_id;
 
@@ -169,7 +176,7 @@ Deno.serve(async (req) => {
         updated_at: new Date().toISOString() 
       })
       .eq('id', coinData.id)
-      .eq('balance', coinData.balance) // Optimistic locking - ensures balance hasn't changed
+      .eq('balance', coinData.balance)
       .select()
       .single();
 
@@ -185,14 +192,14 @@ Deno.serve(async (req) => {
 
     // Create approved order
     const orderData = {
-      user_id: user.id,
-      buyer_id: user.id,
+      user_id: userId,
+      buyer_id: userId,
       account_id: accountId || null,
       product_id: productId || null,
       amount: requiredCoins,
       status: 'approved',
       approved_at: new Date().toISOString(),
-      approved_by: user.id,
+      approved_by: userId,
       order_type: 'coin_purchase',
     };
 
@@ -204,7 +211,6 @@ Deno.serve(async (req) => {
 
     if (orderError) {
       console.error('Failed to create order:', orderError);
-      // Rollback balance
       await supabase
         .from('user_coins')
         .update({ balance: coinData.balance })
@@ -218,18 +224,16 @@ Deno.serve(async (req) => {
 
     console.log('Order created:', order.id);
 
-    // Handle discount code usage - record use and delete the code (single-use)
-    if (discountCodeId && user.id) {
+    // Handle discount code usage
+    if (discountCodeId && userId) {
       try {
-        // Record usage
         await supabase.from('discount_code_uses').insert({
           code_id: discountCodeId,
-          user_id: user.id,
+          user_id: userId,
           order_id: order.id
         });
         console.log('Discount code use recorded:', discountCodeId);
 
-        // Delete the discount code (single-use codes)
         const { error: deleteError } = await supabase
           .from('discount_codes')
           .delete()
@@ -242,11 +246,10 @@ Deno.serve(async (req) => {
         }
       } catch (discountError) {
         console.error('Error processing discount code:', discountError);
-        // Don't fail the purchase if discount recording fails
       }
     }
 
-    // Mark account as sold if applicable (skip for activation/requires_buyer_email accounts)
+    // Mark account as sold if applicable
     if (accountId) {
       const { data: accountInfo } = await supabase
         .from('accounts')
@@ -259,7 +262,7 @@ Deno.serve(async (req) => {
           .from('accounts')
           .update({
             is_sold: true,
-            sold_to: user.id,
+            sold_to: userId,
             sold_at: new Date().toISOString()
           })
           .eq('id', accountId);
@@ -270,33 +273,29 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Add coins to seller if applicable (with fixed commission fee deduction)
+    // Add coins to seller if applicable
     let sellerReceives = 0;
     let commissionFee = 0;
     let newTotalEarnings = 0;
     let sellerUserId: string | null = null;
 
     if (sellerId) {
-      // Fixed commission system based on sale amount tiers
-      // Example: 10 xu sale = 3 xu fee, seller gets 7 xu
-      //          20 xu sale = 5 xu fee, seller gets 15 xu
       if (requiredCoins >= 100) {
-        commissionFee = 10; // 100+ xu: fixed 10 xu fee
+        commissionFee = 10;
       } else if (requiredCoins >= 50) {
-        commissionFee = 7; // 50-99 xu: fixed 7 xu fee
+        commissionFee = 7;
       } else if (requiredCoins >= 20) {
-        commissionFee = 5; // 20-49 xu: fixed 5 xu fee
+        commissionFee = 5;
       } else if (requiredCoins >= 10) {
-        commissionFee = 3; // 10-19 xu: fixed 3 xu fee
+        commissionFee = 3;
       } else {
-        commissionFee = 1; // 1-9 xu: fixed 1 xu fee
+        commissionFee = 1;
       }
       
       sellerReceives = requiredCoins - commissionFee;
       
       console.log(`Fixed Commission: ${commissionFee} xu fee (from ${requiredCoins} xu sale), Seller receives: ${sellerReceives} xu`);
 
-      // Get seller info for notifications
       const { data: sellerInfo } = await supabase
         .from('sellers')
         .select('user_id, display_name')
@@ -320,7 +319,6 @@ Deno.serve(async (req) => {
             total_earned: newTotalEarnings
           })
           .eq('id', existingSellerCoins.id);
-        console.log('Added', sellerReceives, 'coins to seller', sellerId, '(after', commissionFee, 'xu fee)');
       } else {
         newTotalEarnings = sellerReceives;
         await supabase
@@ -330,10 +328,8 @@ Deno.serve(async (req) => {
             balance: sellerReceives,
             total_earned: sellerReceives
           });
-        console.log('Created seller coins record with', sellerReceives, 'coins (after', commissionFee, 'xu fee)');
       }
 
-      // Create in-app notification for seller
       if (sellerUserId) {
         await supabase.from('notifications').insert({
           user_id: sellerUserId,
@@ -342,15 +338,13 @@ Deno.serve(async (req) => {
           type: 'seller_sale',
           reference_id: order.id
         });
-        console.log('In-app notification created for seller:', sellerUserId);
       }
     }
 
-    // Get user email and send purchase notification
+    // Notifications
     try {
-      const { data: userData } = await supabase.auth.admin.getUserById(user.id);
+      const { data: userData } = await supabase.auth.admin.getUserById(userId);
       
-      // Get product/account title
       let productTitle = 'Sản phẩm';
       let productType: 'account' | 'product' = 'product';
       
@@ -364,27 +358,22 @@ Deno.serve(async (req) => {
         productType = 'product';
       }
 
-       // Log to coin_history
-       await supabase.from('coin_history').insert({
-         user_id: user.id,
-         amount: -requiredCoins,
-         type: 'account_purchase',
-         description: `Mua "${productTitle}"`,
-         reference_id: order.id
-       });
-       console.log('Coin history logged for user:', user.id);
- 
-      // Create in-app notification
+      await supabase.from('coin_history').insert({
+        user_id: userId,
+        amount: -requiredCoins,
+        type: 'account_purchase',
+        description: `Mua "${productTitle}"`,
+        reference_id: order.id
+      });
+
       await supabase.from('notifications').insert({
-        user_id: user.id,
+        user_id: userId,
         title: '🎉 Mua hàng thành công!',
         message: `Bạn đã mua "${productTitle}" với ${requiredCoins} xu. Vào "Đơn hàng của tôi" để xem chi tiết.`,
         type: 'purchase',
         reference_id: order.id
       });
-      console.log('In-app notification created for user:', user.id);
 
-      // Send email notification
       if (userData?.user?.email) {
         const notificationUrl = `${supabaseUrl}/functions/v1/send-purchase-notification`;
         await fetch(notificationUrl, {
@@ -399,9 +388,7 @@ Deno.serve(async (req) => {
             orderId: order.id
           })
         });
-        console.log('Purchase notification email sent to:', userData.user.email);
 
-        // Send Telegram notification to admin
         const telegramUrl = `${supabaseUrl}/functions/v1/send-telegram-notification`;
         await fetch(telegramUrl, {
           method: 'POST',
@@ -414,9 +401,7 @@ Deno.serve(async (req) => {
             orderId: order.id
           })
         });
-        console.log('Purchase Telegram notification sent to admin');
 
-        // Send Telegram notification to seller if they earned coins
         if (sellerId && sellerReceives > 0) {
           await fetch(telegramUrl, {
             method: 'POST',
@@ -432,12 +417,10 @@ Deno.serve(async (req) => {
               orderId: order.id
             })
           });
-          console.log('Seller sale Telegram notification sent');
         }
       }
     } catch (notifError) {
       console.error('Failed to send purchase notification:', notifError);
-      // Don't fail the purchase if notification fails
     }
 
     return new Response(
