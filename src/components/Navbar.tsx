@@ -73,10 +73,10 @@ export function Navbar() {
   // Mobile horizontal navbar
   if (isMobile) {
     return (
-      <nav className={`sticky top-0 z-50 transition-all duration-300 ${
+      <nav className={`sticky top-0 z-50 transition-all duration-150 ${
         scrolled 
-          ? 'glass-strong shadow-[0_1px_12px_hsl(0_0%_0%/0.3)]' 
-          : 'glass border-b border-border/30'
+          ? 'bg-background border-b-2 border-primary' 
+          : 'bg-background border-b-2 border-border'
       }`}>
         <div className="container mx-auto px-4">
           <div className="flex h-14 items-center justify-between">
@@ -235,7 +235,7 @@ export function Navbar() {
   // Desktop vertical sidebar
   return (
     <aside className={cn(
-      "fixed left-0 top-0 h-screen z-50 transition-all duration-300 glass-strong border-r border-border/40",
+      "fixed left-0 top-0 h-screen z-50 transition-all duration-300 bg-background border-r-2 border-border",
       sidebarCollapsed ? "w-16" : "w-60"
     )}>
       <div className="flex flex-col h-full p-3">
@@ -272,10 +272,10 @@ export function Navbar() {
               key={link.to}
               to={link.to}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group",
+                    "flex items-center gap-3 px-3 py-2.5 rounded-none transition-all duration-150 group border-l-2",
                 isActive(link.to)
-                  ? "bg-primary/15 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                  ? "bg-primary/10 text-primary border-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60 border-transparent hover:border-primary/50"
               )}
               title={sidebarCollapsed ? link.label : undefined}
             >
