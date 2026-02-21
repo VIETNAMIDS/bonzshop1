@@ -226,9 +226,8 @@ const Accounts = () => {
 
     try {
       const coinPerUnit = selectedProduct.price; // 1 VNĐ = 1 xu
-      const additionalMonthCost = 50000; // +50k VNĐ = +50000 xu per additional month
       const totalCoinCost = isActivationType 
-        ? coinPerUnit + (selectedMonths - 1) * additionalMonthCost
+        ? coinPerUnit * selectedMonths
         : coinPerUnit * quantity;
 
       if (userCoinBalance < totalCoinCost) {
@@ -502,11 +501,10 @@ const Accounts = () => {
             {selectedProduct && (() => {
               const isActivationType = selectedProduct.requires_buyer_email;
               const coinPerUnit = selectedProduct.price; // 1 VNĐ = 1 xu
-              const additionalMonthCost = 50000; // +50k per additional month
               const totalCoin = isActivationType 
-                ? coinPerUnit + (selectedMonths - 1) * additionalMonthCost
+                ? coinPerUnit * selectedMonths
                 : coinPerUnit * quantity;
-              const maxQty = isActivationType ? 12 : selectedProduct.availableCount;
+              const maxQty = isActivationType ? 120 : selectedProduct.availableCount;
 
               return (
                 <div className="space-y-4">
@@ -525,35 +523,44 @@ const Accounts = () => {
                         {formatPrice(selectedProduct.price)} / {isActivationType ? 'tháng' : 'tài khoản'}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {coinPerUnit} xu / {isActivationType ? 'tháng' : 'tài khoản'}
+                        {coinPerUnit.toLocaleString()} xu / {isActivationType ? 'tháng' : 'tài khoản'}
                       </p>
                     </div>
                   </div>
 
                   {isActivationType ? (
                     <>
-                      {/* Duration selector for activation type */}
+                      {/* Duration input for activation type */}
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">⏱️ Chọn thời hạn</label>
-                        <div className="grid grid-cols-4 gap-2">
-                          {[1, 3, 6, 12].map((m) => {
-                            const monthTotal = coinPerUnit + (m - 1) * additionalMonthCost;
-                            return (
-                              <button
-                                key={m}
-                                type="button"
-                                onClick={() => setSelectedMonths(m)}
-                                className={`p-2 rounded-lg border text-center transition-all ${
-                                  selectedMonths === m 
-                                    ? 'border-primary bg-primary/10 text-primary' 
-                                    : 'border-border hover:border-primary/50'
-                                }`}
-                              >
-                                <div className="text-sm font-medium">{m} tháng</div>
-                                <div className="text-[10px] text-muted-foreground">{monthTotal} xu</div>
-                              </button>
-                            );
-                          })}
+                        <label className="text-sm font-medium">⏱️ Số tháng</label>
+                        <div className="flex items-center gap-3">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-10 w-10"
+                            onClick={() => setSelectedMonths(Math.max(1, selectedMonths - 1))}
+                            disabled={selectedMonths <= 1}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={maxQty}
+                            value={selectedMonths}
+                            onChange={(e) => setSelectedMonths(Math.min(maxQty, Math.max(1, parseInt(e.target.value) || 1)))}
+                            className="w-20 text-center font-bold text-lg"
+                          />
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-10 w-10"
+                            onClick={() => setSelectedMonths(Math.min(maxQty, selectedMonths + 1))}
+                            disabled={selectedMonths >= maxQty}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                          <span className="text-sm text-muted-foreground">tháng</span>
                         </div>
                       </div>
 
@@ -636,7 +643,7 @@ const Accounts = () => {
 
             <DialogFooter className="gap-2">
               <Button variant="outline" onClick={() => setShowPurchaseModal(false)}>Hủy</Button>
-              {selectedProduct && userCoinBalance < (selectedProduct.requires_buyer_email ? selectedProduct.price + (selectedMonths - 1) * 50000 : selectedProduct.price * quantity) ? (
+              {selectedProduct && userCoinBalance < (selectedProduct.requires_buyer_email ? selectedProduct.price * selectedMonths : selectedProduct.price * quantity) ? (
                 <Button onClick={() => { setShowPurchaseModal(false); navigate('/buy-coins'); }}>Nạp xu</Button>
               ) : (
                 <Button onClick={handlePurchase} disabled={submitting}>
