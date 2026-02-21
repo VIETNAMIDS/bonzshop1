@@ -150,7 +150,7 @@ export function ChildHome() {
       return;
     }
 
-    const requiredCoin = Math.ceil(product.price / 1000);
+    const requiredCoin = product.price;
     setPendingCoinProduct(product);
     setPendingCoinRequired(requiredCoin);
     setShowCoinConfirm(true);

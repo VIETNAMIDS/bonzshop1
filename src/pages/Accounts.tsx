@@ -200,7 +200,7 @@ const Accounts = () => {
   const uniqueCategories = [...new Set(accounts.map(a => a.category).filter(Boolean))];
 
   const formatPrice = (price: number) =>
-    new Intl.NumberFormat("vi-VN").format(price) + 'đ';
+    new Intl.NumberFormat("vi-VN").format(price) + ' VNĐ';
 
   const handleOpenPurchase = (product: ProductGroup) => {
     if (!user) { navigate("/auth"); return; }
@@ -225,8 +225,8 @@ const Accounts = () => {
     setSubmitting(true);
 
     try {
-      const coinPerUnit = Math.ceil(selectedProduct.price / 1000);
-      const additionalMonthCost = 50; // 50k = 50 xu per additional month
+      const coinPerUnit = selectedProduct.price; // 1 VNĐ = 1 xu
+      const additionalMonthCost = 50000; // +50k VNĐ = +50000 xu per additional month
       const totalCoinCost = isActivationType 
         ? coinPerUnit + (selectedMonths - 1) * additionalMonthCost
         : coinPerUnit * quantity;
@@ -264,7 +264,7 @@ const Accounts = () => {
             account_id: acc.id,
             buyer_id: user.id,
             user_id: user.id,
-            amount: Math.ceil(acc.price / 1000),
+            amount: acc.price,
             status: 'approved',
             approved_at: new Date().toISOString(),
             approved_by: user.id,
@@ -403,7 +403,7 @@ const Accounts = () => {
           {!loading && productGroups.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {productGroups.map((product, idx) => {
-                const coinPrice = Math.ceil(product.price / 1000);
+                const coinPrice = product.price; // 1 VNĐ = 1 xu
                 return (
                   <div
                     key={idx}
@@ -501,8 +501,8 @@ const Accounts = () => {
 
             {selectedProduct && (() => {
               const isActivationType = selectedProduct.requires_buyer_email;
-              const coinPerUnit = Math.ceil(selectedProduct.price / 1000);
-              const additionalMonthCost = 50; // 50 xu per additional month
+              const coinPerUnit = selectedProduct.price; // 1 VNĐ = 1 xu
+              const additionalMonthCost = 50000; // +50k per additional month
               const totalCoin = isActivationType 
                 ? coinPerUnit + (selectedMonths - 1) * additionalMonthCost
                 : coinPerUnit * quantity;
@@ -636,7 +636,7 @@ const Accounts = () => {
 
             <DialogFooter className="gap-2">
               <Button variant="outline" onClick={() => setShowPurchaseModal(false)}>Hủy</Button>
-              {selectedProduct && userCoinBalance < Math.ceil(selectedProduct.price / 1000) * (selectedProduct.requires_buyer_email ? selectedMonths : quantity) ? (
+              {selectedProduct && userCoinBalance < (selectedProduct.requires_buyer_email ? selectedProduct.price + (selectedMonths - 1) * 50000 : selectedProduct.price * quantity) ? (
                 <Button onClick={() => { setShowPurchaseModal(false); navigate('/buy-coins'); }}>Nạp xu</Button>
               ) : (
                 <Button onClick={handlePurchase} disabled={submitting}>
