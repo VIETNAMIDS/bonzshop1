@@ -292,10 +292,7 @@ export default function SellerOrders() {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(price);
+    return new Intl.NumberFormat('vi-VN').format(price) + ' xu';
   };
 
   const getStatusBadge = (status: string) => {
