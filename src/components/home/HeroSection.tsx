@@ -109,45 +109,43 @@ export function HeroSection() {
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/80 to-background" />
 
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/8 rounded-full blur-3xl animate-float-reverse" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/5 to-accent/5 rounded-full blur-3xl" />
+      {/* Brutalist background — raw grid */}
+      <div className="absolute inset-0 grid-pattern opacity-30" />
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-1 bg-primary/60" />
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-primary/30" />
       </div>
-
-      {/* Grid pattern */}
-      <div className="absolute inset-0 grid-pattern opacity-50" />
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 text-center">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8 animate-fade-in">
-          <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-          <span className="text-sm font-medium text-primary">Nền tảng #1 Việt Nam</span>
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-none bg-primary text-primary-foreground border-2 border-primary mb-8 animate-scale-in">
+          <Sparkles className="h-4 w-4" />
+          <span className="text-sm font-black uppercase tracking-widest">Nền tảng #1 Việt Nam</span>
         </div>
 
         {/* Title */}
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in">
-          <span className="block text-gradient glow-text">
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 animate-scale-in uppercase tracking-tight leading-[0.9]">
+          <span className="block text-foreground">
             {settings.hero_title || 'Chào mừng đến với'}
           </span>
-          <span className="block mt-2 bg-gradient-to-r from-primary via-accent to-orange-500 bg-clip-text text-transparent">
+          <span className="block mt-2 text-primary">
             BonzShop
           </span>
         </h1>
 
         {/* Subtitle */}
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-fade-in animation-delay-200">
+        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-scale-in animation-delay-200 font-mono">
           {settings.hero_subtitle || 'Nền tảng mua bán tài khoản game và sản phẩm số uy tín nhất'}
         </p>
 
         {/* CTAs */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in animation-delay-400">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center animate-scale-in animation-delay-200">
           <Button 
             asChild 
             size="lg" 
-            className="btn-glow bg-gradient-to-r from-primary to-accent hover:opacity-90 text-lg px-8"
+            variant="gradient"
+            className="text-lg px-8"
           >
             <Link to="/categories">
               <ShoppingBag className="mr-2 h-5 w-5" />
@@ -158,7 +156,7 @@ export function HeroSection() {
             asChild 
             variant="outline" 
             size="lg"
-            className="border-primary/30 hover:bg-primary/10 text-lg px-8"
+            className="text-lg px-8"
           >
             <Link to="/chat">
               <MessageCircle className="mr-2 h-5 w-5" />
@@ -168,18 +166,18 @@ export function HeroSection() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto mt-16 animate-fade-in animation-delay-600">
-          <div className="stats-card p-4 rounded-xl">
-            <p className="text-3xl font-bold text-gradient">1000+</p>
-            <p className="text-sm text-muted-foreground">Sản phẩm</p>
+        <div className="grid grid-cols-3 gap-4 md:gap-8 max-w-2xl mx-auto mt-16 animate-scale-in animation-delay-200">
+          <div className="stats-card p-4 rounded-none">
+            <p className="text-3xl md:text-4xl font-black text-primary">1000+</p>
+            <p className="text-sm text-muted-foreground font-mono uppercase tracking-wider">Sản phẩm</p>
           </div>
-          <div className="stats-card p-4 rounded-xl">
-            <p className="text-3xl font-bold text-gradient">500+</p>
-            <p className="text-sm text-muted-foreground">Người bán</p>
+          <div className="stats-card p-4 rounded-none">
+            <p className="text-3xl md:text-4xl font-black text-primary">500+</p>
+            <p className="text-sm text-muted-foreground font-mono uppercase tracking-wider">Người bán</p>
           </div>
-          <div className="stats-card p-4 rounded-xl">
-            <p className="text-3xl font-bold text-gradient">99%</p>
-            <p className="text-sm text-muted-foreground">Hài lòng</p>
+          <div className="stats-card p-4 rounded-none">
+            <p className="text-3xl md:text-4xl font-black text-primary">99%</p>
+            <p className="text-sm text-muted-foreground font-mono uppercase tracking-wider">Hài lòng</p>
           </div>
         </div>
 

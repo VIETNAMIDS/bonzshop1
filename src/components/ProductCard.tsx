@@ -40,14 +40,14 @@ export function ProductCard({ product, onPurchase, onBuyWithCoin }: ProductCardP
   };
 
   return (
-    <Tilt3DCard intensity={8}>
+    <Tilt3DCard intensity={4}>
       <motion.div 
-        className="group relative overflow-hidden rounded-xl border border-border/60 bg-card transition-all duration-300 hover:border-primary/30 hover:shadow-[0_8px_32px_-8px_hsl(210_100%_60%/0.12)]"
-        whileHover={{ y: -4 }}
-        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        className="group relative overflow-hidden rounded-none border-2 border-border bg-card transition-all duration-150 hover:border-primary hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_hsl(14_90%_55%/0.3)]"
+        whileHover={{ y: 0 }}
+        transition={{ type: "tween", duration: 0.15 }}
       >
         {/* Image */}
-        <div className="relative h-48 overflow-hidden bg-gradient-to-br from-secondary to-muted">
+        <div className="relative h-48 overflow-hidden bg-secondary">
           {product.image_url ? (
             <motion.img
               src={product.image_url}
@@ -120,7 +120,7 @@ export function ProductCard({ product, onPurchase, onBuyWithCoin }: ProductCardP
             )}
           </div>
 
-          <h3 className="mb-2 text-lg font-bold text-foreground line-clamp-1 group-hover:text-gradient transition-all duration-300">
+          <h3 className="mb-2 text-lg font-black text-foreground line-clamp-1 group-hover:text-primary transition-colors duration-150 uppercase tracking-tight">
             {product.title}
           </h3>
 
@@ -134,7 +134,7 @@ export function ProductCard({ product, onPurchase, onBuyWithCoin }: ProductCardP
               {product.tech_stack.slice(0, 3).map((tech) => (
                 <span
                   key={tech}
-                  className="rounded-lg bg-gradient-to-r from-secondary to-muted px-2.5 py-1 font-mono text-xs text-muted-foreground border border-border/50"
+                  className="rounded-none bg-secondary px-2.5 py-1 font-mono text-xs text-muted-foreground border border-border"
                 >
                   {tech}
                 </span>
@@ -178,10 +178,8 @@ export function ProductCard({ product, onPurchase, onBuyWithCoin }: ProductCardP
           )}
         </div>
 
-        {/* Glow effect on hover */}
-        <div className="absolute inset-0 -z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          <div className="absolute inset-0 bg-gradient-to-t from-primary/5 via-transparent to-transparent" />
-        </div>
+        {/* Border accent on hover */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-150 origin-left" />
       </motion.div>
     </Tilt3DCard>
   );

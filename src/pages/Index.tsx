@@ -356,42 +356,10 @@ export default function Index() {
         style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
       >
         <HeroBackgroundMedia />
-        {/* Animated background elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <FloatingElement className="absolute top-20 left-[10%]" yRange={[-20, 20]} duration={8}>
-            <div className="w-72 h-72 bg-primary/20 rounded-full blur-[120px]" />
-          </FloatingElement>
-          <FloatingElement className="absolute top-40 right-[15%]" yRange={[-15, 25]} duration={10}>
-            <div className="w-96 h-96 bg-accent/15 rounded-full blur-[100px]" />
-          </FloatingElement>
-          <FloatingElement className="absolute bottom-20 left-[30%]" xRange={[-15, 15]} duration={7}>
-            <div className="w-80 h-80 bg-[hsl(20,90%,55%)]/10 rounded-full blur-[100px]" />
-          </FloatingElement>
-        </div>
-
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 grid-pattern opacity-50" />
-
-        {/* Animated orbs */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {!isMobile && [...Array(5)].map((_, i) => (
-            <FloatingElement 
-              key={i} 
-              className="absolute" 
-              xRange={[-30, 30]} 
-              yRange={[-40, 40]} 
-              duration={5 + i * 2}
-            >
-              <div 
-                className="w-2 h-2 rounded-full bg-primary/40"
-                style={{
-                  top: `${20 + i * 15}%`,
-                  left: `${10 + i * 20}%`,
-                  boxShadow: '0 0 30px hsl(210 100% 60% / 0.2)',
-                }}
-              />
-            </FloatingElement>
-          ))}
+        {/* Brutalist background — raw grid lines */}
+        <div className="absolute inset-0 grid-pattern opacity-30" />
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
         </div>
 
         <div className="container mx-auto relative">
@@ -406,53 +374,44 @@ export default function Index() {
               <motion.img 
                 src={bonzshopLogo} 
                 alt="BonzShop" 
-                className="h-48 md:h-64 lg:h-80 w-auto object-contain mx-auto drop-shadow-[0_0_30px_rgba(60,130,246,0.3)]"
-                animate={{ 
-                  filter: [
-                    'drop-shadow(0 0 20px rgba(60,130,246,0.2))',
-                    'drop-shadow(0 0 40px rgba(60,130,246,0.4))',
-                    'drop-shadow(0 0 20px rgba(60,130,246,0.2))',
-                  ]
-                }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="h-48 md:h-64 lg:h-80 w-auto object-contain mx-auto"
               />
             </motion.div>
 
             {/* Badge */}
             <motion.div 
-              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 px-5 py-2.5 mb-8 backdrop-blur-sm"
+              className="inline-flex items-center gap-2 rounded-none bg-primary text-primary-foreground border-2 border-primary px-5 py-2.5 mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
+              transition={{ delay: 0.3, duration: 0.3 }}
             >
-              <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-              <span className="text-sm font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              <Sparkles className="h-4 w-4" />
+              <span className="text-sm font-black uppercase tracking-widest">
                 #1 Marketplace Source Code Việt Nam
               </span>
-              <Star className="h-4 w-4 text-accent" />
             </motion.div>
 
             {/* Title with text reveal */}
             <motion.h1 
-              className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
+              className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-[0.9] uppercase tracking-tight"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.7 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
             >
               Khám phá{' '}
-              <span className="text-gradient animate-gradient bg-[length:200%_200%]">
+              <span className="text-primary">
                 Source Code
               </span>
               <br />
-              <span className="text-foreground/90">Chất lượng cao</span>
+              <span className="text-foreground/80">Chất lượng cao</span>
             </motion.h1>
 
             {/* Description */}
             <motion.p 
-              className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto"
+              className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto font-mono"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
+              transition={{ delay: 0.5, duration: 0.4 }}
             >
               Hàng nghìn source code từ web app, mobile đến game.
               Tiết kiệm thời gian với code sẵn sàng sử dụng.
@@ -465,8 +424,8 @@ export default function Index() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.6 }}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 blur-xl" />
-              <div className="relative glass-strong rounded-2xl p-2">
+              <div className="relative">
+                <div className="relative border-2 border-border p-1 bg-card">
                 <div className="relative">
                   <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
@@ -474,15 +433,16 @@ export default function Index() {
                     placeholder="Tìm kiếm source code, templates, plugins..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-14 h-14 text-base rounded-xl bg-background/50 border-0 focus:ring-2 focus:ring-primary/50"
+                    className="pl-14 h-14 text-base rounded-none bg-background border-2 border-border focus:ring-2 focus:ring-primary focus:border-primary"
                   />
                   <Button 
                     variant="gradient" 
                     size="lg" 
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 rounded-none"
                   >
                     Tìm kiếm
                   </Button>
+                </div>
                 </div>
               </div>
             </motion.div>
