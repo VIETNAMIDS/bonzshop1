@@ -391,19 +391,8 @@ export function protectSourceCode() {
     return false;
   }, true);
 
-  // Liên tục clear debugger trong console
-  const antiDebug = () => {
-    const start = performance.now();
-    // eslint-disable-next-line no-debugger
-    debugger;
-    const end = performance.now();
-    // Nếu debugger mở, thời gian sẽ > 100ms
-    if (end - start > 100) {
-      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;color:#ff0;font-size:24px;font-family:monospace;text-align:center;padding:20px;">⚠️ Bạn đang cố xem source code?<br/>Mày tuổi cc gì mà đòi xem code tao 😂<br/><br/>Tất cả hành vi đã được ghi lại.</div>';
-    }
-  };
-  
-  setInterval(antiDebug, 3000);
+  // Anti-debug: chỉ log cảnh báo, KHÔNG xóa body (tránh false-positive trên máy chậm)
+  // DevTools detection đã được xử lý ở detectDevTools()
 
   // Override toString để chống console inspect
   const originalToString = Function.prototype.toString;
