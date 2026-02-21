@@ -120,8 +120,8 @@ export default function QrLoginDesktop({ onLoginSuccess }: QrLoginDesktopProps) 
     return () => clearInterval(interval);
   }, [expiresAt]);
 
-  // Use published URL if available, otherwise current origin
-  const baseUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
+  // Always use the published URL so scanned QR opens the correct site
+  const baseUrl = import.meta.env.VITE_SITE_URL || 'https://bonzshop.lovable.app';
   const qrUrl = qrToken
     ? `${baseUrl}/qr-confirm?qr_token=${qrToken}`
     : '';
