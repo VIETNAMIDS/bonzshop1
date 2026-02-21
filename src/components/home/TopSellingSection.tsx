@@ -63,31 +63,31 @@ export function TopSellingSection() {
         <ScrollReveal variant="fadeUp">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-warning/20 to-warning/10 border border-warning/30 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-none bg-warning/10 border-2 border-warning/30 flex items-center justify-center">
                 <TrendingUp className="h-7 w-7 text-warning" />
               </div>
               <div>
-                <h2 className="text-2xl md:text-3xl font-bold text-foreground">Bán chạy nhất</h2>
-                <p className="text-sm text-muted-foreground">Sản phẩm được mua nhiều nhất</p>
+                <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-foreground">Bán chạy nhất</h2>
+                <p className="text-sm text-muted-foreground font-mono">Sản phẩm được mua nhiều nhất</p>
               </div>
             </div>
 
             {/* Realtime stats */}
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4">
               <motion.div 
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-success/10 border border-success/20"
+                className="flex items-center gap-2 px-4 py-2 rounded-none bg-success/10 border-2 border-success/30"
                 animate={{ opacity: [0.7, 1, 0.7] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                <div className="w-2 h-2 bg-success animate-pulse" />
                 <Eye className="h-4 w-4 text-success" />
-                <span className="text-sm font-medium text-success">
+                <span className="text-sm font-bold text-success font-mono">
                   {Math.max(5, viewingNow)} đang xem
                 </span>
               </motion.div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-none bg-primary/10 border-2 border-primary/30">
                 <ShoppingBag className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium text-primary">
+                <span className="text-sm font-bold text-primary font-mono">
                   <CountUp end={todaySales} /> đơn hôm nay
                 </span>
               </div>
@@ -99,8 +99,8 @@ export function TopSellingSection() {
           {products.map((product, index) => (
             <StaggerItem key={product.id}>
               <div className="relative">
-                <div className="absolute -top-2 -left-2 z-10 w-8 h-8 rounded-full bg-gradient-to-br from-warning to-warning/70 flex items-center justify-center shadow-lg">
-                  <span className="text-xs font-bold text-warning-foreground">#{index + 1}</span>
+                <div className="absolute -top-2 -left-2 z-10 w-8 h-8 bg-warning border-2 border-warning-foreground/20 flex items-center justify-center">
+                  <span className="text-xs font-black text-warning-foreground font-mono">#{index + 1}</span>
                 </div>
                 <ProductCard product={product} />
               </div>
