@@ -4,11 +4,12 @@ import App from "./App.tsx";
 import "./index.css";
 import { initSecuritySuite } from "./lib/security";
 
-// Initialize security protections before app renders
-initSecuritySuite();
-
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
 );
+
+// Initialize security protections AFTER React has mounted
+// Running before mount can break React internals (ReactCurrentBatchConfig)
+setTimeout(() => initSecuritySuite(), 0);
