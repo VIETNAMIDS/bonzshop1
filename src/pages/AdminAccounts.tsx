@@ -536,21 +536,26 @@ export default function AdminAccounts() {
                 />
 
                 {/* Requires buyer email checkbox */}
-                <div className="flex items-start gap-3 p-3 rounded-lg border border-border bg-secondary/30">
-                  <input
-                    type="checkbox"
-                    id="requires_buyer_email"
-                    checked={formData.requires_buyer_email}
-                    onChange={(e) => setFormData({ ...formData, requires_buyer_email: e.target.checked })}
-                    className="mt-1 h-4 w-4 rounded border-border accent-primary"
-                  />
-                  <label htmlFor="requires_buyer_email" className="cursor-pointer">
+                <label 
+                  htmlFor="requires_buyer_email" 
+                  className="flex items-start gap-3 p-3 rounded-lg border border-border bg-secondary/30 cursor-pointer select-none"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setFormData(prev => ({ ...prev, requires_buyer_email: !prev.requires_buyer_email }));
+                  }}
+                >
+                  <div className={`mt-0.5 h-5 w-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${formData.requires_buyer_email ? 'bg-primary border-primary' : 'border-muted-foreground/40'}`}>
+                    {formData.requires_buyer_email && (
+                      <CheckCircle className="h-3.5 w-3.5 text-primary-foreground" />
+                    )}
+                  </div>
+                  <div>
                     <span className="text-sm font-medium">📧 Cần email kích hoạt</span>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Khách hàng chỉ cần nhập Gmail, chờ 30p-1h để bạn kích hoạt (VD: ChatGPT, Netflix...)
+                      Số lượng không giới hạn. Khách chỉ cần nhập Gmail + chọn số tháng, chờ 30p-1h để kích hoạt.
                     </p>
-                  </label>
-                </div>
+                  </div>
+                </label>
 
                 <div className="flex gap-3 pt-2">
                   <Button type="button" variant="outline" onClick={resetForm} className="flex-1 h-12">

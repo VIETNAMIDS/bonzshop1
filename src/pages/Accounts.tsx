@@ -85,6 +85,7 @@ const Accounts = () => {
   const [submitting, setSubmitting] = useState(false);
   const [userCoinBalance, setUserCoinBalance] = useState(0);
   const [buyerEmail, setBuyerEmail] = useState("");
+  const [selectedMonths, setSelectedMonths] = useState(1);
 
   // Orders
   const [userOrders, setUserOrders] = useState<Order[]>([]);
@@ -205,6 +206,7 @@ const Accounts = () => {
     if (!user) { navigate("/auth"); return; }
     setSelectedProduct(product);
     setQuantity(1);
+    setSelectedMonths(1);
     setBuyerEmail(user.email || "");
     setShowPurchaseModal(true);
   };
@@ -212,8 +214,10 @@ const Accounts = () => {
   const handlePurchase = async () => {
     if (!selectedProduct || !user) return;
 
+    const isActivationType = selectedProduct.requires_buyer_email;
+
     // Validate buyer email if required
-    if (selectedProduct.requires_buyer_email && !buyerEmail.trim()) {
+    if (isActivationType && !buyerEmail.trim()) {
       toast.error("Vui lòng nhập email để kích hoạt tài khoản!");
       return;
     }
@@ -221,8 +225,9 @@ const Accounts = () => {
     setSubmitting(true);
 
     try {
-      const accountsToBuy = selectedProduct.accounts.slice(0, quantity);
-      const totalCoinCost = Math.ceil(selectedProduct.price / 1000) * quantity;
+      const coinPerUnit = Math.ceil(selectedProduct.price / 1000);
+      const effectiveQty = isActivationType ? selectedMonths : quantity;
+      const totalCoinCost = coinPerUnit * effectiveQty;
 
       if (userCoinBalance < totalCoinCost) {
         toast.error(`Không đủ xu! Cần ${totalCoinCost} xu, bạn có ${userCoinBalance} xu.`);
@@ -237,30 +242,43 @@ const Accounts = () => {
         .eq('user_id', user.id);
       if (coinError) throw coinError;
 
-      // Create orders and mark accounts as sold
-      const needsActivation = selectedProduct.requires_buyer_email;
-      for (const acc of accountsToBuy) {
+      if (isActivationType) {
+        // For activation type: create one order with months info, no need to mark account as sold
+        const acc = selectedProduct.accounts[0];
         await supabase.from("orders").insert({
           account_id: acc.id,
           buyer_id: user.id,
           user_id: user.id,
-          amount: Math.ceil(acc.price / 1000),
-          status: needsActivation ? 'pending' : 'approved',
-          approved_at: needsActivation ? null : new Date().toISOString(),
-          approved_by: needsActivation ? null : user.id,
-          buyer_email: needsActivation ? buyerEmail.trim() : null,
+          amount: totalCoinCost,
+          status: 'pending',
+          buyer_email: buyerEmail.trim(),
+          login_credentials: { months: selectedMonths, activation_email: buyerEmail.trim() },
         });
+      } else {
+        // Normal accounts: mark each as sold
+        const accountsToBuy = selectedProduct.accounts.slice(0, quantity);
+        for (const acc of accountsToBuy) {
+          await supabase.from("orders").insert({
+            account_id: acc.id,
+            buyer_id: user.id,
+            user_id: user.id,
+            amount: Math.ceil(acc.price / 1000),
+            status: 'approved',
+            approved_at: new Date().toISOString(),
+            approved_by: user.id,
+          });
 
-        await supabase.from('accounts').update({
-          is_sold: true,
-          sold_to: user.id,
-          sold_at: new Date().toISOString()
-        }).eq('id', acc.id);
+          await supabase.from('accounts').update({
+            is_sold: true,
+            sold_to: user.id,
+            sold_at: new Date().toISOString()
+          }).eq('id', acc.id);
+        }
       }
 
       setUserCoinBalance(prev => prev - totalCoinCost);
-      if (needsActivation) {
-        toast.success(`Đặt hàng thành công! Vui lòng chờ 30 phút - 1 tiếng để kích hoạt.`);
+      if (isActivationType) {
+        toast.success(`Đặt hàng thành công ${selectedMonths} tháng! Vui lòng chờ 30 phút - 1 tiếng để kích hoạt.`);
       } else {
         toast.success(`Mua thành công ${quantity} tài khoản!`);
       }
@@ -405,22 +423,25 @@ const Accounts = () => {
                       )}
 
                       {/* Stock badge */}
-                      {product.availableCount <= 3 && product.availableCount > 0 && !product.is_free && (
+                      {product.requires_buyer_email ? (
+                        <div className="absolute top-2 left-2">
+                          <Badge className="text-[10px] px-1.5 py-0.5 bg-primary/90">
+                            ♾️ Không giới hạn
+                          </Badge>
+                        </div>
+                      ) : product.availableCount <= 3 && product.availableCount > 0 && !product.is_free ? (
                         <div className="absolute top-2 left-2">
                           <Badge variant="destructive" className="text-[10px] px-1.5 py-0.5">
                             Còn {product.availableCount}
                           </Badge>
                         </div>
-                      )}
-
-                      {/* Available count */}
-                      {product.availableCount > 3 && (
+                      ) : product.availableCount > 3 ? (
                         <div className="absolute top-2 left-2">
                           <Badge className="text-[10px] px-1.5 py-0.5 bg-primary/90">
                             Còn {product.availableCount}
                           </Badge>
                         </div>
-                      )}
+                      ) : null}
 
                       {product.is_free && (
                         <div className="absolute top-2 right-2">
@@ -477,9 +498,11 @@ const Accounts = () => {
             </DialogHeader>
 
             {selectedProduct && (() => {
+              const isActivationType = selectedProduct.requires_buyer_email;
               const coinPerUnit = Math.ceil(selectedProduct.price / 1000);
-              const totalCoin = coinPerUnit * quantity;
-              const maxQty = selectedProduct.availableCount;
+              const effectiveQuantity = isActivationType ? selectedMonths : quantity;
+              const totalCoin = coinPerUnit * effectiveQuantity;
+              const maxQty = isActivationType ? 12 : selectedProduct.availableCount;
 
               return (
                 <div className="space-y-4">
@@ -494,70 +517,98 @@ const Accounts = () => {
                     )}
                     <div className="flex-1">
                       <h4 className="font-medium text-sm line-clamp-2">{selectedProduct.title}</h4>
-                      <p className="text-primary font-bold mt-1">{formatPrice(selectedProduct.price)} / tài khoản</p>
-                      <p className="text-xs text-muted-foreground">{coinPerUnit} xu / tài khoản</p>
+                      <p className="text-primary font-bold mt-1">
+                        {formatPrice(selectedProduct.price)} / {isActivationType ? 'tháng' : 'tài khoản'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {coinPerUnit} xu / {isActivationType ? 'tháng' : 'tài khoản'}
+                      </p>
                     </div>
                   </div>
 
-                  {/* Quantity selector */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Số lượng (tối đa {maxQty})</label>
-                    <div className="flex items-center gap-3">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-10 w-10"
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        disabled={quantity <= 1}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <Input
-                        type="number"
-                        min={1}
-                        max={maxQty}
-                        value={quantity}
-                        onChange={(e) => setQuantity(Math.min(maxQty, Math.max(1, parseInt(e.target.value) || 1)))}
-                        className="w-20 text-center font-bold text-lg"
-                      />
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-10 w-10"
-                        onClick={() => setQuantity(Math.min(maxQty, quantity + 1))}
-                        disabled={quantity >= maxQty}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Buyer email for activation */}
-                  {selectedProduct.requires_buyer_email && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">📧 Email kích hoạt <span className="text-destructive">*</span></label>
-                      <p className="text-xs text-muted-foreground">Nhập Gmail/Email của bạn để chúng tôi kích hoạt tài khoản cho bạn.</p>
-                      <Input
-                        type="email"
-                        placeholder="Nhập Gmail của bạn..."
-                        value={buyerEmail}
-                        onChange={(e) => setBuyerEmail(e.target.value)}
-                      />
-                      <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-xs text-blue-600 dark:text-blue-400">
-                        ⏳ Sau khi mua, vui lòng chờ <strong>30 phút - 1 tiếng</strong> để chúng tôi kích hoạt tài khoản vào email của bạn.
+                  {isActivationType ? (
+                    <>
+                      {/* Duration selector for activation type */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">⏱️ Chọn thời hạn</label>
+                        <div className="grid grid-cols-4 gap-2">
+                          {[1, 3, 6, 12].map((m) => (
+                            <button
+                              key={m}
+                              type="button"
+                              onClick={() => setSelectedMonths(m)}
+                              className={`p-2 rounded-lg border text-center transition-all text-sm font-medium ${
+                                selectedMonths === m 
+                                  ? 'border-primary bg-primary/10 text-primary' 
+                                  : 'border-border hover:border-primary/50'
+                              }`}
+                            >
+                              {m} tháng
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+
+                      {/* Buyer email */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">📧 Email kích hoạt <span className="text-destructive">*</span></label>
+                        <Input
+                          type="email"
+                          placeholder="Nhập Gmail của bạn..."
+                          value={buyerEmail}
+                          onChange={(e) => setBuyerEmail(e.target.value)}
+                        />
+                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-xs text-blue-600 dark:text-blue-400">
+                          ⏳ Sau khi mua, vui lòng chờ <strong>30 phút - 1 tiếng</strong> để chúng tôi kích hoạt tài khoản vào email của bạn.
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* Quantity selector for normal accounts */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Số lượng (tối đa {maxQty})</label>
+                        <div className="flex items-center gap-3">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-10 w-10"
+                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                            disabled={quantity <= 1}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={maxQty}
+                            value={quantity}
+                            onChange={(e) => setQuantity(Math.min(maxQty, Math.max(1, parseInt(e.target.value) || 1)))}
+                            className="w-20 text-center font-bold text-lg"
+                          />
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-10 w-10"
+                            onClick={() => setQuantity(Math.min(maxQty, quantity + 1))}
+                            disabled={quantity >= maxQty}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </>
                   )}
 
                   {/* Summary */}
                   <div className="space-y-2 p-3 rounded-lg border border-border">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Đơn giá:</span>
-                      <span>{coinPerUnit} xu</span>
+                      <span>{coinPerUnit} xu / {isActivationType ? 'tháng' : 'tài khoản'}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Số lượng:</span>
-                      <span>x{quantity}</span>
+                      <span className="text-muted-foreground">{isActivationType ? 'Thời hạn:' : 'Số lượng:'}</span>
+                      <span>{isActivationType ? `${selectedMonths} tháng` : `x${quantity}`}</span>
                     </div>
                     <div className="border-t border-border pt-2 flex justify-between font-bold">
                       <span>Tổng cộng:</span>
@@ -577,7 +628,7 @@ const Accounts = () => {
 
             <DialogFooter className="gap-2">
               <Button variant="outline" onClick={() => setShowPurchaseModal(false)}>Hủy</Button>
-              {selectedProduct && userCoinBalance < Math.ceil(selectedProduct.price / 1000) * quantity ? (
+              {selectedProduct && userCoinBalance < Math.ceil(selectedProduct.price / 1000) * (selectedProduct.requires_buyer_email ? selectedMonths : quantity) ? (
                 <Button onClick={() => { setShowPurchaseModal(false); navigate('/buy-coins'); }}>Nạp xu</Button>
               ) : (
                 <Button onClick={handlePurchase} disabled={submitting}>
