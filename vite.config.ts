@@ -27,10 +27,7 @@ export default defineConfig(({ mode }) => ({
         pure_funcs: ['console.log', 'console.debug', 'console.info', 'console.warn', 'console.table', 'console.dir', 'console.trace'],
       },
       mangle: {
-        toplevel: true,
-        properties: {
-          regex: /^_/,
-        },
+        toplevel: false,
       },
       format: {
         comments: false,
