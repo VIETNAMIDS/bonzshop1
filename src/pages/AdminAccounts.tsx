@@ -250,13 +250,14 @@ export default function AdminAccounts() {
         return;
       }
 
+      const isActivationType = formData.requires_buyer_email;
       const accountData = {
         title: formData.title.trim(),
         description: formData.description.trim() || undefined,
-        account_username: formData.account_username.trim(),
-        account_password: formData.account_password,
-        account_email: formData.account_email.trim() || undefined,
-        account_phone: formData.account_phone.trim() || undefined,
+        account_username: isActivationType ? 'activation' : formData.account_username.trim(),
+        account_password: isActivationType ? 'activation' : formData.account_password,
+        account_email: isActivationType ? undefined : (formData.account_email.trim() || undefined),
+        account_phone: isActivationType ? undefined : (formData.account_phone.trim() || undefined),
         price: parseFloat(formData.price) || 0,
         category: formData.category,
         image_url: formData.image_url.trim() || undefined,
@@ -402,50 +403,54 @@ export default function AdminAccounts() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium">Tên đăng nhập *</label>
-                    <Input
-                      value={formData.account_username}
-                      onChange={(e) => setFormData({ ...formData, account_username: e.target.value })}
-                      placeholder="username"
-                      required
-                      className="h-12"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium">Mật khẩu *</label>
-                    <Input
-                      value={formData.account_password}
-                      onChange={(e) => setFormData({ ...formData, account_password: e.target.value })}
-                      placeholder="••••••••"
-                      required
-                      className="h-12"
-                    />
-                  </div>
-                </div>
+                {!formData.requires_buyer_email && (
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium">Tên đăng nhập *</label>
+                        <Input
+                          value={formData.account_username}
+                          onChange={(e) => setFormData({ ...formData, account_username: e.target.value })}
+                          placeholder="username"
+                          required
+                          className="h-12"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium">Mật khẩu *</label>
+                        <Input
+                          value={formData.account_password}
+                          onChange={(e) => setFormData({ ...formData, account_password: e.target.value })}
+                          placeholder="••••••••"
+                          required
+                          className="h-12"
+                        />
+                      </div>
+                    </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium">Email TK</label>
-                    <Input
-                      type="email"
-                      value={formData.account_email}
-                      onChange={(e) => setFormData({ ...formData, account_email: e.target.value })}
-                      placeholder="email@example.com"
-                      className="h-12"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium">SĐT TK</label>
-                    <Input
-                      value={formData.account_phone}
-                      onChange={(e) => setFormData({ ...formData, account_phone: e.target.value })}
-                      placeholder="0123456789"
-                      className="h-12"
-                    />
-                  </div>
-                </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium">Email TK</label>
+                        <Input
+                          type="email"
+                          value={formData.account_email}
+                          onChange={(e) => setFormData({ ...formData, account_email: e.target.value })}
+                          placeholder="email@example.com"
+                          className="h-12"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium">SĐT TK</label>
+                        <Input
+                          value={formData.account_phone}
+                          onChange={(e) => setFormData({ ...formData, account_phone: e.target.value })}
+                          placeholder="0123456789"
+                          className="h-12"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
