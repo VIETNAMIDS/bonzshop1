@@ -9,6 +9,7 @@ import { FlashSaleSection } from '@/components/home/FlashSaleSection';
 import { TopSellingSection } from '@/components/home/TopSellingSection';
 import { TestimonialsSection } from '@/components/home/TestimonialsSection';
 import { SocialProofPopup } from '@/components/home/SocialProofPopup';
+import { TopDepositSection } from '@/components/home/TopDepositSection';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -533,6 +534,9 @@ export default function Index() {
 
       {/* Top Selling Section */}
       <TopSellingSection />
+
+      {/* Top Deposit Section */}
+      <TopDepositSection />
 
       {/* Features Section - Stagger animation */}
       <section className="py-12 px-4 border-y border-border/50">
