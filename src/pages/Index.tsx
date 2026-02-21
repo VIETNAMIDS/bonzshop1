@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, lazy, Suspense } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Search, Filter, Sparkles, ShoppingCart, QrCode, CheckCircle, Loader2, Clock, XCircle, Download, TrendingUp, Users, Package, Star, ArrowRight, Zap, Shield, Rocket } from 'lucide-react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { Navbar } from '@/components/Navbar';
 import { HeroBackgroundMedia } from '@/components/home/HeroBackgroundMedia';
 import { ProductCard } from '@/components/ProductCard';
@@ -15,6 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import bonzshopLogo from '@/assets/bonzshop-logo.png';
+import { ScrollReveal, StaggerContainer, StaggerItem, CountUp, FloatingElement } from '@/components/motion';
 
 // Lazy load 3D components for performance
 const Scene3DBackground = lazy(() => import('@/components/3d/Scene3DBackground').then(m => ({ default: m.Scene3DBackground })));
@@ -99,6 +101,12 @@ export default function Index() {
   const [pendingCoinProduct, setPendingCoinProduct] = useState<Product | null>(null);
   const [pendingCoinRequired, setPendingCoinRequired] = useState<number | null>(null);
 
+  // Parallax scroll
+  const { scrollY } = useScroll();
+  const heroY = useTransform(scrollY, [0, 500], [0, 150]);
+  const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
+  const heroScale = useTransform(scrollY, [0, 400], [1, 0.95]);
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/auth');
@@ -134,7 +142,7 @@ export default function Index() {
       
       setStats({
         totalProducts: productsRes.count || 0,
-        totalUsers: 1000, // Placeholder
+        totalUsers: 1000,
         totalOrders: ordersRes.count || 0
       });
     } catch (err) {
@@ -315,10 +323,12 @@ export default function Index() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <img 
+        <motion.img 
           src={bonzshopLogo} 
           alt="BonzShop" 
-          className="h-40 md:h-56 w-auto animate-pulse"
+          className="h-40 md:h-56 w-auto"
+          animate={{ scale: [1, 1.05, 1], opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         />
       </div>
     );
@@ -335,57 +345,121 @@ export default function Index() {
         <Scene3DBackground />
       </Suspense>
 
-      {/* Hero Section - New Design */}
-      <section className="relative overflow-hidden py-16 md:py-24 px-4">
+      {/* Hero Section - Parallax */}
+      <motion.section 
+        className="relative overflow-hidden py-16 md:py-24 px-4"
+        style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
+      >
         <HeroBackgroundMedia />
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-[10%] w-72 h-72 bg-primary/20 rounded-full blur-[120px] animate-float" />
-          <div className="absolute top-40 right-[15%] w-96 h-96 bg-accent/15 rounded-full blur-[100px] animate-float-reverse" />
-          <div className="absolute bottom-20 left-[30%] w-80 h-80 bg-[hsl(20,90%,55%)]/10 rounded-full blur-[100px] animate-float" />
+          <FloatingElement className="absolute top-20 left-[10%]" yRange={[-20, 20]} duration={8}>
+            <div className="w-72 h-72 bg-primary/20 rounded-full blur-[120px]" />
+          </FloatingElement>
+          <FloatingElement className="absolute top-40 right-[15%]" yRange={[-15, 25]} duration={10}>
+            <div className="w-96 h-96 bg-accent/15 rounded-full blur-[100px]" />
+          </FloatingElement>
+          <FloatingElement className="absolute bottom-20 left-[30%]" xRange={[-15, 15]} duration={7}>
+            <div className="w-80 h-80 bg-[hsl(20,90%,55%)]/10 rounded-full blur-[100px]" />
+          </FloatingElement>
         </div>
 
         {/* Grid pattern overlay */}
         <div className="absolute inset-0 grid-pattern opacity-50" />
 
+        {/* Animated orbs */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {!isMobile && [...Array(5)].map((_, i) => (
+            <FloatingElement 
+              key={i} 
+              className="absolute" 
+              xRange={[-30, 30]} 
+              yRange={[-40, 40]} 
+              duration={5 + i * 2}
+            >
+              <div 
+                className="w-2 h-2 rounded-full bg-primary/40"
+                style={{
+                  top: `${20 + i * 15}%`,
+                  left: `${10 + i * 20}%`,
+                  boxShadow: '0 0 20px hsl(280 85% 65% / 0.4)',
+                }}
+              />
+            </FloatingElement>
+          ))}
+        </div>
+
         <div className="container mx-auto relative">
           <div className="text-center max-w-4xl mx-auto">
-            {/* Logo */}
-            <div className="mx-auto mb-8 animate-fade-in">
-              <img 
+            {/* Logo with entrance animation */}
+            <motion.div 
+              className="mx-auto mb-8"
+              initial={{ opacity: 0, scale: 0.5, rotateY: -30 }}
+              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
+              <motion.img 
                 src={bonzshopLogo} 
                 alt="BonzShop" 
                 className="h-48 md:h-64 lg:h-80 w-auto object-contain mx-auto drop-shadow-[0_0_50px_rgba(168,85,247,0.5)]"
+                animate={{ 
+                  filter: [
+                    'drop-shadow(0 0 30px rgba(168,85,247,0.3))',
+                    'drop-shadow(0 0 60px rgba(168,85,247,0.6))',
+                    'drop-shadow(0 0 30px rgba(168,85,247,0.3))',
+                  ]
+                }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               />
-            </div>
+            </motion.div>
 
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 px-5 py-2.5 mb-8 animate-fade-in backdrop-blur-sm">
+            <motion.div 
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 px-5 py-2.5 mb-8 backdrop-blur-sm"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
               <Sparkles className="h-4 w-4 text-primary animate-pulse" />
               <span className="text-sm font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 #1 Marketplace Source Code Việt Nam
               </span>
               <Star className="h-4 w-4 text-accent" />
-            </div>
+            </motion.div>
 
-            {/* Title */}
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in leading-tight" style={{ animationDelay: '100ms' }}>
+            {/* Title with text reveal */}
+            <motion.h1 
+              className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.7 }}
+            >
               Khám phá{' '}
               <span className="text-gradient animate-gradient bg-[length:200%_200%]">
                 Source Code
               </span>
               <br />
               <span className="text-foreground/90">Chất lượng cao</span>
-            </h1>
+            </motion.h1>
 
             {/* Description */}
-            <p className="text-lg md:text-xl text-muted-foreground mb-10 animate-fade-in max-w-2xl mx-auto" style={{ animationDelay: '200ms' }}>
+            <motion.p 
+              className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+            >
               Hàng nghìn source code từ web app, mobile đến game.
               Tiết kiệm thời gian với code sẵn sàng sử dụng.
-            </p>
+            </motion.p>
 
             {/* Search */}
-            <div className="relative max-w-2xl mx-auto animate-fade-in mb-12" style={{ animationDelay: '300ms' }}>
+            <motion.div 
+              className="relative max-w-2xl mx-auto mb-12"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+            >
               <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 blur-xl" />
               <div className="relative glass-strong rounded-2xl p-2">
                 <div className="relative">
@@ -406,54 +480,79 @@ export default function Index() {
                   </Button>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 md:gap-8 max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '400ms' }}>
-              <div className="stats-card rounded-xl p-4 md:p-6 transition-all duration-300">
+            {/* Stats with CountUp */}
+            <motion.div 
+              className="grid grid-cols-3 gap-4 md:gap-8 max-w-2xl mx-auto"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7, duration: 0.6 }}
+            >
+              <motion.div 
+                className="stats-card rounded-xl p-4 md:p-6 transition-all duration-300"
+                whileHover={{ scale: 1.05, boxShadow: '0 0 40px hsl(280 85% 65% / 0.3)' }}
+              >
                 <Package className="h-6 w-6 md:h-8 md:w-8 text-primary mx-auto mb-2" />
-                <div className="text-2xl md:text-3xl font-bold text-foreground">{stats.totalProducts}+</div>
+                <div className="text-2xl md:text-3xl font-bold text-foreground">
+                  <CountUp end={stats.totalProducts} suffix="+" />
+                </div>
                 <div className="text-xs md:text-sm text-muted-foreground">Sản phẩm</div>
-              </div>
-              <div className="stats-card rounded-xl p-4 md:p-6 transition-all duration-300">
+              </motion.div>
+              <motion.div 
+                className="stats-card rounded-xl p-4 md:p-6 transition-all duration-300"
+                whileHover={{ scale: 1.05, boxShadow: '0 0 40px hsl(330 85% 60% / 0.3)' }}
+              >
                 <Users className="h-6 w-6 md:h-8 md:w-8 text-accent mx-auto mb-2" />
-                <div className="text-2xl md:text-3xl font-bold text-foreground">{stats.totalUsers}+</div>
+                <div className="text-2xl md:text-3xl font-bold text-foreground">
+                  <CountUp end={stats.totalUsers} suffix="+" />
+                </div>
                 <div className="text-xs md:text-sm text-muted-foreground">Người dùng</div>
-              </div>
-              <div className="stats-card rounded-xl p-4 md:p-6 transition-all duration-300">
+              </motion.div>
+              <motion.div 
+                className="stats-card rounded-xl p-4 md:p-6 transition-all duration-300"
+                whileHover={{ scale: 1.05, boxShadow: '0 0 40px hsl(20 90% 55% / 0.3)' }}
+              >
                 <TrendingUp className="h-6 w-6 md:h-8 md:w-8 text-[hsl(20,90%,55%)] mx-auto mb-2" />
-                <div className="text-2xl md:text-3xl font-bold text-foreground">{stats.totalOrders}+</div>
+                <div className="text-2xl md:text-3xl font-bold text-foreground">
+                  <CountUp end={stats.totalOrders} suffix="+" />
+                </div>
                 <div className="text-xs md:text-sm text-muted-foreground">Đơn hàng</div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* Features Section */}
+      {/* Features Section - Stagger animation */}
       <section className="py-12 px-4 border-y border-border/50">
         <div className="container mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <StaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {features.map((feature, index) => (
-              <div 
-                key={feature.title}
-                className="flex items-center gap-4 p-4 rounded-xl glass hover:border-primary/30 transition-all duration-300 animate-fade-in"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center shrink-0">
-                  <feature.icon className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground">{feature.description}</p>
-                </div>
-              </div>
+              <StaggerItem key={feature.title}>
+                <motion.div 
+                  className="flex items-center gap-4 p-4 rounded-xl glass hover:border-primary/30 transition-all duration-300"
+                  whileHover={{ scale: 1.03, y: -4 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                >
+                  <motion.div 
+                    className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center shrink-0"
+                    whileHover={{ rotate: 10 }}
+                  >
+                    <feature.icon className="h-6 w-6 text-primary" />
+                  </motion.div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">{feature.title}</h3>
+                    <p className="text-sm text-muted-foreground">{feature.description}</p>
+                  </div>
+                </motion.div>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
 
-      {/* Products Section - New Design */}
+      {/* Products Section */}
       <section className="py-12 md:py-20 px-4 relative">
         {/* Background decoration */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -462,72 +561,74 @@ export default function Index() {
         </div>
         
         <div className="container mx-auto relative">
-          {/* Section Header - Enhanced */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 px-4 py-1.5 mb-4">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Được yêu thích nhất</span>
+          {/* Section Header */}
+          <ScrollReveal variant="fadeUp">
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 px-4 py-1.5 mb-4">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-primary">Được yêu thích nhất</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+                Sản phẩm <span className="text-gradient">nổi bật</span>
+              </h2>
+              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                Khám phá các source code chất lượng cao, được cộng đồng đánh giá tốt
+              </p>
             </div>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-              Sản phẩm <span className="text-gradient">nổi bật</span>
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Khám phá các source code chất lượng cao, được cộng đồng đánh giá tốt
-            </p>
-          </div>
+          </ScrollReveal>
 
-          {/* Filter Tabs - Enhanced */}
-          <div className="flex flex-col items-center gap-6 mb-10">
-            {/* Categories - Horizontal scroll on mobile */}
-            <div className="w-full overflow-x-auto pb-2 scrollbar-hide">
-              <div className="flex gap-2 justify-center min-w-max px-4">
-                <Button
-                  variant={selectedCategory === 'all' ? 'gradient' : 'outline'}
-                  size="sm"
-                  onClick={() => {
-                    setSelectedCategory('all');
-                    setSearchParams({});
-                  }}
-                  className="rounded-full px-5 transition-all duration-300"
-                >
-                  ✨ Tất cả
-                </Button>
-                {categories.map((cat) => (
+          {/* Filter Tabs */}
+          <ScrollReveal variant="fadeUp" delay={0.1}>
+            <div className="flex flex-col items-center gap-6 mb-10">
+              <div className="w-full overflow-x-auto pb-2 scrollbar-hide">
+                <div className="flex gap-2 justify-center min-w-max px-4">
                   <Button
-                    key={cat.id}
-                    variant={selectedCategory === cat.name ? 'gradient' : 'outline'}
+                    variant={selectedCategory === 'all' ? 'gradient' : 'outline'}
                     size="sm"
                     onClick={() => {
-                      setSelectedCategory(cat.name);
-                      setSearchParams({ category: cat.name });
+                      setSelectedCategory('all');
+                      setSearchParams({});
                     }}
-                    className="rounded-full px-5 transition-all duration-300 whitespace-nowrap"
+                    className="rounded-full px-5 transition-all duration-300"
                   >
-                    {cat.name}
+                    ✨ Tất cả
                   </Button>
+                  {categories.map((cat) => (
+                    <Button
+                      key={cat.id}
+                      variant={selectedCategory === cat.name ? 'gradient' : 'outline'}
+                      size="sm"
+                      onClick={() => {
+                        setSelectedCategory(cat.name);
+                        setSearchParams({ category: cat.name });
+                      }}
+                      className="rounded-full px-5 transition-all duration-300 whitespace-nowrap"
+                    >
+                      {cat.name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 p-1 rounded-full bg-secondary/50 backdrop-blur-sm border border-border/50">
+                {filters.map((filter) => (
+                  <button
+                    key={filter.id}
+                    onClick={() => setSelectedFilter(filter.id)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                      selectedFilter === filter.id
+                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {filter.label}
+                  </button>
                 ))}
               </div>
             </div>
+          </ScrollReveal>
 
-            {/* Price filters - Pill style */}
-            <div className="flex items-center gap-2 p-1 rounded-full bg-secondary/50 backdrop-blur-sm border border-border/50">
-              {filters.map((filter) => (
-                <button
-                  key={filter.id}
-                  onClick={() => setSelectedFilter(filter.id)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                    selectedFilter === filter.id
-                      ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {filter.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Products Grid - Enhanced */}
+          {/* Products Grid with stagger */}
           {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(8)].map((_, i) => (
@@ -535,95 +636,107 @@ export default function Index() {
               ))}
             </div>
           ) : filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
-              {filteredProducts.map((product, index) => (
-                <div
-                  key={product.id}
-                  className="animate-fade-in group"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
+            <StaggerContainer 
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8"
+              staggerDelay={0.06}
+            >
+              {filteredProducts.map((product) => (
+                <StaggerItem key={product.id}>
                   <ProductCard product={product} onPurchase={handlePurchase} onBuyWithCoin={handleBuyProductWithCoin} />
-                </div>
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerContainer>
           ) : (
-            <div className="text-center py-20 relative">
-              {/* Empty state with nice design */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-64 h-64 rounded-full bg-gradient-to-br from-primary/10 to-accent/10 blur-3xl" />
-              </div>
-              <div className="relative">
-                <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-secondary to-secondary/50 flex items-center justify-center mx-auto mb-6 border border-border/50">
-                  <Package className="h-12 w-12 text-muted-foreground/30" />
+            <ScrollReveal variant="scaleUp">
+              <div className="text-center py-20 relative">
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-64 h-64 rounded-full bg-gradient-to-br from-primary/10 to-accent/10 blur-3xl" />
                 </div>
-                <h3 className="text-2xl font-bold text-foreground mb-3">
-                  Chưa có sản phẩm nào
-                </h3>
-                <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-                  Thử tìm kiếm với từ khóa khác hoặc thay đổi bộ lọc để khám phá thêm
-                </p>
-                <div className="flex gap-3 justify-center">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      setSearchQuery('');
-                      setSelectedCategory('all');
-                      setSelectedFilter('all');
-                    }}
-                    className="rounded-full"
-                  >
-                    Xóa bộ lọc
-                  </Button>
-                  <Link to="/categories">
-                    <Button variant="gradient" className="rounded-full">
-                      Xem danh mục
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                <div className="relative">
+                  <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-secondary to-secondary/50 flex items-center justify-center mx-auto mb-6 border border-border/50">
+                    <Package className="h-12 w-12 text-muted-foreground/30" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground mb-3">
+                    Chưa có sản phẩm nào
+                  </h3>
+                  <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+                    Thử tìm kiếm với từ khóa khác hoặc thay đổi bộ lọc để khám phá thêm
+                  </p>
+                  <div className="flex gap-3 justify-center">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setSearchQuery('');
+                        setSelectedCategory('all');
+                        setSelectedFilter('all');
+                      }}
+                      className="rounded-full"
+                    >
+                      Xóa bộ lọc
                     </Button>
-                  </Link>
+                    <Link to="/categories">
+                      <Button variant="gradient" className="rounded-full">
+                        Xem danh mục
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
           )}
 
           {/* View all link */}
           {filteredProducts.length > 0 && (
-            <div className="text-center mt-12">
-              <Link to="/categories">
-                <Button variant="outline" size="lg" className="rounded-full group">
-                  Xem tất cả sản phẩm
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-            </div>
+            <ScrollReveal variant="fadeUp">
+              <div className="text-center mt-12">
+                <Link to="/categories">
+                  <Button variant="outline" size="lg" className="rounded-full group">
+                    Xem tất cả sản phẩm
+                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+              </div>
+            </ScrollReveal>
           )}
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 md:py-20 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10" />
-        <div className="absolute inset-0 grid-pattern opacity-30" />
-        
-        <div className="container mx-auto relative">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Bạn là <span className="text-gradient">Developer</span>?
-            </h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              Trở thành seller và bắt đầu kiếm tiền từ source code của bạn ngay hôm nay!
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="gradient" size="xl" onClick={() => navigate('/seller-setup')} className="btn-glow">
-                Trở thành Seller
-                <ArrowRight className="h-5 w-5 ml-2" />
-              </Button>
-              <Button variant="outline" size="xl" onClick={() => navigate('/contact')}>
-                Liên hệ hỗ trợ
-              </Button>
-            </div>
+      <ScrollReveal variant="fadeUp">
+        <section className="py-16 md:py-20 px-4 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10" />
+          <div className="absolute inset-0 grid-pattern opacity-30" />
+          
+          <div className="container mx-auto relative">
+            <motion.div 
+              className="max-w-3xl mx-auto text-center"
+              whileInView={{ scale: [0.95, 1] }}
+              transition={{ duration: 0.6 }}
+            >
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Bạn là <span className="text-gradient">Developer</span>?
+              </h2>
+              <p className="text-lg text-muted-foreground mb-8">
+                Trở thành seller và bắt đầu kiếm tiền từ source code của bạn ngay hôm nay!
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+                  <Button variant="gradient" size="xl" onClick={() => navigate('/seller-setup')} className="btn-glow">
+                    Trở thành Seller
+                    <ArrowRight className="h-5 w-5 ml-2" />
+                  </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+                  <Button variant="outline" size="xl" onClick={() => navigate('/contact')}>
+                    Liên hệ hỗ trợ
+                  </Button>
+                </motion.div>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      </section>
+        </section>
+      </ScrollReveal>
 
       {/* Footer */}
       <footer className="border-t border-border/50 py-8 px-4">
