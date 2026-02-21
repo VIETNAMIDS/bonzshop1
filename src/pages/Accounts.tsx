@@ -238,16 +238,17 @@ const Accounts = () => {
       if (coinError) throw coinError;
 
       // Create orders and mark accounts as sold
+      const needsActivation = selectedProduct.requires_buyer_email;
       for (const acc of accountsToBuy) {
         await supabase.from("orders").insert({
           account_id: acc.id,
           buyer_id: user.id,
           user_id: user.id,
           amount: Math.ceil(acc.price / 1000),
-          status: 'approved',
-          approved_at: new Date().toISOString(),
-          approved_by: user.id,
-          buyer_email: selectedProduct.requires_buyer_email ? buyerEmail.trim() : null,
+          status: needsActivation ? 'pending' : 'approved',
+          approved_at: needsActivation ? null : new Date().toISOString(),
+          approved_by: needsActivation ? null : user.id,
+          buyer_email: needsActivation ? buyerEmail.trim() : null,
         });
 
         await supabase.from('accounts').update({
@@ -258,7 +259,11 @@ const Accounts = () => {
       }
 
       setUserCoinBalance(prev => prev - totalCoinCost);
-      toast.success(`Mua thành công ${quantity} tài khoản!`);
+      if (needsActivation) {
+        toast.success(`Đặt hàng thành công! Vui lòng chờ 30 phút - 1 tiếng để kích hoạt.`);
+      } else {
+        toast.success(`Mua thành công ${quantity} tài khoản!`);
+      }
       setShowPurchaseModal(false);
       fetchAccounts();
       fetchUserOrders();
@@ -531,13 +536,16 @@ const Accounts = () => {
                   {selectedProduct.requires_buyer_email && (
                     <div className="space-y-2">
                       <label className="text-sm font-medium">📧 Email kích hoạt <span className="text-destructive">*</span></label>
-                      <p className="text-xs text-muted-foreground">Tài khoản này cần Gmail/Email của bạn để kích hoạt (ví dụ: ChatGPT, Netflix...)</p>
+                      <p className="text-xs text-muted-foreground">Nhập Gmail/Email của bạn để chúng tôi kích hoạt tài khoản cho bạn.</p>
                       <Input
                         type="email"
-                        placeholder="Nhập email của bạn..."
+                        placeholder="Nhập Gmail của bạn..."
                         value={buyerEmail}
                         onChange={(e) => setBuyerEmail(e.target.value)}
                       />
+                      <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-xs text-blue-600 dark:text-blue-400">
+                        ⏳ Sau khi mua, vui lòng chờ <strong>30 phút - 1 tiếng</strong> để chúng tôi kích hoạt tài khoản vào email của bạn.
+                      </div>
                     </div>
                   )}
 
