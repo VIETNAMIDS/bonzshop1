@@ -98,7 +98,6 @@ Deno.serve(async (req) => {
             user_id,
             status,
             amount,
-            payment_note,
             created_at,
             approved_at,
             approved_by,
