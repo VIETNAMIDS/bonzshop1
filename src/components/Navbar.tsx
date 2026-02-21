@@ -75,8 +75,8 @@ export function Navbar() {
     return (
       <nav className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled 
-          ? 'glass-strong border-b border-primary/10 shadow-[0_5px_30px_-10px_hsl(280_85%_65%/0.2)]' 
-          : 'glass border-b border-border/50'
+          ? 'glass-strong shadow-[0_1px_12px_hsl(0_0%_0%/0.3)]' 
+          : 'glass border-b border-border/30'
       }`}>
         <div className="container mx-auto px-4">
           <div className="flex h-14 items-center justify-between">
@@ -235,7 +235,7 @@ export function Navbar() {
   // Desktop vertical sidebar
   return (
     <aside className={cn(
-      "fixed left-0 top-0 h-screen z-50 transition-all duration-300 glass-strong border-r border-primary/10",
+      "fixed left-0 top-0 h-screen z-50 transition-all duration-300 glass-strong border-r border-border/40",
       sidebarCollapsed ? "w-16" : "w-60"
     )}>
       <div className="flex flex-col h-full p-3">
@@ -274,8 +274,8 @@ export function Navbar() {
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group",
                 isActive(link.to)
-                  ? "bg-primary/20 text-primary shadow-[0_0_20px_-5px_hsl(var(--primary)/0.3)]"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                  ? "bg-primary/15 text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
               )}
               title={sidebarCollapsed ? link.label : undefined}
             >

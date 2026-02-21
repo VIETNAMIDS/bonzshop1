@@ -387,7 +387,7 @@ export default function Index() {
                 style={{
                   top: `${20 + i * 15}%`,
                   left: `${10 + i * 20}%`,
-                  boxShadow: '0 0 20px hsl(280 85% 65% / 0.4)',
+                  boxShadow: '0 0 30px hsl(210 100% 60% / 0.2)',
                 }}
               />
             </FloatingElement>
@@ -406,12 +406,12 @@ export default function Index() {
               <motion.img 
                 src={bonzshopLogo} 
                 alt="BonzShop" 
-                className="h-48 md:h-64 lg:h-80 w-auto object-contain mx-auto drop-shadow-[0_0_50px_rgba(168,85,247,0.5)]"
+                className="h-48 md:h-64 lg:h-80 w-auto object-contain mx-auto drop-shadow-[0_0_30px_rgba(60,130,246,0.3)]"
                 animate={{ 
                   filter: [
-                    'drop-shadow(0 0 30px rgba(168,85,247,0.3))',
-                    'drop-shadow(0 0 60px rgba(168,85,247,0.6))',
-                    'drop-shadow(0 0 30px rgba(168,85,247,0.3))',
+                    'drop-shadow(0 0 20px rgba(60,130,246,0.2))',
+                    'drop-shadow(0 0 40px rgba(60,130,246,0.4))',
+                    'drop-shadow(0 0 20px rgba(60,130,246,0.2))',
                   ]
                 }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -496,7 +496,7 @@ export default function Index() {
             >
               <motion.div 
                 className="stats-card rounded-xl p-4 md:p-6 transition-all duration-300"
-                whileHover={{ scale: 1.05, boxShadow: '0 0 40px hsl(280 85% 65% / 0.3)' }}
+                whileHover={{ scale: 1.03 }}
               >
                 <Package className="h-6 w-6 md:h-8 md:w-8 text-primary mx-auto mb-2" />
                 <div className="text-2xl md:text-3xl font-bold text-foreground">
@@ -506,7 +506,7 @@ export default function Index() {
               </motion.div>
               <motion.div 
                 className="stats-card rounded-xl p-4 md:p-6 transition-all duration-300"
-                whileHover={{ scale: 1.05, boxShadow: '0 0 40px hsl(330 85% 60% / 0.3)' }}
+                whileHover={{ scale: 1.03 }}
               >
                 <Users className="h-6 w-6 md:h-8 md:w-8 text-accent mx-auto mb-2" />
                 <div className="text-2xl md:text-3xl font-bold text-foreground">
@@ -516,9 +516,9 @@ export default function Index() {
               </motion.div>
               <motion.div 
                 className="stats-card rounded-xl p-4 md:p-6 transition-all duration-300"
-                whileHover={{ scale: 1.05, boxShadow: '0 0 40px hsl(20 90% 55% / 0.3)' }}
+                whileHover={{ scale: 1.03 }}
               >
-                <TrendingUp className="h-6 w-6 md:h-8 md:w-8 text-[hsl(20,90%,55%)] mx-auto mb-2" />
+                <TrendingUp className="h-6 w-6 md:h-8 md:w-8 text-accent mx-auto mb-2" />
                 <div className="text-2xl md:text-3xl font-bold text-foreground">
                   <CountUp end={stats.totalOrders} suffix="+" />
                 </div>
