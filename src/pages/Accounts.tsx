@@ -226,8 +226,10 @@ const Accounts = () => {
 
     try {
       const coinPerUnit = Math.ceil(selectedProduct.price / 1000);
-      const effectiveQty = isActivationType ? selectedMonths : quantity;
-      const totalCoinCost = coinPerUnit * effectiveQty;
+      const additionalMonthCost = 50; // 50k = 50 xu per additional month
+      const totalCoinCost = isActivationType 
+        ? coinPerUnit + (selectedMonths - 1) * additionalMonthCost
+        : coinPerUnit * quantity;
 
       if (userCoinBalance < totalCoinCost) {
         toast.error(`Không đủ xu! Cần ${totalCoinCost} xu, bạn có ${userCoinBalance} xu.`);
@@ -500,8 +502,10 @@ const Accounts = () => {
             {selectedProduct && (() => {
               const isActivationType = selectedProduct.requires_buyer_email;
               const coinPerUnit = Math.ceil(selectedProduct.price / 1000);
-              const effectiveQuantity = isActivationType ? selectedMonths : quantity;
-              const totalCoin = coinPerUnit * effectiveQuantity;
+              const additionalMonthCost = 50; // 50 xu per additional month
+              const totalCoin = isActivationType 
+                ? coinPerUnit + (selectedMonths - 1) * additionalMonthCost
+                : coinPerUnit * quantity;
               const maxQty = isActivationType ? 12 : selectedProduct.availableCount;
 
               return (
@@ -532,20 +536,24 @@ const Accounts = () => {
                       <div className="space-y-2">
                         <label className="text-sm font-medium">⏱️ Chọn thời hạn</label>
                         <div className="grid grid-cols-4 gap-2">
-                          {[1, 3, 6, 12].map((m) => (
-                            <button
-                              key={m}
-                              type="button"
-                              onClick={() => setSelectedMonths(m)}
-                              className={`p-2 rounded-lg border text-center transition-all text-sm font-medium ${
-                                selectedMonths === m 
-                                  ? 'border-primary bg-primary/10 text-primary' 
-                                  : 'border-border hover:border-primary/50'
-                              }`}
-                            >
-                              {m} tháng
-                            </button>
-                          ))}
+                          {[1, 3, 6, 12].map((m) => {
+                            const monthTotal = coinPerUnit + (m - 1) * additionalMonthCost;
+                            return (
+                              <button
+                                key={m}
+                                type="button"
+                                onClick={() => setSelectedMonths(m)}
+                                className={`p-2 rounded-lg border text-center transition-all ${
+                                  selectedMonths === m 
+                                    ? 'border-primary bg-primary/10 text-primary' 
+                                    : 'border-border hover:border-primary/50'
+                                }`}
+                              >
+                                <div className="text-sm font-medium">{m} tháng</div>
+                                <div className="text-[10px] text-muted-foreground">{monthTotal} xu</div>
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
 
