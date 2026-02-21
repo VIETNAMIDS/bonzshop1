@@ -42,12 +42,12 @@ export function ProductCard({ product, onPurchase, onBuyWithCoin }: ProductCardP
   return (
     <Tilt3DCard intensity={8}>
       <motion.div 
-        className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card transition-all duration-500 hover:border-primary/50 hover:shadow-[0_0_50px_hsl(280_85%_65%/0.2)]"
-        whileHover={{ y: -8 }}
-        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        className="group relative overflow-hidden rounded-xl border border-border/60 bg-card transition-all duration-300 hover:border-primary/30 hover:shadow-[0_8px_32px_-8px_hsl(210_100%_60%/0.12)]"
+        whileHover={{ y: -4 }}
+        transition={{ type: "spring", stiffness: 400, damping: 30 }}
       >
         {/* Image */}
-        <div className="relative h-52 overflow-hidden bg-gradient-to-br from-primary/10 via-accent/10 to-secondary">
+        <div className="relative h-48 overflow-hidden bg-gradient-to-br from-secondary to-muted">
           {product.image_url ? (
             <motion.img
               src={product.image_url}
@@ -179,8 +179,8 @@ export function ProductCard({ product, onPurchase, onBuyWithCoin }: ProductCardP
         </div>
 
         {/* Glow effect on hover */}
-        <div className="absolute inset-0 -z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-          <div className="absolute inset-0 bg-gradient-to-t from-primary/15 via-accent/5 to-transparent" />
+        <div className="absolute inset-0 -z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/5 via-transparent to-transparent" />
         </div>
       </motion.div>
     </Tilt3DCard>
