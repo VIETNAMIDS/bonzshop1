@@ -335,16 +335,128 @@ function generateIntegrityHash(): string {
   return hash.toString(36);
 }
 
+// 14. ANTI-SOURCE VIEW - Chống xem source code
+export function protectSourceCode() {
+  if (!import.meta.env.PROD) return;
+
+  // Chặn Ctrl+U (View Source)
+  document.addEventListener('keydown', (e) => {
+    // Ctrl+U - View source
+    if (e.ctrlKey && e.key === 'u') {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+    // Ctrl+Shift+I - DevTools
+    if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+    // Ctrl+Shift+J - Console
+    if (e.ctrlKey && e.shiftKey && e.key === 'J') {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+    // Ctrl+Shift+C - Inspect element
+    if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+    // F12
+    if (e.key === 'F12') {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+    // Ctrl+S - Save page
+    if (e.ctrlKey && e.key === 's') {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+    // Ctrl+P - Print page
+    if (e.ctrlKey && e.key === 'p') {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+  }, true);
+
+  // Chặn hoàn toàn right click
+  document.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    return false;
+  }, true);
+
+  // Liên tục clear debugger trong console
+  const antiDebug = () => {
+    const start = performance.now();
+    // eslint-disable-next-line no-debugger
+    debugger;
+    const end = performance.now();
+    // Nếu debugger mở, thời gian sẽ > 100ms
+    if (end - start > 100) {
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;color:#ff0;font-size:24px;font-family:monospace;text-align:center;padding:20px;">⚠️ Bạn đang cố xem source code?<br/>Mày tuổi cc gì mà đòi xem code tao 😂<br/><br/>Tất cả hành vi đã được ghi lại.</div>';
+    }
+  };
+  
+  setInterval(antiDebug, 3000);
+
+  // Override toString để chống console inspect
+  const originalToString = Function.prototype.toString;
+  Function.prototype.toString = function() {
+    if (this === Function.prototype.toString) {
+      return 'function toString() { [native code] }';
+    }
+    // Trả về fake code
+    return 'function() { [protected code] }';
+  };
+}
+
+// 15. DISABLE TEXT SELECTION trên toàn bộ trang (trừ input/textarea)
+export function disableTextSelection() {
+  if (!import.meta.env.PROD) return;
+  
+  const style = document.createElement('style');
+  style.textContent = `
+    * {
+      -webkit-user-select: none !important;
+      -moz-user-select: none !important;
+      -ms-user-select: none !important;
+      user-select: none !important;
+    }
+    input, textarea, [contenteditable="true"], pre, code {
+      -webkit-user-select: text !important;
+      -moz-user-select: text !important;
+      -ms-user-select: text !important;
+      user-select: text !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 // MASTER INIT - Call this once on app startup
 export function initSecuritySuite() {
   protectConsole();
   preventClickjacking();
   enableCopyProtection();
   detectStorageTamper();
+  protectSourceCode();
+  disableTextSelection();
   
   // Dev tools detection - log warning
   detectDevTools(() => {
-    console.warn('[BonzShop] Developer tools detected. All actions are logged.');
+    // Trong production, hiển thị cảnh báo
+    if (import.meta.env.PROD) {
+      console.clear();
+      console.log('%c⚠️ DỪNG LẠI!', 'color: red; font-size: 48px; font-weight: bold;');
+      console.log('%cĐây là tính năng trình duyệt dành cho nhà phát triển.', 'font-size: 16px;');
+      console.log('%cNếu ai đó bảo bạn sao chép-dán nội dung nào đó vào đây, đó là hành vi lừa đảo.', 'font-size: 16px; color: red;');
+      console.log('%cMọi hành vi đều được ghi lại và theo dõi.', 'font-size: 14px; color: orange;');
+    }
   });
 
   // Global keyboard/mouse tracking for behavior analysis
