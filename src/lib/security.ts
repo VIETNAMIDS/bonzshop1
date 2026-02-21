@@ -289,17 +289,18 @@ export function preventClickjacking() {
       const allowedOrigins = [
         'lovable.app',
         'lovable.dev',
+        'lovableproject.com',
         'bonzshop.lovable.app',
+        'webcontainer.io',
       ];
       
       const isAllowed = allowedOrigins.some(origin => parentOrigin.includes(origin));
-      if (!isAllowed) {
-        document.body.innerHTML = '';
-        window.top!.location.href = window.self.location.href;
+      if (!isAllowed && parentOrigin) {
+        // Log warning instead of destroying DOM - prevents false positives
+        console.warn('[Security] Iframe embedding from unauthorized origin detected:', parentOrigin);
       }
     } catch {
-      // Cross-origin - can't read parent, likely malicious
-      // Don't break in development
+      // Cross-origin - can't read parent
     }
   }
 }
