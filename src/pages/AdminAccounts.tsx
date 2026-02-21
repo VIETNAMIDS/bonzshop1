@@ -70,6 +70,7 @@ export default function AdminAccounts() {
     category: '',
     image_url: '',
     seller_id: '',
+    requires_buyer_email: false,
   });
 
   // Verify admin status via backend - SECURE
@@ -199,6 +200,7 @@ export default function AdminAccounts() {
       category: categories[0]?.name || '',
       image_url: '',
       seller_id: '',
+      requires_buyer_email: false,
     });
     setEditingAccount(null);
     setShowForm(false);
@@ -220,6 +222,7 @@ export default function AdminAccounts() {
         category: details.category,
         image_url: details.image_url || '',
         seller_id: details.seller_id || '',
+        requires_buyer_email: details.requires_buyer_email || false,
       });
       setShowForm(true);
     } catch (err) {
@@ -258,6 +261,7 @@ export default function AdminAccounts() {
         category: formData.category,
         image_url: formData.image_url.trim() || undefined,
         seller_id: formData.seller_id,
+        requires_buyer_email: formData.requires_buyer_email,
       };
 
       if (editingAccount) {
@@ -530,6 +534,23 @@ export default function AdminAccounts() {
                   bucket="images"
                   folder="accounts"
                 />
+
+                {/* Requires buyer email checkbox */}
+                <div className="flex items-start gap-3 p-3 rounded-lg border border-border bg-secondary/30">
+                  <input
+                    type="checkbox"
+                    id="requires_buyer_email"
+                    checked={formData.requires_buyer_email}
+                    onChange={(e) => setFormData({ ...formData, requires_buyer_email: e.target.checked })}
+                    className="mt-1 h-4 w-4 rounded border-border accent-primary"
+                  />
+                  <label htmlFor="requires_buyer_email" className="cursor-pointer">
+                    <span className="text-sm font-medium">📧 Cần email kích hoạt</span>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Khách hàng chỉ cần nhập Gmail, chờ 30p-1h để bạn kích hoạt (VD: ChatGPT, Netflix...)
+                    </p>
+                  </label>
+                </div>
 
                 <div className="flex gap-3 pt-2">
                   <Button type="button" variant="outline" onClick={resetForm} className="flex-1 h-12">

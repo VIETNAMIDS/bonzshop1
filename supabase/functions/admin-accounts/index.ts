@@ -93,6 +93,7 @@ Deno.serve(async (req) => {
             is_free: data.is_free || false,
             platform: data.platform || data.category || 'other',
             account_type: data.account_type || 'standard',
+            requires_buyer_email: data.requires_buyer_email || false,
           })
           .select()
           .single();
@@ -139,6 +140,7 @@ Deno.serve(async (req) => {
           category: data.category || 'other',
           image_url: data.image_url || null,
           is_free: data.is_free || false,
+          requires_buyer_email: data.requires_buyer_email || false,
         };
         if (data.seller_id) {
           updateData.seller_id = data.seller_id;
