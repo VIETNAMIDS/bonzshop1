@@ -229,20 +229,29 @@ Deno.serve(async (req) => {
           throw approveError;
         }
 
-        // If it's an account order, mark account as sold
+        // If it's an account order, mark account as sold (skip for activation/requires_buyer_email accounts)
         if (order.account_id) {
-          const { error: soldError } = await supabase
+          // Check if this account requires buyer email (activation type = unlimited sales)
+          const { data: accountInfo } = await supabase
             .from('accounts')
-            .update({
-              is_sold: true,
-              sold_to: order.user_id,
-              sold_at: new Date().toISOString()
-            })
-            .eq('id', order.account_id);
+            .select('requires_buyer_email')
+            .eq('id', order.account_id)
+            .single();
 
-          if (soldError) {
-            console.error('Mark sold error:', soldError);
-            throw soldError;
+          if (!accountInfo?.requires_buyer_email) {
+            const { error: soldError } = await supabase
+              .from('accounts')
+              .update({
+                is_sold: true,
+                sold_to: order.user_id,
+                sold_at: new Date().toISOString()
+              })
+              .eq('id', order.account_id);
+
+            if (soldError) {
+              console.error('Mark sold error:', soldError);
+              throw soldError;
+            }
           }
         }
 

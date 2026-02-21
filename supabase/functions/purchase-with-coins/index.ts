@@ -246,20 +246,27 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Mark account as sold if applicable
+    // Mark account as sold if applicable (skip for activation/requires_buyer_email accounts)
     if (accountId) {
-      const { error: soldError } = await supabase
+      const { data: accountInfo } = await supabase
         .from('accounts')
-        .update({
-          is_sold: true,
-          sold_to: user.id,
-          sold_at: new Date().toISOString()
-        })
-        .eq('id', accountId);
+        .select('requires_buyer_email')
+        .eq('id', accountId)
+        .single();
 
-      if (soldError) {
-        console.error('Failed to mark account as sold:', soldError);
-        // Don't rollback - order is already created, admin can handle manually
+      if (!accountInfo?.requires_buyer_email) {
+        const { error: soldError } = await supabase
+          .from('accounts')
+          .update({
+            is_sold: true,
+            sold_to: user.id,
+            sold_at: new Date().toISOString()
+          })
+          .eq('id', accountId);
+
+        if (soldError) {
+          console.error('Failed to mark account as sold:', soldError);
+        }
       }
     }
 
