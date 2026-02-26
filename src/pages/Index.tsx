@@ -23,6 +23,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import bonzshopLogo from '@/assets/bonzshop-logo.png';
 import { ScrollReveal, StaggerContainer, StaggerItem, CountUp, FloatingElement } from '@/components/motion';
+import { AdvancedSearch } from '@/components/search/AdvancedSearch';
 
 // Lazy load 3D components for performance
 const Scene3DBackground = lazy(() => import('@/components/3d/Scene3DBackground').then(m => ({ default: m.Scene3DBackground })));
@@ -95,6 +96,8 @@ export default function Index() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
+  const [sortBy, setSortBy] = useState('newest');
   const [stats, setStats] = useState<Stats>({ totalProducts: 0, totalUsers: 0, totalOrders: 0 });
 
   // Payment modal
@@ -137,7 +140,7 @@ export default function Index() {
 
   useEffect(() => {
     filterProducts();
-  }, [products, searchQuery, selectedCategory, selectedFilter]);
+  }, [products, searchQuery, selectedCategory, selectedFilter, priceRange, sortBy]);
 
   const fetchStats = async () => {
     try {
@@ -242,6 +245,24 @@ export default function Index() {
       result = result.filter((p) => p.is_free);
     } else if (selectedFilter === 'premium') {
       result = result.filter((p) => !p.is_free);
+    }
+
+    // Price range filter
+    result = result.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
+
+    // Sort
+    switch (sortBy) {
+      case 'price_asc':
+        result.sort((a, b) => a.price - b.price);
+        break;
+      case 'price_desc':
+        result.sort((a, b) => b.price - a.price);
+        break;
+      case 'popular':
+        // Already sorted by created_at from DB, just keep
+        break;
+      default: // newest
+        break;
     }
 
     setFilteredProducts(result);
@@ -552,40 +573,28 @@ export default function Index() {
             </div>
           </ScrollReveal>
 
-          {/* Filter Tabs */}
+          {/* Advanced Search & Filters */}
           <ScrollReveal variant="fadeUp" delay={0.1}>
-            <div className="flex flex-col items-center gap-6 mb-10">
-              <div className="w-full overflow-x-auto pb-2 scrollbar-hide">
-                <div className="flex gap-2 justify-center min-w-max px-4">
-                  <Button
-                    variant={selectedCategory === 'all' ? 'gradient' : 'outline'}
-                    size="sm"
-                    onClick={() => {
-                      setSelectedCategory('all');
-                      setSearchParams({});
-                    }}
-                    className="rounded-full px-5 transition-all duration-300"
-                  >
-                    ✨ Tất cả
-                  </Button>
-                  {categories.map((cat) => (
-                    <Button
-                      key={cat.id}
-                      variant={selectedCategory === cat.name ? 'gradient' : 'outline'}
-                      size="sm"
-                      onClick={() => {
-                        setSelectedCategory(cat.name);
-                        setSearchParams({ category: cat.name });
-                      }}
-                      className="rounded-full px-5 transition-all duration-300 whitespace-nowrap"
-                    >
-                      {cat.name}
-                    </Button>
-                  ))}
-                </div>
-              </div>
+            <div className="mb-10">
+              <AdvancedSearch
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                categories={categories.map(c => ({ id: c.name, name: c.name }))}
+                selectedCategory={selectedCategory}
+                onCategoryChange={(cat) => {
+                  setSelectedCategory(cat);
+                  if (cat === 'all') setSearchParams({});
+                  else setSearchParams({ category: cat });
+                }}
+                priceRange={priceRange}
+                onPriceRangeChange={setPriceRange}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+                totalResults={filteredProducts.length}
+              />
 
-              <div className="flex items-center gap-2 p-1 rounded-full bg-secondary/50 backdrop-blur-sm border border-border/50">
+              {/* Quick filter tabs */}
+              <div className="flex items-center gap-2 p-1 rounded-full bg-secondary/50 backdrop-blur-sm border border-border/50 w-fit mx-auto mt-4">
                 {filters.map((filter) => (
                   <button
                     key={filter.id}

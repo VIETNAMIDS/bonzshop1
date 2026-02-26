@@ -13,3 +13,12 @@ createRoot(document.getElementById("root")!).render(
 // Initialize security protections AFTER React has mounted
 // Running before mount can break React internals (ReactCurrentBatchConfig)
 setTimeout(() => initSecuritySuite(), 0);
+
+// Register PWA Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Service worker registration failed - non-critical
+    });
+  });
+}
