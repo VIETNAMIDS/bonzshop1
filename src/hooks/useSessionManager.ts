@@ -125,18 +125,18 @@ export async function deactivateCurrentSession(): Promise<void> {
     .eq('session_token', sessionToken);
 }
 
-// Check if device already registered an account
-export async function checkDeviceRegistration(): Promise<{ registered: boolean; userId?: string }> {
+// Check if device already registered max accounts (limit: 2)
+export async function checkDeviceRegistration(): Promise<{ registered: boolean; count: number; userId?: string }> {
   const device = await getDeviceInfo();
   
   const { data, error } = await supabase
     .from('device_registrations')
     .select('user_id')
-    .eq('device_fingerprint', device.fingerprint)
-    .maybeSingle();
+    .eq('device_fingerprint', device.fingerprint);
   
-  if (error || !data) return { registered: false };
-  return { registered: true, userId: data.user_id };
+  if (error || !data || data.length === 0) return { registered: false, count: 0 };
+  if (data.length >= 2) return { registered: true, count: data.length, userId: data[0].user_id };
+  return { registered: false, count: data.length, userId: data[0].user_id };
 }
 
 // Register device for a new account
