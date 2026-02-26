@@ -44,6 +44,8 @@ import ApiDocs from "./pages/ApiDocs";
 import QrConfirm from "./pages/QrConfirm";
 import QrScanner from "./pages/QrScanner";
 import TopDeposit from "./pages/TopDeposit";
+import Rewards from "./pages/Rewards";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -95,6 +97,8 @@ const App = () => (
               <Route path="/qr-confirm" element={<QrConfirm />} />
               <Route path="/qr-scan" element={<QrScanner />} />
               <Route path="/top-deposit" element={<TopDeposit />} />
+              <Route path="/rewards" element={<Rewards />} />
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>
