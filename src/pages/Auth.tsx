@@ -355,8 +355,8 @@ export default function Auth() {
         const deviceCheck = await checkDeviceRegistration();
         if (deviceCheck.registered) {
           toast({
-            title: '🚫 Thiết bị đã được đăng ký',
-            description: 'Mỗi thiết bị chỉ được tạo 1 tài khoản. Thiết bị này đã có tài khoản.',
+            title: '🚫 Thiết bị đã đạt giới hạn',
+            description: `Mỗi thiết bị chỉ được tạo tối đa 2 tài khoản. Thiết bị này đã có ${deviceCheck.count} tài khoản.`,
             variant: 'destructive',
             duration: 10000,
           });
