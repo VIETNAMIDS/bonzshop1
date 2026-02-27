@@ -614,6 +614,33 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_checkins: {
+        Row: {
+          checkin_date: string
+          coins_earned: number
+          created_at: string
+          id: string
+          streak: number
+          user_id: string
+        }
+        Insert: {
+          checkin_date?: string
+          coins_earned?: number
+          created_at?: string
+          id?: string
+          streak?: number
+          user_id: string
+        }
+        Update: {
+          checkin_date?: string
+          coins_earned?: number
+          created_at?: string
+          id?: string
+          streak?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_tasks: {
         Row: {
           action_type: string | null
@@ -1817,6 +1844,33 @@ export type Database = {
           reason?: string
           user_id?: string
           warned_by?: string | null
+        }
+        Relationships: []
+      }
+      wheel_spins: {
+        Row: {
+          coins_won: number
+          created_at: string
+          id: string
+          prize_label: string
+          spin_date: string
+          user_id: string
+        }
+        Insert: {
+          coins_won?: number
+          created_at?: string
+          id?: string
+          prize_label: string
+          spin_date?: string
+          user_id: string
+        }
+        Update: {
+          coins_won?: number
+          created_at?: string
+          id?: string
+          prize_label?: string
+          spin_date?: string
+          user_id?: string
         }
         Relationships: []
       }
