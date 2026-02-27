@@ -147,12 +147,22 @@ export function WheelOfFortune() {
   const finishSpin = async (prize: typeof PRIZES[0]) => {
     try {
       const today = new Date().toISOString().split('T')[0];
-      await (supabase as any).from('wheel_spins').insert({
+      const { error } = await (supabase as any).from('wheel_spins').insert({
         user_id: user!.id,
-        prize_type: 'coins',
-        prize_amount: prize.amount,
+        prize_label: prize.label,
+        coins_won: prize.amount,
         spin_date: today,
       });
+
+      if (error) {
+        if (error.code === '23505') {
+          toast.info('Bạn đã quay hôm nay rồi!');
+          setCanSpin(false);
+          setSpinning(false);
+          return;
+        }
+        throw error;
+      }
 
       if (prize.amount > 0) {
         const { data: userCoins } = await supabase
