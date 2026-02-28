@@ -896,6 +896,78 @@ export type Database = {
         }
         Relationships: []
       }
+      keys: {
+        Row: {
+          buyer_id: string | null
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          is_sold: boolean
+          key_value: string
+          price: number
+          seller_id: string | null
+          sold_at: string | null
+          sold_to: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          buyer_id?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          is_sold?: boolean
+          key_value: string
+          price?: number
+          seller_id?: string | null
+          sold_at?: string | null
+          sold_to?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          buyer_id?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          is_sold?: boolean
+          key_value?: string
+          price?: number
+          seller_id?: string | null
+          sold_at?: string | null
+          sold_to?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "keys_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "keys_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string

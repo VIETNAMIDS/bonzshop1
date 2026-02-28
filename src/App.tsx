@@ -18,6 +18,8 @@ import AdminPosts from "./pages/AdminPosts";
 import AdminScamReports from "./pages/AdminScamReports";
 import AdminChildWebsites from "./pages/AdminChildWebsites";
 import Accounts from "./pages/Accounts";
+import Keys from "./pages/Keys";
+import AdminKeys from "./pages/AdminKeys";
 import MyOrders from "./pages/MyOrders";
 import Categories from "./pages/Categories";
 import Free from "./pages/Free";
@@ -62,6 +64,8 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/about" element={<About />} />
               <Route path="/accounts" element={<Accounts />} />
+              <Route path="/keys" element={<Keys />} />
+              <Route path="/admin/keys" element={<AdminKeys />} />
               <Route path="/my-orders" element={<MyOrders />} />
               <Route path="/categories" element={<Categories />} />
               <Route path="/free" element={<Free />} />
