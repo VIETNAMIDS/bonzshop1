@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
  interface TelegramPayload {
-   type: 'new_registration' | 'coin_purchase' | 'product_purchase' | 'account_purchase' | 'seller_upload' | 'seller_sale' | 'withdrawal_request' | 'bot_rental' | 'new_post' | 'new_product' | 'new_account';
+   type: 'new_registration' | 'coin_purchase' | 'product_purchase' | 'account_purchase' | 'seller_upload' | 'seller_sale' | 'withdrawal_request' | 'bot_rental' | 'new_post' | 'new_product' | 'new_account' | 'key_purchase' | 'activation_order';
   userEmail?: string;
   userName?: string;
   amount?: number;
@@ -35,6 +35,10 @@ const corsHeaders = {
  // For bot rental
  botName?: string;
  price?: number;
+ // For activation orders
+ activationEmail?: string;
+ gmailPassword?: string;
+ months?: number;
 }
 
 Deno.serve(async (req) => {
@@ -204,9 +208,25 @@ Deno.serve(async (req) => {
         `📂 Danh mục: ${payload.productType || 'Khác'}\n` +
         `🕐 Thời gian: ${now}\n\n` +
         `👉 Mua ngay tại BonzShop!`;
-      if (payload.receiptUrl) {
+       if (payload.receiptUrl) {
         photoUrl = payload.receiptUrl;
       }
+    } else if (payload.type === 'key_purchase') {
+      message = `🔑 *MUA KEY*\n\n` +
+        `👤 Email: ${payload.userEmail || 'N/A'}\n` +
+        `📦 Key: ${payload.productTitle || 'Không rõ'}\n` +
+        `🪙 Số xu: ${payload.amount?.toLocaleString('vi-VN') || 0} xu\n` +
+        `🕐 Thời gian: ${now}`;
+    } else if (payload.type === 'activation_order') {
+      message = `📱 *ĐƠN KÍCH HOẠT MỚI*\n\n` +
+        `👤 Email người mua: ${payload.userEmail || 'N/A'}\n` +
+        `📦 Sản phẩm: ${payload.productTitle || 'Không rõ'}\n` +
+        `📧 Email kích hoạt: \`${payload.activationEmail || 'N/A'}\`\n` +
+        `🔑 MK Gmail: \`${payload.gmailPassword || 'N/A'}\`\n` +
+        `⏱️ Số tháng: ${payload.months || 1}\n` +
+        `🪙 Số xu: ${payload.amount?.toLocaleString('vi-VN') || 0} xu\n` +
+        `🆔 Mã đơn: \`${payload.orderId?.slice(0, 8) || 'N/A'}\`\n` +
+        `🕐 Thời gian: ${now}`;
     }
 
     if (!message) {

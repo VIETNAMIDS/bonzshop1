@@ -85,6 +85,7 @@ const Accounts = () => {
   const [submitting, setSubmitting] = useState(false);
   const [userCoinBalance, setUserCoinBalance] = useState(0);
   const [buyerEmail, setBuyerEmail] = useState("");
+  const [buyerGmailPassword, setBuyerGmailPassword] = useState("");
   const [selectedMonths, setSelectedMonths] = useState(1);
 
   // Orders
@@ -208,6 +209,7 @@ const Accounts = () => {
     setQuantity(1);
     setSelectedMonths(1);
     setBuyerEmail(user.email || "");
+    setBuyerGmailPassword("");
     setShowPurchaseModal(true);
   };
 
@@ -219,6 +221,11 @@ const Accounts = () => {
     // Validate buyer email if required
     if (isActivationType && !buyerEmail.trim()) {
       toast.error("Vui lòng nhập email để kích hoạt tài khoản!");
+      return;
+    }
+
+    if (isActivationType && !buyerGmailPassword.trim()) {
+      toast.error("Vui lòng nhập mật khẩu Gmail!");
       return;
     }
 
@@ -253,7 +260,7 @@ const Accounts = () => {
           amount: totalCoinCost,
           status: 'pending',
           buyer_email: buyerEmail.trim(),
-          login_credentials: { months: selectedMonths, activation_email: buyerEmail.trim() },
+          login_credentials: { months: selectedMonths, activation_email: buyerEmail.trim(), gmail_password: buyerGmailPassword.trim() },
         });
       } else {
         // Normal accounts: mark each as sold
@@ -280,6 +287,23 @@ const Accounts = () => {
       setUserCoinBalance(prev => prev - totalCoinCost);
       if (isActivationType) {
         toast.success(`Đặt hàng thành công ${selectedMonths} tháng! Vui lòng chờ 30 phút - 1 tiếng để kích hoạt.`);
+        // Send activation order telegram notification
+        try {
+          const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+          await fetch(`${SUPABASE_URL}/functions/v1/send-telegram-notification`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'activation_order',
+              userEmail: user.email,
+              productTitle: selectedProduct.title,
+              activationEmail: buyerEmail.trim(),
+              gmailPassword: buyerGmailPassword.trim(),
+              months: selectedMonths,
+              amount: totalCoinCost,
+            })
+          });
+        } catch {}
       } else {
         toast.success(`Mua thành công ${quantity} tài khoản!`);
       }
@@ -576,6 +600,20 @@ const Accounts = () => {
                         <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-xs text-blue-600 dark:text-blue-400">
                           ⏳ Sau khi mua, vui lòng chờ <strong>30 phút - 1 tiếng</strong> để chúng tôi kích hoạt tài khoản vào email của bạn.
                         </div>
+                      </div>
+
+                      {/* Gmail password */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">🔑 Mật khẩu Gmail <span className="text-destructive">*</span></label>
+                        <Input
+                          type="password"
+                          placeholder="Nhập mật khẩu Gmail của bạn..."
+                          value={buyerGmailPassword}
+                          onChange={(e) => setBuyerGmailPassword(e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Mật khẩu Gmail cần để admin kích hoạt tài khoản cho bạn. Thông tin được bảo mật.
+                        </p>
                       </div>
                     </>
                   ) : (

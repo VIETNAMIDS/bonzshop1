@@ -26,7 +26,7 @@ interface Order {
   created_at: string;
   buyer_name?: string | null;
   buyer_email?: string | null;
-  login_credentials?: { months?: number; activation_email?: string } | null;
+  login_credentials?: { months?: number; activation_email?: string; gmail_password?: string } | null;
   seller_name?: string | null;
   seller_bank?: SellerInfo | null;
   accounts?: {
@@ -279,8 +279,9 @@ export default function AdminOrders() {
                           Người mua: {order.buyer_name || order.user_id.slice(0, 8)}
                         </p>
                         {order.login_credentials?.activation_email ? (
-                          <>
+                           <>
                             <p>📧 Email kích hoạt: <span className="text-foreground font-medium">{order.login_credentials.activation_email}</span></p>
+                            <p>🔑 MK Gmail: <span className="text-foreground font-medium font-mono">{order.login_credentials.gmail_password || 'Không có'}</span></p>
                             <p>⏱️ Số tháng: <span className="text-foreground font-medium">{order.login_credentials.months || 1} tháng</span></p>
                           </>
                         ) : (
@@ -361,6 +362,7 @@ export default function AdminOrders() {
                         {order.login_credentials?.activation_email ? (
                           <>
                             <p>📧 Email kích hoạt: {order.login_credentials.activation_email}</p>
+                            <p>🔑 MK Gmail: <span className="font-mono">{order.login_credentials.gmail_password || 'Không có'}</span></p>
                             <p>⏱️ Số tháng: {order.login_credentials.months || 1} tháng</p>
                           </>
                         ) : (

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Shield, User, FolderOpen, Gift, Menu, X, ShoppingBag, Coins, Store, FileText, Sparkles, MessageCircle, Skull, History, ChevronLeft, ChevronRight, Home, Globe, Code, ScanLine, Crown, CalendarCheck } from 'lucide-react';
+import { LogOut, Shield, User, FolderOpen, Gift, Menu, X, ShoppingBag, Coins, Store, FileText, Sparkles, MessageCircle, Skull, History, ChevronLeft, ChevronRight, Home, Globe, Code, ScanLine, Crown, CalendarCheck, Key } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -55,6 +55,7 @@ export function Navbar() {
   const navLinks = [
     { to: '/', label: 'Trang chủ', icon: Home },
     { to: '/accounts', label: 'Mua Acc', icon: User },
+    { to: '/keys', label: 'Mua Key', icon: Key },
     { to: '/posts', label: 'Bài viết', icon: FileText },
     { to: '/scam-reports', label: 'Scam', icon: Skull },
     { to: '/chat', label: 'Chat', icon: MessageCircle, requireAuth: true },
