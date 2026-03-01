@@ -25,9 +25,7 @@ import bonzshopLogo from '@/assets/bonzshop-logo.png';
 import { ScrollReveal, StaggerContainer, StaggerItem, CountUp, FloatingElement } from '@/components/motion';
 import { AdvancedSearch } from '@/components/search/AdvancedSearch';
 
-// Lazy load 3D components for performance
-const Scene3DBackground = lazy(() => import('@/components/3d/Scene3DBackground').then(m => ({ default: m.Scene3DBackground })));
-const FloatingLogo3D = lazy(() => import('@/components/3d/FloatingLogo3D').then(m => ({ default: m.FloatingLogo3D })));
+// 3D components disabled due to React duplicate instance issue with @react-three/fiber
 
 interface Seller {
   id: string;
@@ -367,10 +365,6 @@ export default function Index() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className={cn("transition-all duration-300", !isMobile && "ml-60")}>
-      {/* 3D Background */}
-      <Suspense fallback={null}>
-        <Scene3DBackground />
-      </Suspense>
 
       {/* Hero Section - Parallax */}
       <motion.section 
