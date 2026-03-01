@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, Edit, Save, X, Loader2, Users, FolderOpen, Gift, User, ShoppingCart, Store, Coins, Package, Upload, FileText, Settings, Skull, Ticket, Globe } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Edit, Save, X, Loader2, Users, FolderOpen, Gift, User, ShoppingCart, Store, Coins, Package, Upload, FileText, Settings, Skull, Ticket, Globe, Key } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -421,6 +421,12 @@ export default function Admin() {
               <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm border-primary/30 hover:bg-primary/10">
                 <Globe className="h-4 w-4 text-primary" />
                 Web Con
+              </Button>
+            </Link>
+            <Link to="/admin/keys" className="contents">
+              <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm border-yellow-500/30 hover:bg-yellow-500/10">
+                <Key className="h-4 w-4 text-yellow-500" />
+                Up Key
               </Button>
             </Link>
             <Link to="/seller-profile" className="contents">

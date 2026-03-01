@@ -21,9 +21,9 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Network first for API calls, cache first for static assets
-  if (event.request.url.includes('/rest/') || event.request.url.includes('/functions/')) {
-    return; // Let API calls go through normally
+  // Network first for API calls and OAuth, cache first for static assets
+  if (event.request.url.includes('/rest/') || event.request.url.includes('/functions/') || event.request.url.includes('/~oauth')) {
+    return; // Let API calls and OAuth go through normally
   }
 
   event.respondWith(
