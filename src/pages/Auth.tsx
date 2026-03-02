@@ -11,6 +11,7 @@ import ForgotPassword from '@/components/ForgotPassword';
 import QrLoginDesktop from '@/components/QrLoginDesktop';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
+import { lovable } from '@/integrations/lovable/index';
 import { toast as sonnerToast } from 'sonner';
 import bonzshopLogo from '@/assets/bonzshop-logo.png';
 
@@ -826,11 +827,8 @@ export default function Auth() {
                      localStorage.setItem('pending_referral_code', referralCode.toUpperCase());
                    }
 
-                  const { error } = await supabase.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: {
-                      redirectTo: window.location.origin,
-                    },
+                  const { error } = await lovable.auth.signInWithOAuth('google', {
+                    redirect_uri: window.location.origin,
                   });
                   if (error) {
                     toast({
