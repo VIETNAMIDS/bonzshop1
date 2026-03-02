@@ -161,6 +161,14 @@ serve(async (req) => {
           { status: 404, headers: { "Content-Type": "application/json", ...corsHeaders } }
         );
       }
+
+      // If only checking email existence (no action needed), return success
+      if (!action) {
+        return new Response(
+          JSON.stringify({ success: true, emailExists: true }),
+          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
     }
 
     if (action === "send") {
