@@ -12,6 +12,7 @@ import QrLoginDesktop from '@/components/QrLoginDesktop';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 import { supabase } from '@/integrations/supabase/client';
+import { validateEmailNotDisposable } from '@/lib/disposableEmails';
 import { toast as sonnerToast } from 'sonner';
 import bonzshopLogo from '@/assets/bonzshop-logo.png';
 
@@ -350,6 +351,18 @@ export default function Auth() {
           navigate('/');
         }
       } else if (view === 'signup') {
+        // Check disposable/fake email
+        const emailCheck = validateEmailNotDisposable(email);
+        if (!emailCheck.isValid) {
+          toast({
+            title: '🚫 Email không hợp lệ',
+            description: emailCheck.reason || 'Vui lòng sử dụng email thật.',
+            variant: 'destructive',
+            duration: 8000,
+          });
+          return;
+        }
+
         // Check device registration limit
         const deviceCheck = await checkDeviceRegistration();
         if (deviceCheck.registered) {
