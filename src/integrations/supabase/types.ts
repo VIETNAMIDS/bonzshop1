@@ -2119,6 +2119,84 @@ export type Database = {
           },
         ]
       }
+      keys_public: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          image_url: string | null
+          is_active: boolean | null
+          is_sold: boolean | null
+          price: number | null
+          seller_id: string | null
+          title: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          is_sold?: boolean | null
+          price?: number | null
+          seller_id?: string | null
+          title?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          is_sold?: boolean | null
+          price?: number | null
+          seller_id?: string | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "keys_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "keys_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles_public: {
+        Row: {
+          avatar_url: string | null
+          display_name: string | null
+          id: string | null
+          referral_code: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          display_name?: string | null
+          id?: string | null
+          referral_code?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          display_name?: string | null
+          id?: string | null
+          referral_code?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       sellers_public: {
         Row: {
           avatar_url: string | null
@@ -2145,6 +2223,7 @@ export type Database = {
       }
     }
     Functions: {
+      check_device_count: { Args: { p_fingerprint: string }; Returns: number }
       get_public_seller_info: {
         Args: { p_seller_id: string }
         Returns: {
