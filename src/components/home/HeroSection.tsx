@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, MessageCircle, Sparkles, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import { GlitchText, GradientText, Typewriter, FloatingParticles, AnimatedCounter, WordReveal } from '@/components/motion/TextEffects';
 
 interface SiteSettings {
   hero_video_url?: string;
@@ -111,74 +113,132 @@ export function HeroSection() {
 
       {/* Brutalist background — raw grid */}
       <div className="absolute inset-0 grid-pattern opacity-30" />
+      <FloatingParticles count={25} />
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-1 bg-primary/60" />
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-primary/30" />
+        <motion.div 
+          className="absolute top-0 left-0 w-full h-1 bg-primary/60"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 1.5, ease: 'easeOut' }}
+          style={{ transformOrigin: 'left' }}
+        />
+        <motion.div 
+          className="absolute bottom-0 left-0 w-full h-1 bg-primary/30"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 1.5, delay: 0.3, ease: 'easeOut' }}
+          style={{ transformOrigin: 'right' }}
+        />
       </div>
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 text-center">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-none bg-primary text-primary-foreground border-2 border-primary mb-8 animate-scale-in">
-          <Sparkles className="h-4 w-4" />
+        <motion.div 
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-none bg-primary text-primary-foreground border-2 border-primary mb-8"
+          initial={{ opacity: 0, y: -30, scale: 0.8 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+        >
+          <motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}>
+            <Sparkles className="h-4 w-4" />
+          </motion.div>
           <span className="text-sm font-black uppercase tracking-widest">Nền tảng #1 Việt Nam</span>
-        </div>
+        </motion.div>
 
         {/* Title */}
-        <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 animate-scale-in uppercase tracking-tight leading-[0.9]">
-          <span className="block text-foreground">
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 uppercase tracking-tight leading-[0.9]">
+          <motion.span 
+            className="block text-foreground"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+          >
             {settings.hero_title || 'Chào mừng đến với'}
-          </span>
-          <span className="block mt-2 text-primary">
-            BonzShop
-          </span>
+          </motion.span>
+          <motion.span 
+            className="block mt-2"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.5, type: 'spring', stiffness: 100 }}
+          >
+            <GlitchText className="text-primary" intensity="low">BonzShop</GlitchText>
+          </motion.span>
         </h1>
 
-        {/* Subtitle */}
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-scale-in animation-delay-200 font-mono">
-          {settings.hero_subtitle || 'Nền tảng mua bán tài khoản game và sản phẩm số uy tín nhất'}
-        </p>
+        {/* Animated subtitle with typewriter */}
+        <motion.div 
+          className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-4 font-mono"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+        >
+          <Typewriter 
+            texts={[
+              settings.hero_subtitle || 'Nền tảng mua bán tài khoản game và sản phẩm số uy tín nhất',
+              'Giao dịch an toàn — Hoàn tiền nếu có vấn đề',
+              'Hàng nghìn sản phẩm chất lượng đang chờ bạn',
+            ]}
+            speed={50}
+            className="text-muted-foreground"
+          />
+        </motion.div>
+
+        <motion.p 
+          className="text-sm text-muted-foreground/60 mb-10 font-mono"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2 }}
+        >
+          <GradientText className="text-sm font-bold">✦ Uy tín ✦ Nhanh chóng ✦ Bảo mật ✦</GradientText>
+        </motion.p>
 
         {/* CTAs */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center animate-scale-in animation-delay-200">
-          <Button 
-            asChild 
-            size="lg" 
-            variant="gradient"
-            className="text-lg px-8"
-          >
-            <Link to="/categories">
-              <ShoppingBag className="mr-2 h-5 w-5" />
-              Khám phá ngay
-            </Link>
-          </Button>
-          <Button 
-            asChild 
-            variant="outline" 
-            size="lg"
-            className="text-lg px-8"
-          >
-            <Link to="/chat">
-              <MessageCircle className="mr-2 h-5 w-5" />
-              Chat cộng đồng
-            </Link>
-          </Button>
-        </div>
+        <motion.div 
+          className="flex flex-col sm:flex-row gap-4 justify-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.6 }}
+        >
+          <motion.div whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.95 }}>
+            <Button asChild size="lg" variant="gradient" className="text-lg px-8">
+              <Link to="/categories">
+                <ShoppingBag className="mr-2 h-5 w-5" />
+                Khám phá ngay
+              </Link>
+            </Button>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.95 }}>
+            <Button asChild variant="outline" size="lg" className="text-lg px-8">
+              <Link to="/chat">
+                <MessageCircle className="mr-2 h-5 w-5" />
+                Chat cộng đồng
+              </Link>
+            </Button>
+          </motion.div>
+        </motion.div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 md:gap-8 max-w-2xl mx-auto mt-16 animate-scale-in animation-delay-200">
-          <div className="stats-card p-4 rounded-none">
-            <p className="text-3xl md:text-4xl font-black text-primary">1000+</p>
-            <p className="text-sm text-muted-foreground font-mono uppercase tracking-wider">Sản phẩm</p>
-          </div>
-          <div className="stats-card p-4 rounded-none">
-            <p className="text-3xl md:text-4xl font-black text-primary">500+</p>
-            <p className="text-sm text-muted-foreground font-mono uppercase tracking-wider">Người bán</p>
-          </div>
-          <div className="stats-card p-4 rounded-none">
-            <p className="text-3xl md:text-4xl font-black text-primary">99%</p>
-            <p className="text-sm text-muted-foreground font-mono uppercase tracking-wider">Hài lòng</p>
-          </div>
+        {/* Stats with animated counters */}
+        <div className="grid grid-cols-3 gap-4 md:gap-8 max-w-2xl mx-auto mt-16">
+          {[
+            { value: '1000+', label: 'Sản phẩm' },
+            { value: '500+', label: 'Người bán' },
+            { value: '99%', label: 'Hài lòng' },
+          ].map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              className="stats-card p-4 rounded-none"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.2 + i * 0.15, duration: 0.5 }}
+              whileHover={{ y: -4, borderColor: 'hsl(14, 90%, 55%)' }}
+            >
+              <p className="text-3xl md:text-4xl font-black text-primary">
+                <AnimatedCounter target={stat.value} duration={2} />
+              </p>
+              <p className="text-sm text-muted-foreground font-mono uppercase tracking-wider">{stat.label}</p>
+            </motion.div>
+          ))}
         </div>
 
         {/* Scroll indicator */}

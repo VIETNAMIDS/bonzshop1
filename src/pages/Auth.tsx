@@ -675,10 +675,28 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
       {/* Brutalist background */}
       <div className="fixed inset-0 grid-pattern opacity-15 pointer-events-none" />
       <div className="fixed top-0 left-0 w-full h-1 bg-primary pointer-events-none" />
+      
+      {/* Floating particles */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        {Array.from({ length: 15 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full bg-primary/10 animate-float"
+            style={{
+              width: Math.random() * 6 + 2,
+              height: Math.random() * 6 + 2,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 5}s`,
+              animationDuration: `${Math.random() * 4 + 4}s`,
+            }}
+          />
+        ))}
+      </div>
 
       <div className="relative w-full max-w-md animate-scale-in">
         {/* Logo */}
@@ -686,17 +704,21 @@ export default function Auth() {
           <img 
             src={bonzshopLogo} 
             alt="BonzShop" 
-            className="h-28 md:h-36 w-auto object-contain"
+            className="h-28 md:h-36 w-auto object-contain animate-float"
+            style={{ animationDuration: '6s' }}
           />
         </div>
 
         {/* Form */}
-        <div className="glass rounded-none p-6 md:p-8 border-2 border-border mx-2 md:mx-0">
+        <div className="glass rounded-none p-6 md:p-8 border-2 border-border mx-2 md:mx-0 relative overflow-hidden">
+          {/* Animated top border */}
+          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent animate-shimmer" />
+          
           <h2 className="text-2xl md:text-3xl font-black text-center mb-1 uppercase tracking-tight">
             {view === 'login' ? 'Đăng nhập' : 'Đăng ký'}
           </h2>
           <p className="text-muted-foreground text-center text-sm font-mono mb-6 md:mb-8">
-            {view === 'login' ? 'Chào mừng bạn trở lại!' : 'Tạo tài khoản mới'}
+            {view === 'login' ? 'Chào mừng bạn trở lại! ✨' : 'Tạo tài khoản mới 🚀'}
           </p>
 
           {/* Lockout message */}
