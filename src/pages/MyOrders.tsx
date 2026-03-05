@@ -397,7 +397,34 @@ export default function MyOrders() {
                             </p>
                           </div>
                         </div>
-                        {isProduct ? (
+                        {item?.type === 'key' && item.key_value ? (
+                          <div className="mt-4 space-y-2">
+                            <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-muted-foreground">Key của bạn</p>
+                                <p className="font-mono font-medium text-sm break-all">
+                                  {showPassword ? item.key_value : '••••••••••••••••'}
+                                </p>
+                              </div>
+                              <div className="flex gap-1 shrink-0">
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                >
+                                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </Button>
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost"
+                                  onClick={() => copyToClipboard(item.key_value!, 'key')}
+                                >
+                                  <Copy className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : isProduct ? (
                           item?.download_url ? (
                             <Button 
                               className="w-full mt-4 gap-2"
