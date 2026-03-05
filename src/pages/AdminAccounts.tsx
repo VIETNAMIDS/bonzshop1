@@ -72,6 +72,8 @@ export default function AdminAccounts() {
     seller_id: '',
     requires_buyer_email: false,
   });
+  const [isBulkMode, setIsBulkMode] = useState(false);
+  const [bulkCredentials, setBulkCredentials] = useState('');
 
   // Verify admin status via backend - SECURE
   useEffect(() => {
@@ -203,6 +205,8 @@ export default function AdminAccounts() {
       requires_buyer_email: false,
     });
     setEditingAccount(null);
+    setIsBulkMode(false);
+    setBulkCredentials('');
     setShowForm(false);
   };
 
