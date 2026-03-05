@@ -15,6 +15,8 @@ interface Order {
   id: string;
   account_id: string | null;
   product_id: string | null;
+  order_type: string;
+  login_credentials: any;
   status: 'pending' | 'approved' | 'rejected';
   amount: number;
   created_at: string;
@@ -66,6 +68,8 @@ export default function MyOrders() {
           id,
           account_id,
           product_id,
+          order_type,
+          login_credentials,
           status,
           amount,
           created_at,
