@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { ShoppingCart, Search, Loader2, Package, Coins, Key, Copy, Eye, EyeOff } from "lucide-react";
+import { ShoppingCart, Search, Loader2, Package, Coins, Key, Minus, Plus } from "lucide-react";
 
 interface Seller {
   id: string;
@@ -32,6 +32,17 @@ interface KeyItem {
   created_at: string;
 }
 
+interface KeyGroup {
+  title: string;
+  description: string | null;
+  price: number;
+  category: string;
+  image_url: string | null;
+  seller: Seller | null;
+  keys: KeyItem[];
+  availableCount: number;
+}
+
 const Keys = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -42,8 +53,9 @@ const Keys = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   // Purchase modal
-  const [selectedKey, setSelectedKey] = useState<KeyItem | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<KeyGroup | null>(null);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [quantity, setQuantity] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [userCoinBalance, setUserCoinBalance] = useState(0);
 
@@ -98,27 +110,59 @@ const Keys = () => {
 
   const uniqueCategories = [...new Set(keys.map(k => k.category).filter(Boolean))];
 
-  const filteredKeys = keys.filter(key => {
-    const matchesSearch = key.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (key.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
-    const matchesCategory = selectedCategory === "all" || key.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // Group keys by title+category
+  const keyGroups: KeyGroup[] = (() => {
+    const grouped: Record<string, KeyGroup> = {};
+    const filtered = keys.filter(key => {
+      const matchesSearch = key.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (key.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+      const matchesCategory = selectedCategory === "all" || key.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+
+    filtered.forEach(key => {
+      const groupKey = `${key.title}__${key.category}`;
+      if (!grouped[groupKey]) {
+        grouped[groupKey] = {
+          title: key.title,
+          description: key.description,
+          price: key.price,
+          category: key.category,
+          image_url: key.image_url,
+          seller: key.sellers || null,
+          keys: [],
+          availableCount: 0,
+        };
+      }
+      grouped[groupKey].keys.push(key);
+      grouped[groupKey].availableCount++;
+    });
+
+    return Object.values(grouped);
+  })();
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("vi-VN").format(price) + ' VNĐ';
 
-  const handleOpenPurchase = (key: KeyItem) => {
+  const handleOpenPurchase = (group: KeyGroup) => {
     if (!user) { navigate("/auth"); return; }
-    setSelectedKey(key);
+    setSelectedGroup(group);
+    setQuantity(1);
     setShowPurchaseModal(true);
   };
 
   const handlePurchase = async () => {
-    if (!selectedKey || !user) return;
+    if (!selectedGroup || !user) return;
 
-    if (userCoinBalance < selectedKey.price) {
-      toast.error(`Không đủ xu! Cần ${selectedKey.price} xu, bạn có ${userCoinBalance} xu.`);
+    const totalCost = selectedGroup.price * quantity;
+
+    if (userCoinBalance < totalCost) {
+      toast.error(`Không đủ xu! Cần ${totalCost} xu, bạn có ${userCoinBalance} xu.`);
+      return;
+    }
+
+    if (quantity > selectedGroup.availableCount) {
+      toast.error(`Chỉ còn ${selectedGroup.availableCount} key có sẵn!`);
       return;
     }
 
@@ -128,36 +172,40 @@ const Keys = () => {
       // Deduct coins
       const { error: coinError } = await supabase
         .from('user_coins')
-        .update({ balance: userCoinBalance - selectedKey.price, updated_at: new Date().toISOString() })
+        .update({ balance: userCoinBalance - totalCost, updated_at: new Date().toISOString() })
         .eq('user_id', user.id);
       if (coinError) throw coinError;
 
-      // Mark key as sold
-      await supabase.from('keys').update({
-        is_sold: true,
-        sold_to: user.id,
-        sold_at: new Date().toISOString(),
-        buyer_id: user.id,
-      }).eq('id', selectedKey.id);
+      // Buy each key
+      const keysToBuy = selectedGroup.keys.slice(0, quantity);
+      for (const key of keysToBuy) {
+        // Mark key as sold
+        await supabase.from('keys').update({
+          is_sold: true,
+          sold_to: user.id,
+          sold_at: new Date().toISOString(),
+          buyer_id: user.id,
+        }).eq('id', key.id);
 
-      // Create order
-      await supabase.from("orders").insert({
-        buyer_id: user.id,
-        user_id: user.id,
-        amount: selectedKey.price,
-        status: 'approved',
-        approved_at: new Date().toISOString(),
-        approved_by: user.id,
-        order_type: 'key_purchase',
-        login_credentials: { key_value: selectedKey.key_value, key_title: selectedKey.title },
-      });
+        // Create order with key_value
+        await supabase.from("orders").insert({
+          buyer_id: user.id,
+          user_id: user.id,
+          amount: key.price,
+          status: 'approved',
+          approved_at: new Date().toISOString(),
+          approved_by: user.id,
+          order_type: 'key_purchase',
+          login_credentials: { key_value: key.key_value, key_title: key.title },
+        });
+      }
 
       // Coin history
       await supabase.from('coin_history').insert({
         user_id: user.id,
-        amount: -selectedKey.price,
+        amount: -totalCost,
         type: 'key_purchase',
-        description: `Mua key "${selectedKey.title}"`,
+        description: `Mua ${quantity} key "${selectedGroup.title}"`,
       });
 
       // Send telegram notification
@@ -169,14 +217,14 @@ const Keys = () => {
           body: JSON.stringify({
             type: 'key_purchase',
             userEmail: user.email,
-            productTitle: selectedKey.title,
-            amount: selectedKey.price,
+            productTitle: `${selectedGroup.title} x${quantity}`,
+            amount: totalCost,
           })
         });
       } catch {}
 
-      setUserCoinBalance(prev => prev - selectedKey.price);
-      toast.success("Mua key thành công! Xem trong Đơn hàng của tôi.");
+      setUserCoinBalance(prev => prev - totalCost);
+      toast.success(`Mua thành công ${quantity} key! Xem trong Đơn hàng của tôi.`);
       setShowPurchaseModal(false);
       fetchKeys();
       navigate('/my-orders');
@@ -234,7 +282,7 @@ const Keys = () => {
           )}
 
           {/* Empty */}
-          {!loading && filteredKeys.length === 0 && (
+          {!loading && keyGroups.length === 0 && (
             <div className="text-center py-20">
               <Key className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-xl font-semibold mb-2">Không tìm thấy key</h3>
@@ -243,20 +291,20 @@ const Keys = () => {
           )}
 
           {/* Key Grid */}
-          {!loading && filteredKeys.length > 0 && (
+          {!loading && keyGroups.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {filteredKeys.map((key) => (
+              {keyGroups.map((group, idx) => (
                 <div
-                  key={key.id}
-                  className="group bg-card rounded-xl border border-border overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-300 cursor-pointer"
-                  onClick={() => handleOpenPurchase(key)}
+                  key={idx}
+                  className="group bg-card rounded-xl border border-border overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-300 cursor-pointer relative"
+                  onClick={() => handleOpenPurchase(group)}
                 >
                   {/* Image */}
                   <div className="aspect-[16/10] relative overflow-hidden bg-secondary/30">
-                    {key.image_url ? (
+                    {group.image_url ? (
                       <img
-                        src={key.image_url}
-                        alt={key.title}
+                        src={group.image_url}
+                        alt={group.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
@@ -269,29 +317,44 @@ const Keys = () => {
                         🔑 Key
                       </Badge>
                     </div>
+                    {/* Stock badge */}
+                    {group.availableCount <= 5 && group.availableCount > 0 && (
+                      <div className="absolute top-2 right-2">
+                        <Badge variant="destructive" className="text-[10px] px-1.5 py-0.5">
+                          Còn {group.availableCount}
+                        </Badge>
+                      </div>
+                    )}
+                    {group.availableCount > 5 && (
+                      <div className="absolute top-2 right-2">
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">
+                          Còn {group.availableCount}
+                        </Badge>
+                      </div>
+                    )}
                   </div>
 
                   {/* Info */}
                   <div className="p-3">
                     <h3 className="text-sm font-medium text-foreground line-clamp-2 mb-2 min-h-[2.5rem]">
-                      {key.title}
+                      {group.title}
                     </h3>
                     <div className="flex items-center justify-between">
                       <span className="text-primary font-bold text-sm">
-                        {formatPrice(key.price)}
+                        {formatPrice(group.price)}
                       </span>
                       <Badge variant="outline" className="text-[10px] text-orange-500 border-orange-500/30">
                         <Coins className="h-2.5 w-2.5 mr-0.5" />
-                        {key.price} xu
+                        {group.price} xu
                       </Badge>
                     </div>
-                    {key.sellers && (
+                    {group.seller && (
                       <p className="text-xs text-muted-foreground mt-1 truncate">
-                        {key.sellers.display_name}
+                        {group.seller.display_name}
                       </p>
                     )}
-                    {key.category && (
-                      <Badge variant="secondary" className="text-[10px] mt-1">{key.category}</Badge>
+                    {group.category && (
+                      <Badge variant="secondary" className="text-[10px] mt-1">{group.category}</Badge>
                     )}
                   </div>
                 </div>
@@ -299,7 +362,7 @@ const Keys = () => {
             </div>
           )}
 
-          {/* Purchase Modal */}
+          {/* Purchase Modal with Quantity */}
           <Dialog open={showPurchaseModal} onOpenChange={setShowPurchaseModal}>
             <DialogContent className="max-w-md">
               <DialogHeader>
@@ -307,24 +370,50 @@ const Keys = () => {
                   <Key className="h-5 w-5 text-primary" />
                   Mua Key
                 </DialogTitle>
-                <DialogDescription>Xác nhận mua key</DialogDescription>
+                <DialogDescription>Chọn số lượng và xác nhận mua</DialogDescription>
               </DialogHeader>
 
-              {selectedKey && (
+              {selectedGroup && (
                 <div className="space-y-4">
                   {/* Key info */}
                   <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg">
-                    {selectedKey.image_url ? (
-                      <img src={selectedKey.image_url} alt={selectedKey.title} className="w-12 h-12 rounded-lg object-cover" />
+                    {selectedGroup.image_url ? (
+                      <img src={selectedGroup.image_url} alt={selectedGroup.title} className="w-12 h-12 rounded-lg object-cover" />
                     ) : (
                       <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
                         <Key className="h-6 w-6 text-primary" />
                       </div>
                     )}
                     <div>
-                      <p className="font-medium">{selectedKey.title}</p>
-                      <p className="text-sm text-primary font-bold">{formatPrice(selectedKey.price)}</p>
-                      <p className="text-xs text-muted-foreground">{selectedKey.price} xu</p>
+                      <p className="font-medium">{selectedGroup.title}</p>
+                      <p className="text-sm text-primary font-bold">{formatPrice(selectedGroup.price)} / key</p>
+                      <p className="text-xs text-muted-foreground">Còn {selectedGroup.availableCount} key</p>
+                    </div>
+                  </div>
+
+                  {/* Quantity selector */}
+                  <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
+                    <span className="font-medium">Số lượng:</span>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className="h-8 w-8"
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        disabled={quantity <= 1}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <span className="font-bold text-lg min-w-[2rem] text-center">{quantity}</span>
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className="h-8 w-8"
+                        onClick={() => setQuantity(Math.min(selectedGroup.availableCount, quantity + 1))}
+                        disabled={quantity >= selectedGroup.availableCount}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
 
@@ -332,21 +421,25 @@ const Keys = () => {
                   <div className="border border-border rounded-lg p-3 space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Đơn giá:</span>
-                      <span>{selectedKey.price} xu</span>
+                      <span>{selectedGroup.price} xu</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Số lượng:</span>
+                      <span>x{quantity}</span>
                     </div>
                     <div className="flex justify-between font-bold text-base border-t border-border pt-2">
                       <span>Tổng cộng:</span>
-                      <span className="text-primary">{selectedKey.price} xu</span>
+                      <span className="text-primary">{(selectedGroup.price * quantity).toLocaleString()} xu</span>
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>Số dư hiện tại:</span>
-                      <span>{userCoinBalance} xu</span>
+                      <span>{userCoinBalance.toLocaleString()} xu</span>
                     </div>
                   </div>
 
-                  {userCoinBalance < selectedKey.price && (
+                  {userCoinBalance < selectedGroup.price * quantity && (
                     <p className="text-sm text-destructive">
-                      ⚠️ Không đủ xu! Cần thêm {selectedKey.price - userCoinBalance} xu.
+                      ⚠️ Không đủ xu! Cần thêm {(selectedGroup.price * quantity - userCoinBalance).toLocaleString()} xu.
                     </p>
                   )}
                 </div>
@@ -359,11 +452,11 @@ const Keys = () => {
                 <Button
                   variant="gradient"
                   onClick={handlePurchase}
-                  disabled={submitting || !selectedKey || userCoinBalance < (selectedKey?.price || 0)}
+                  disabled={submitting || !selectedGroup || userCoinBalance < (selectedGroup ? selectedGroup.price * quantity : 0)}
                   className="gap-2"
                 >
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
-                  XÁC NHẬN MUA
+                  MUA {quantity} KEY
                 </Button>
               </DialogFooter>
             </DialogContent>
