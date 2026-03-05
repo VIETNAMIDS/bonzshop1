@@ -72,6 +72,8 @@ export default function AdminAccounts() {
     seller_id: '',
     requires_buyer_email: false,
   });
+  const [isBulkMode, setIsBulkMode] = useState(false);
+  const [bulkCredentials, setBulkCredentials] = useState('');
 
   // Verify admin status via backend - SECURE
   useEffect(() => {
@@ -203,6 +205,8 @@ export default function AdminAccounts() {
       requires_buyer_email: false,
     });
     setEditingAccount(null);
+    setIsBulkMode(false);
+    setBulkCredentials('');
     setShowForm(false);
   };
 
@@ -251,6 +255,50 @@ export default function AdminAccounts() {
       }
 
       const isActivationType = formData.requires_buyer_email;
+
+      // Bulk mode for non-activation, non-editing
+      if (isBulkMode && !editingAccount && !isActivationType) {
+        const lines = bulkCredentials.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        if (lines.length === 0) {
+          toast({ title: 'Lỗi', description: 'Vui lòng nhập ít nhất 1 tài khoản', variant: 'destructive' });
+          setIsSaving(false);
+          return;
+        }
+
+        const payloads = lines.map(line => {
+          // Support formats: user:pass, user|pass, user pass
+          const sep = line.includes(':') ? ':' : line.includes('|') ? '|' : ' ';
+          const parts = line.split(sep);
+          const username = parts[0]?.trim() || '';
+          const password = parts.slice(1).join(sep).trim() || '';
+          
+          return {
+            title: formData.title.trim(),
+            description: formData.description.trim() || undefined,
+            account_username: username,
+            account_password: password,
+            account_email: formData.account_email.trim() || undefined,
+            account_phone: formData.account_phone.trim() || undefined,
+            price: parseFloat(formData.price) || 0,
+            category: formData.category,
+            image_url: formData.image_url.trim() || undefined,
+            seller_id: formData.seller_id,
+            requires_buyer_email: false,
+            platform: formData.category,
+            account_type: 'premium',
+          };
+        });
+
+        for (const payload of payloads) {
+          await adminAccountsApi.create(payload);
+        }
+        
+        toast({ title: `Đã thêm ${payloads.length} tài khoản thành công!` });
+        resetForm();
+        fetchAccounts();
+        return;
+      }
+
       const accountData = {
         title: formData.title.trim(),
         description: formData.description.trim() || undefined,
@@ -403,7 +451,39 @@ export default function AdminAccounts() {
                   />
                 </div>
 
-                {!formData.requires_buyer_email && (
+                {!formData.requires_buyer_email && !editingAccount && (
+                  <label 
+                    className="flex items-center gap-3 p-3 rounded-lg border border-border bg-secondary/30 cursor-pointer select-none"
+                    onClick={(e) => { e.preventDefault(); setIsBulkMode(!isBulkMode); }}
+                  >
+                    <div className={`h-5 w-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${isBulkMode ? 'bg-primary border-primary' : 'border-muted-foreground/40'}`}>
+                      {isBulkMode && <span className="text-primary-foreground text-xs font-bold">✓</span>}
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium">📦 Thêm nhiều tài khoản cùng lúc</span>
+                      <p className="text-xs text-muted-foreground">Nhập mỗi dòng: username:password</p>
+                    </div>
+                  </label>
+                )}
+
+                {!formData.requires_buyer_email && isBulkMode && !editingAccount ? (
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">Danh sách tài khoản (mỗi dòng: username:password) *</label>
+                    <textarea
+                      value={bulkCredentials}
+                      onChange={(e) => setBulkCredentials(e.target.value)}
+                      placeholder={"user1:pass123\nuser2:pass456\nuser3:pass789"}
+                      rows={6}
+                      className="flex w-full rounded-lg border border-border bg-secondary px-4 py-2 text-foreground focus:ring-2 focus:ring-primary resize-none font-mono text-sm"
+                      required
+                    />
+                    {bulkCredentials.trim() && (
+                      <p className="text-xs text-muted-foreground">
+                        📊 {bulkCredentials.split('\n').filter(l => l.trim()).length} tài khoản sẽ được thêm
+                      </p>
+                    )}
+                  </div>
+                ) : !formData.requires_buyer_email ? (
                   <>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
@@ -450,7 +530,7 @@ export default function AdminAccounts() {
                       </div>
                     </div>
                   </>
-                )}
+                ) : null}
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
@@ -575,7 +655,7 @@ export default function AdminAccounts() {
                     ) : (
                       <>
                         <Save className="h-5 w-5 mr-2" />
-                        {editingAccount ? 'Cập nhật' : 'Thêm'}
+                        {editingAccount ? 'Cập nhật' : isBulkMode ? `Thêm ${bulkCredentials.split('\n').filter(l => l.trim()).length} TK` : 'Thêm'}
                       </>
                     )}
                   </Button>

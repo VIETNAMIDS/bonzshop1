@@ -39,6 +39,8 @@ export default function AdminKeys() {
   // Form
   const [showForm, setShowForm] = useState(false);
   const [editingKey, setEditingKey] = useState<KeyItem | null>(null);
+  const [isBulkMode, setIsBulkMode] = useState(false);
+  const [bulkKeyValues, setBulkKeyValues] = useState('');
   const [formData, setFormData] = useState({
     title: '', key_value: '', description: '', category: 'other', price: '0', image_url: ''
   });
@@ -76,6 +78,8 @@ export default function AdminKeys() {
   const resetForm = () => {
     setFormData({ title: '', key_value: '', description: '', category: 'other', price: '0', image_url: '' });
     setEditingKey(null);
+    setIsBulkMode(false);
+    setBulkKeyValues('');
     setShowForm(false);
   };
 
@@ -93,8 +97,48 @@ export default function AdminKeys() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.title || !formData.key_value) {
-      toast.error('Vui lòng nhập tên key và giá trị key');
+    if (!formData.title) {
+      toast.error('Vui lòng nhập tên key');
+      return;
+    }
+
+    // Bulk mode: multiple key values
+    if (isBulkMode && !editingKey) {
+      const keyLines = bulkKeyValues.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      if (keyLines.length === 0) {
+        toast.error('Vui lòng nhập ít nhất 1 key');
+        return;
+      }
+
+      setSubmitting(true);
+      try {
+        const payloads = keyLines.map(keyVal => ({
+          title: formData.title,
+          key_value: keyVal,
+          description: formData.description || null,
+          category: formData.category,
+          price: parseInt(formData.price) || 0,
+          image_url: formData.image_url || null,
+          created_by: user?.id,
+          seller_id: null,
+        }));
+
+        const { error } = await supabase.from('keys').insert(payloads);
+        if (error) throw error;
+        toast.success(`Đã thêm ${keyLines.length} key mới!`);
+        resetForm();
+        fetchKeys();
+      } catch (err) {
+        toast.error('Lỗi thêm key hàng loạt');
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
+    // Single mode
+    if (!formData.key_value) {
+      toast.error('Vui lòng nhập giá trị key');
       return;
     }
     setSubmitting(true);
@@ -208,19 +252,55 @@ export default function AdminKeys() {
 
         {/* Form Dialog */}
         <Dialog open={showForm} onOpenChange={setShowForm}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{editingKey ? 'Sửa Key' : 'Thêm Key Mới'}</DialogTitle>
+              <DialogTitle>{editingKey ? 'Sửa Key' : 'Thêm Key'}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
+              {/* Bulk mode toggle - only for new keys */}
+              {!editingKey && (
+                <label 
+                  className="flex items-center gap-3 p-3 rounded-lg border border-border bg-secondary/30 cursor-pointer select-none"
+                  onClick={(e) => { e.preventDefault(); setIsBulkMode(!isBulkMode); }}
+                >
+                  <div className={`h-5 w-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${isBulkMode ? 'bg-primary border-primary' : 'border-muted-foreground/40'}`}>
+                    {isBulkMode && <span className="text-primary-foreground text-xs font-bold">✓</span>}
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium">📦 Thêm nhiều key cùng lúc</span>
+                    <p className="text-xs text-muted-foreground">Nhập mỗi key một dòng, chung tiêu đề & giá</p>
+                  </div>
+                </label>
+              )}
+
               <div>
                 <Label>Tên Key *</Label>
                 <Input value={formData.title} onChange={e => setFormData(f => ({ ...f, title: e.target.value }))} placeholder="VD: Windows 11 Pro Key" />
               </div>
-              <div>
-                <Label>Giá trị Key *</Label>
-                <Input value={formData.key_value} onChange={e => setFormData(f => ({ ...f, key_value: e.target.value }))} placeholder="VD: XXXXX-XXXXX-XXXXX" />
-              </div>
+
+              {isBulkMode && !editingKey ? (
+                <div>
+                  <Label>Danh sách Key (mỗi dòng 1 key) *</Label>
+                  <Textarea 
+                    value={bulkKeyValues} 
+                    onChange={e => setBulkKeyValues(e.target.value)} 
+                    placeholder={"XXXXX-XXXXX-XXXXX-XXXXX\nYYYYY-YYYYY-YYYYY-YYYYY\nZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ"}
+                    rows={6}
+                    className="font-mono text-sm"
+                  />
+                  {bulkKeyValues.trim() && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      📊 {bulkKeyValues.split('\n').filter(l => l.trim()).length} key sẽ được thêm
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <Label>Giá trị Key *</Label>
+                  <Input value={formData.key_value} onChange={e => setFormData(f => ({ ...f, key_value: e.target.value }))} placeholder="VD: XXXXX-XXXXX-XXXXX" />
+                </div>
+              )}
+
               <div>
                 <Label>Mô tả</Label>
                 <Textarea value={formData.description} onChange={e => setFormData(f => ({ ...f, description: e.target.value }))} placeholder="Mô tả chi tiết..." />
@@ -248,7 +328,7 @@ export default function AdminKeys() {
               <Button variant="outline" onClick={resetForm}>Hủy</Button>
               <Button onClick={handleSubmit} disabled={submitting}>
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                {editingKey ? 'Cập nhật' : 'Thêm'}
+                {editingKey ? 'Cập nhật' : isBulkMode ? `Thêm ${bulkKeyValues.split('\n').filter(l => l.trim()).length} key` : 'Thêm'}
               </Button>
             </DialogFooter>
           </DialogContent>
