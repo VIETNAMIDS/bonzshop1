@@ -451,7 +451,39 @@ export default function AdminAccounts() {
                   />
                 </div>
 
-                {!formData.requires_buyer_email && (
+                {!formData.requires_buyer_email && !editingAccount && (
+                  <label 
+                    className="flex items-center gap-3 p-3 rounded-lg border border-border bg-secondary/30 cursor-pointer select-none"
+                    onClick={(e) => { e.preventDefault(); setIsBulkMode(!isBulkMode); }}
+                  >
+                    <div className={`h-5 w-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${isBulkMode ? 'bg-primary border-primary' : 'border-muted-foreground/40'}`}>
+                      {isBulkMode && <span className="text-primary-foreground text-xs font-bold">✓</span>}
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium">📦 Thêm nhiều tài khoản cùng lúc</span>
+                      <p className="text-xs text-muted-foreground">Nhập mỗi dòng: username:password</p>
+                    </div>
+                  </label>
+                )}
+
+                {!formData.requires_buyer_email && isBulkMode && !editingAccount ? (
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">Danh sách tài khoản (mỗi dòng: username:password) *</label>
+                    <textarea
+                      value={bulkCredentials}
+                      onChange={(e) => setBulkCredentials(e.target.value)}
+                      placeholder={"user1:pass123\nuser2:pass456\nuser3:pass789"}
+                      rows={6}
+                      className="flex w-full rounded-lg border border-border bg-secondary px-4 py-2 text-foreground focus:ring-2 focus:ring-primary resize-none font-mono text-sm"
+                      required
+                    />
+                    {bulkCredentials.trim() && (
+                      <p className="text-xs text-muted-foreground">
+                        📊 {bulkCredentials.split('\n').filter(l => l.trim()).length} tài khoản sẽ được thêm
+                      </p>
+                    )}
+                  </div>
+                ) : !formData.requires_buyer_email ? (
                   <>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
@@ -498,7 +530,7 @@ export default function AdminAccounts() {
                       </div>
                     </div>
                   </>
-                )}
+                ) : null}
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
