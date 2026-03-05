@@ -655,7 +655,7 @@ export default function AdminAccounts() {
                     ) : (
                       <>
                         <Save className="h-5 w-5 mr-2" />
-                        {editingAccount ? 'Cập nhật' : 'Thêm'}
+                        {editingAccount ? 'Cập nhật' : isBulkMode ? `Thêm ${bulkCredentials.split('\n').filter(l => l.trim()).length} TK` : 'Thêm'}
                       </>
                     )}
                   </Button>
