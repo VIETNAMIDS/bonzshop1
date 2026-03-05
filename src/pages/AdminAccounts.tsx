@@ -255,6 +255,50 @@ export default function AdminAccounts() {
       }
 
       const isActivationType = formData.requires_buyer_email;
+
+      // Bulk mode for non-activation, non-editing
+      if (isBulkMode && !editingAccount && !isActivationType) {
+        const lines = bulkCredentials.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        if (lines.length === 0) {
+          toast({ title: 'Lỗi', description: 'Vui lòng nhập ít nhất 1 tài khoản', variant: 'destructive' });
+          setIsSaving(false);
+          return;
+        }
+
+        const payloads = lines.map(line => {
+          // Support formats: user:pass, user|pass, user pass
+          const sep = line.includes(':') ? ':' : line.includes('|') ? '|' : ' ';
+          const parts = line.split(sep);
+          const username = parts[0]?.trim() || '';
+          const password = parts.slice(1).join(sep).trim() || '';
+          
+          return {
+            title: formData.title.trim(),
+            description: formData.description.trim() || undefined,
+            account_username: username,
+            account_password: password,
+            account_email: formData.account_email.trim() || undefined,
+            account_phone: formData.account_phone.trim() || undefined,
+            price: parseFloat(formData.price) || 0,
+            category: formData.category,
+            image_url: formData.image_url.trim() || undefined,
+            seller_id: formData.seller_id,
+            requires_buyer_email: false,
+            platform: formData.category,
+            account_type: 'premium',
+          };
+        });
+
+        for (const payload of payloads) {
+          await adminAccountsApi.create(payload);
+        }
+        
+        toast({ title: `Đã thêm ${payloads.length} tài khoản thành công!` });
+        resetForm();
+        fetchAccounts();
+        return;
+      }
+
       const accountData = {
         title: formData.title.trim(),
         description: formData.description.trim() || undefined,
