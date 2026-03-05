@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Clock, CheckCircle, XCircle, Eye, EyeOff, Copy, ShoppingBag, Bell, Download, Package, User } from 'lucide-react';
+import { Loader2, Clock, CheckCircle, XCircle, Eye, EyeOff, Copy, ShoppingBag, Bell, Download, Package, User, Key } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { PageWrapper } from '@/components/layout/PageWrapper';
 import { Button } from '@/components/ui/button';
@@ -183,13 +183,25 @@ export default function MyOrders() {
 
   // Helper to get order item info (works for both account and product orders)
   const getOrderItem = (order: Order) => {
+    if (order.order_type === 'key_purchase' && order.login_credentials) {
+      const creds = order.login_credentials as any;
+      return {
+        type: 'key' as const,
+        title: creds.key_title || 'Key',
+        category: 'Key',
+        image_url: null,
+        download_url: null,
+        key_value: creds.key_value || null,
+      };
+    }
     if (order.product_id && order.products) {
       return {
         type: 'product' as const,
         title: order.products.title,
         category: order.products.category,
         image_url: order.products.image_url,
-        download_url: order.products.download_url
+        download_url: order.products.download_url,
+        key_value: null,
       };
     }
     if (order.account_id && order.accounts) {
@@ -198,13 +210,17 @@ export default function MyOrders() {
         title: order.accounts.title,
         category: order.accounts.category,
         image_url: order.accounts.image_url,
-        download_url: null
+        download_url: null,
+        key_value: null,
       };
     }
     return null;
   };
 
   const getOrderTypeBadge = (order: Order) => {
+    if (order.order_type === 'key_purchase') {
+      return <Badge variant="outline" className="gap-1 text-xs"><Key className="h-3 w-3" /> Key</Badge>;
+    }
     if (order.product_id) {
       return <Badge variant="outline" className="gap-1 text-xs"><Package className="h-3 w-3" /> Source Code</Badge>;
     }
