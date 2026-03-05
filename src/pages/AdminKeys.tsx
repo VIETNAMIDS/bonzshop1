@@ -39,6 +39,8 @@ export default function AdminKeys() {
   // Form
   const [showForm, setShowForm] = useState(false);
   const [editingKey, setEditingKey] = useState<KeyItem | null>(null);
+  const [isBulkMode, setIsBulkMode] = useState(false);
+  const [bulkKeyValues, setBulkKeyValues] = useState('');
   const [formData, setFormData] = useState({
     title: '', key_value: '', description: '', category: 'other', price: '0', image_url: ''
   });
@@ -76,6 +78,8 @@ export default function AdminKeys() {
   const resetForm = () => {
     setFormData({ title: '', key_value: '', description: '', category: 'other', price: '0', image_url: '' });
     setEditingKey(null);
+    setIsBulkMode(false);
+    setBulkKeyValues('');
     setShowForm(false);
   };
 
@@ -93,8 +97,48 @@ export default function AdminKeys() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.title || !formData.key_value) {
-      toast.error('Vui lòng nhập tên key và giá trị key');
+    if (!formData.title) {
+      toast.error('Vui lòng nhập tên key');
+      return;
+    }
+
+    // Bulk mode: multiple key values
+    if (isBulkMode && !editingKey) {
+      const keyLines = bulkKeyValues.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      if (keyLines.length === 0) {
+        toast.error('Vui lòng nhập ít nhất 1 key');
+        return;
+      }
+
+      setSubmitting(true);
+      try {
+        const payloads = keyLines.map(keyVal => ({
+          title: formData.title,
+          key_value: keyVal,
+          description: formData.description || null,
+          category: formData.category,
+          price: parseInt(formData.price) || 0,
+          image_url: formData.image_url || null,
+          created_by: user?.id,
+          seller_id: null,
+        }));
+
+        const { error } = await supabase.from('keys').insert(payloads);
+        if (error) throw error;
+        toast.success(`Đã thêm ${keyLines.length} key mới!`);
+        resetForm();
+        fetchKeys();
+      } catch (err) {
+        toast.error('Lỗi thêm key hàng loạt');
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
+    // Single mode
+    if (!formData.key_value) {
+      toast.error('Vui lòng nhập giá trị key');
       return;
     }
     setSubmitting(true);
