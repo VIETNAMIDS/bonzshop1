@@ -136,7 +136,7 @@ export function enableCopyProtection() {
   // Disable drag
   document.addEventListener('dragstart', (e) => {
     const target = e.target as HTMLElement;
-    if (target.tagName === 'IMG') {
+    if (target?.tagName === 'IMG') {
       e.preventDefault();
     }
   });
