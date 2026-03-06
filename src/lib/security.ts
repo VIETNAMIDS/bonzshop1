@@ -120,7 +120,7 @@ export function enableCopyProtection() {
   // Disable text selection on sensitive elements
   document.addEventListener('selectstart', (e) => {
     const target = e.target as HTMLElement;
-    if (target.closest('input, textarea, [contenteditable]')) return; // Allow in inputs
+    if (target && typeof target.closest === 'function' && target.closest('input, textarea, [contenteditable]')) return;
     // Allow selection in normal content, just prevent on sensitive areas
   });
 
@@ -136,7 +136,7 @@ export function enableCopyProtection() {
   // Disable drag
   document.addEventListener('dragstart', (e) => {
     const target = e.target as HTMLElement;
-    if (target.tagName === 'IMG') {
+    if (target?.tagName === 'IMG') {
       e.preventDefault();
     }
   });
