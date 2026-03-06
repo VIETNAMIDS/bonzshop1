@@ -34,7 +34,7 @@ export function Footer() {
       <div className="absolute inset-0 grid-pattern opacity-10 pointer-events-none" />
       
       <div className="container mx-auto px-4 py-12 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div>
             <img src={bonzshopLogo} alt="BonzShop" className="h-16 w-auto mb-4" />
