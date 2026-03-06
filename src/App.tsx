@@ -40,6 +40,8 @@ import MyWebsites from "./pages/MyWebsites";
 import ChildWebsiteRouter from "./pages/ChildWebsiteRouter";
 
 import About from "./pages/About";
+import Terms from "./pages/Terms";
+import Guide from "./pages/Guide";
 import Welcome from "./pages/Welcome";
 import NotFound from "./pages/NotFound";
 import ApiDocs from "./pages/ApiDocs";
@@ -104,6 +106,8 @@ const App = () => (
               <Route path="/rewards" element={<Rewards />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/guide" element={<Guide />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </GeoProtection>
