@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MessageCircle, ShoppingBag, Shield, FileText, Gift, FolderOpen } from 'lucide-react';
+import { MessageCircle, ShoppingBag, Shield, FileText, Gift, FolderOpen, BookOpen, Scale } from 'lucide-react';
 import bonzshopLogo from '@/assets/bonzshop-logo.png';
 
 const footerLinks = [
@@ -17,6 +17,13 @@ const footerLinks = [
       { to: '/chat', label: 'Chat', icon: MessageCircle },
       { to: '/posts', label: 'Bài viết', icon: FileText },
       { to: '/scam-reports', label: 'Báo cáo Scam', icon: Shield },
+    ],
+  },
+  {
+    title: 'HỖ TRỢ',
+    links: [
+      { to: '/guide', label: 'Hướng dẫn sử dụng', icon: BookOpen },
+      { to: '/terms', label: 'Điều khoản sử dụng', icon: Scale },
     ],
   },
 ];
