@@ -63,19 +63,29 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get current user coin balance
-    const { data: coinData, error: coinError } = await supabase
+    // Get current user coin balance (auto-create if missing)
+    let { data: coinData, error: coinError } = await supabase
       .from('user_coins')
       .select('id, balance')
       .eq('user_id', userId)
       .single();
 
     if (coinError || !coinData) {
-      console.error('Coin balance not found:', coinError);
-      return new Response(
-        JSON.stringify({ error: 'Không tìm thấy số dư xu' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      console.log('No coin record found, creating one for user:', userId);
+      const { data: newCoin, error: insertError } = await supabase
+        .from('user_coins')
+        .insert({ user_id: userId, balance: 0 })
+        .select('id, balance')
+        .single();
+
+      if (insertError || !newCoin) {
+        console.error('Failed to create coin record:', insertError);
+        return new Response(
+          JSON.stringify({ error: 'Không thể tạo ví xu. Vui lòng thử lại.' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      coinData = newCoin;
     }
 
     console.log('Current balance:', coinData.balance, 'Required:', requiredCoins);
