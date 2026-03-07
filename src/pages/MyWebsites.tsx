@@ -37,6 +37,7 @@ interface ChildWebsite {
   bank_name: string | null;
   bank_account_name: string | null;
   bank_account_number: string | null;
+  custom_domain: string | null;
   is_active: boolean;
   created_at: string;
 }
@@ -64,6 +65,8 @@ export default function MyWebsites() {
   const [bankName, setBankName] = useState('');
   const [bankAccountName, setBankAccountName] = useState('');
   const [bankAccountNumber, setBankAccountNumber] = useState('');
+  const [customDomain, setCustomDomain] = useState('');
+  const [showGuide, setShowGuide] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
