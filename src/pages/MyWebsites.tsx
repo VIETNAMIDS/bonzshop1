@@ -645,6 +645,9 @@ export default function MyWebsites() {
                       <CardTitle className="text-lg">{website.name}</CardTitle>
                       <CardDescription className="text-xs mt-1">
                         /store/{website.slug}
+                        {website.custom_domain && (
+                          <span className="block text-primary">🌐 {website.custom_domain}</span>
+                        )}
                       </CardDescription>
                     </div>
                     <div 
