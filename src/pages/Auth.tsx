@@ -836,19 +836,20 @@ export default function Auth() {
             </div>
 
             {view === 'signup' && (
-              <div className="flex items-start gap-2">
+              <div className="flex items-start gap-3 p-3 rounded-lg border border-primary/30 bg-primary/5">
                 <input
                   type="checkbox"
                   id="accept-terms"
                   checked={acceptedTerms}
                   onChange={(e) => setAcceptedTerms(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-border accent-primary cursor-pointer"
+                  className="mt-0.5 h-5 w-5 min-w-[20px] rounded border-2 border-primary accent-primary cursor-pointer"
                 />
-                <label htmlFor="accept-terms" className="text-xs text-muted-foreground cursor-pointer select-none">
+                <label htmlFor="accept-terms" className="text-sm text-foreground cursor-pointer select-none leading-snug">
                   Tôi đã đọc và đồng ý với{' '}
-                  <a href="/terms" target="_blank" className="text-primary hover:underline font-medium">
+                  <a href="/terms" target="_blank" className="text-primary hover:underline font-semibold">
                     Điều khoản sử dụng
-                  </a>
+                  </a>{' '}
+                  của BonzShop
                 </label>
               </div>
             )}
