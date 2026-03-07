@@ -21,7 +21,13 @@ import {
   Edit, 
   Eye,
   Palette,
-  Building2
+  Building2,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
+  Link2,
+  Copy,
+  Check
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -194,6 +200,7 @@ export default function MyWebsites() {
           bank_name: bankName.trim() || null,
           bank_account_name: bankAccountName.trim() || null,
           bank_account_number: bankAccountNumber.trim() || null,
+          custom_domain: customDomain.trim() || null,
         })
         .select()
         .single();
@@ -214,6 +221,7 @@ export default function MyWebsites() {
       setBankName('');
       setBankAccountName('');
       setBankAccountNumber('');
+      setCustomDomain('');
       setIsCreateDialogOpen(false);
       
       // Refresh data
@@ -245,6 +253,7 @@ export default function MyWebsites() {
           bank_name: bankName.trim() || null,
           bank_account_name: bankAccountName.trim() || null,
           bank_account_number: bankAccountNumber.trim() || null,
+          custom_domain: customDomain.trim() || null,
         })
         .eq('id', editingWebsite.id);
       
@@ -309,6 +318,7 @@ export default function MyWebsites() {
     setBankName(website.bank_name || '');
     setBankAccountName(website.bank_account_name || '');
     setBankAccountNumber(website.bank_account_number || '');
+    setCustomDomain(website.custom_domain || '');
   };
 
   const resetForm = () => {
@@ -320,6 +330,7 @@ export default function MyWebsites() {
     setBankName('');
     setBankAccountName('');
     setBankAccountNumber('');
+    setCustomDomain('');
   };
 
   if (authLoading || isLoading) {
