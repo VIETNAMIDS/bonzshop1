@@ -21,7 +21,13 @@ import {
   Edit, 
   Eye,
   Palette,
-  Building2
+  Building2,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
+  Link2,
+  Copy,
+  Check
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -37,6 +43,7 @@ interface ChildWebsite {
   bank_name: string | null;
   bank_account_name: string | null;
   bank_account_number: string | null;
+  custom_domain: string | null;
   is_active: boolean;
   created_at: string;
 }
@@ -64,6 +71,8 @@ export default function MyWebsites() {
   const [bankName, setBankName] = useState('');
   const [bankAccountName, setBankAccountName] = useState('');
   const [bankAccountNumber, setBankAccountNumber] = useState('');
+  const [customDomain, setCustomDomain] = useState('');
+  const [showGuide, setShowGuide] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -191,6 +200,7 @@ export default function MyWebsites() {
           bank_name: bankName.trim() || null,
           bank_account_name: bankAccountName.trim() || null,
           bank_account_number: bankAccountNumber.trim() || null,
+          custom_domain: customDomain.trim() || null,
         })
         .select()
         .single();
@@ -211,6 +221,7 @@ export default function MyWebsites() {
       setBankName('');
       setBankAccountName('');
       setBankAccountNumber('');
+      setCustomDomain('');
       setIsCreateDialogOpen(false);
       
       // Refresh data
@@ -242,6 +253,7 @@ export default function MyWebsites() {
           bank_name: bankName.trim() || null,
           bank_account_name: bankAccountName.trim() || null,
           bank_account_number: bankAccountNumber.trim() || null,
+          custom_domain: customDomain.trim() || null,
         })
         .eq('id', editingWebsite.id);
       
@@ -306,6 +318,7 @@ export default function MyWebsites() {
     setBankName(website.bank_name || '');
     setBankAccountName(website.bank_account_name || '');
     setBankAccountNumber(website.bank_account_number || '');
+    setCustomDomain(website.custom_domain || '');
   };
 
   const resetForm = () => {
@@ -317,6 +330,7 @@ export default function MyWebsites() {
     setBankName('');
     setBankAccountName('');
     setBankAccountNumber('');
+    setCustomDomain('');
   };
 
   if (authLoading || isLoading) {
@@ -484,6 +498,23 @@ export default function MyWebsites() {
                       </div>
                     </div>
                   </div>
+
+                  <div className="border-t pt-4 mt-4">
+                    <h4 className="font-medium flex items-center gap-2 mb-3">
+                      <Link2 className="h-4 w-4" />
+                      Domain tùy chỉnh (tùy chọn)
+                    </h4>
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="VD: myshop.com"
+                        value={customDomain}
+                        onChange={(e) => setCustomDomain(e.target.value.toLowerCase().replace(/[^a-z0-9.-]/g, ''))}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Nhập domain riêng nếu bạn muốn trỏ domain về web con. Cần cấu hình DNS trỏ về server.
+                      </p>
+                    </div>
+                  </div>
                 </div>
                 
                 <DialogFooter>
@@ -512,6 +543,68 @@ export default function MyWebsites() {
             </Dialog>
           </div>
         </div>
+
+        {/* Guide Section */}
+        <Card className="mb-8 border-primary/20">
+          <CardContent className="p-0">
+            <button
+              onClick={() => setShowGuide(!showGuide)}
+              className="w-full flex items-center justify-between p-4 hover:bg-accent/50 transition-colors rounded-lg"
+            >
+              <div className="flex items-center gap-3">
+                <BookOpen className="h-5 w-5 text-primary" />
+                <span className="font-semibold">📖 Hướng dẫn sử dụng Web Con</span>
+              </div>
+              {showGuide ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+            </button>
+            
+            {showGuide && (
+              <div className="px-4 pb-4 space-y-4 border-t border-border/50 pt-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2 p-3 rounded-lg bg-accent/30">
+                    <h4 className="font-semibold text-sm flex items-center gap-2">🚀 Bước 1: Tạo Web Con</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Nhấn "Tạo Web Con" và điền thông tin: tên shop, màu sắc, thông tin ngân hàng. Chi phí {WEBSITE_COST} xu.
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2 p-3 rounded-lg bg-accent/30">
+                    <h4 className="font-semibold text-sm flex items-center gap-2">🎨 Bước 2: Tùy chỉnh</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Chọn màu chính/phụ, thêm mô tả, cập nhật thông tin ngân hàng để nhận thanh toán riêng.
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2 p-3 rounded-lg bg-accent/30">
+                    <h4 className="font-semibold text-sm flex items-center gap-2">🌐 Bước 3: Truy cập Web</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Web con có địa chỉ <code className="bg-background px-1 rounded text-xs">/store/ten-website</code>. 
+                      Chia sẻ link này cho khách hàng. Bạn cũng có thể nhập domain riêng trong phần chỉnh sửa.
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2 p-3 rounded-lg bg-accent/30">
+                    <h4 className="font-semibold text-sm flex items-center gap-2">📦 Bước 4: Quản lý sản phẩm</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Web con kế thừa toàn bộ danh mục tài khoản, bài viết, chat và hệ thống đơn hàng từ BonzShop. 
+                      Đơn hàng sẽ thanh toán qua ngân hàng của bạn.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+                  <h4 className="font-semibold text-sm mb-2">💡 Lưu ý quan trọng</h4>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Web con hiển thị nhãn "Powered by BonzShop" cố định</li>
+                    <li>Bạn có thể tắt/bật web con bất cứ lúc nào</li>
+                    <li>Nếu dùng domain riêng, hãy trỏ CNAME/A record về server</li>
+                    <li>Khách hàng đặt hàng trên web con sẽ thanh toán qua ngân hàng của bạn</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Websites Grid */}
         {websites.length === 0 ? (
@@ -552,6 +645,9 @@ export default function MyWebsites() {
                       <CardTitle className="text-lg">{website.name}</CardTitle>
                       <CardDescription className="text-xs mt-1">
                         /store/{website.slug}
+                        {website.custom_domain && (
+                          <span className="block text-primary">🌐 {website.custom_domain}</span>
+                        )}
                       </CardDescription>
                     </div>
                     <div 
@@ -725,6 +821,23 @@ export default function MyWebsites() {
                       onChange={(e) => setBankAccountNumber(e.target.value)}
                     />
                   </div>
+                </div>
+              </div>
+
+              <div className="border-t pt-4 mt-4">
+                <h4 className="font-medium flex items-center gap-2 mb-3">
+                  <Link2 className="h-4 w-4" />
+                  Domain tùy chỉnh (tùy chọn)
+                </h4>
+                <div className="space-y-2">
+                  <Input
+                    placeholder="VD: myshop.com"
+                    value={customDomain}
+                    onChange={(e) => setCustomDomain(e.target.value.toLowerCase().replace(/[^a-z0-9.-]/g, ''))}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Nhập domain riêng nếu bạn muốn trỏ domain về web con.
+                  </p>
                 </div>
               </div>
             </div>
