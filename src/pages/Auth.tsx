@@ -118,6 +118,7 @@ export default function Auth() {
   const [pendingSignup, setPendingSignup] = useState<{ email: string; password: string; displayName: string } | null>(null);
   const [redirectToWelcome, setRedirectToWelcome] = useState(false);
   const [honeypot, setHoneypot] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [formTimer] = useState(() => createFormTimer());
   const [lockoutMessage, setLockoutMessage] = useState('');
   const [searchParams] = useSearchParams();
@@ -834,12 +835,30 @@ export default function Auth() {
               )}
             </div>
 
+            {view === 'signup' && (
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  id="accept-terms"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-border accent-primary cursor-pointer"
+                />
+                <label htmlFor="accept-terms" className="text-xs text-muted-foreground cursor-pointer select-none">
+                  Tôi đã đọc và đồng ý với{' '}
+                  <a href="/terms" target="_blank" className="text-primary hover:underline font-medium">
+                    Điều khoản sử dụng
+                  </a>
+                </label>
+              </div>
+            )}
+
             <Button
               type="submit"
               className="w-full h-12 md:h-11 text-base md:text-sm"
               variant="gradient"
               size="lg"
-              disabled={isLoading || isBlocked}
+              disabled={isLoading || isBlocked || (view === 'signup' && !acceptedTerms)}
             >
               {isLoading ? (
                 <>
