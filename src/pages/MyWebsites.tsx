@@ -498,6 +498,23 @@ export default function MyWebsites() {
                       </div>
                     </div>
                   </div>
+
+                  <div className="border-t pt-4 mt-4">
+                    <h4 className="font-medium flex items-center gap-2 mb-3">
+                      <Link2 className="h-4 w-4" />
+                      Domain tùy chỉnh (tùy chọn)
+                    </h4>
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="VD: myshop.com"
+                        value={customDomain}
+                        onChange={(e) => setCustomDomain(e.target.value.toLowerCase().replace(/[^a-z0-9.-]/g, ''))}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Nhập domain riêng nếu bạn muốn trỏ domain về web con. Cần cấu hình DNS trỏ về server.
+                      </p>
+                    </div>
+                  </div>
                 </div>
                 
                 <DialogFooter>
@@ -739,6 +756,23 @@ export default function MyWebsites() {
                       onChange={(e) => setBankAccountNumber(e.target.value)}
                     />
                   </div>
+                </div>
+              </div>
+
+              <div className="border-t pt-4 mt-4">
+                <h4 className="font-medium flex items-center gap-2 mb-3">
+                  <Link2 className="h-4 w-4" />
+                  Domain tùy chỉnh (tùy chọn)
+                </h4>
+                <div className="space-y-2">
+                  <Input
+                    placeholder="VD: myshop.com"
+                    value={customDomain}
+                    onChange={(e) => setCustomDomain(e.target.value.toLowerCase().replace(/[^a-z0-9.-]/g, ''))}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Nhập domain riêng nếu bạn muốn trỏ domain về web con.
+                  </p>
                 </div>
               </div>
             </div>
