@@ -424,6 +424,7 @@ export type Database = {
           bank_qr_url: string | null
           banner_url: string | null
           created_at: string
+          custom_domain: string | null
           description: string | null
           id: string
           is_active: boolean | null
@@ -441,6 +442,7 @@ export type Database = {
           bank_qr_url?: string | null
           banner_url?: string | null
           created_at?: string
+          custom_domain?: string | null
           description?: string | null
           id?: string
           is_active?: boolean | null
@@ -458,6 +460,7 @@ export type Database = {
           bank_qr_url?: string | null
           banner_url?: string | null
           created_at?: string
+          custom_domain?: string | null
           description?: string | null
           id?: string
           is_active?: boolean | null

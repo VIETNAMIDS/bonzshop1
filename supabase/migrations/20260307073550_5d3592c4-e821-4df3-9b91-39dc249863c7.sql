@@ -1,0 +1,1 @@
+ALTER TABLE public.child_websites ADD COLUMN custom_domain character varying NULL;
