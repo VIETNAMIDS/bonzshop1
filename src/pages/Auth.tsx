@@ -118,6 +118,7 @@ export default function Auth() {
   const [pendingSignup, setPendingSignup] = useState<{ email: string; password: string; displayName: string } | null>(null);
   const [redirectToWelcome, setRedirectToWelcome] = useState(false);
   const [honeypot, setHoneypot] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [formTimer] = useState(() => createFormTimer());
   const [lockoutMessage, setLockoutMessage] = useState('');
   const [searchParams] = useSearchParams();
