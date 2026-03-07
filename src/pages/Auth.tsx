@@ -270,10 +270,23 @@ export default function Auth() {
       return;
     }
 
-    // Anti-bot: Honeypot check
-    if (isHoneypotTriggered(honeypot)) {
-      // Silently reject - don't reveal detection
+    // Anti-bot: Honeypot check (ignore common browser autofill false-positives)
+    const normalizedHoneypot = honeypot.trim();
+    const isLikelyAutofillFalsePositive =
+      normalizedHoneypot.length > 0 &&
+      (normalizedHoneypot === email.trim() || normalizedHoneypot.includes('@'));
+
+    if (isHoneypotTriggered(honeypot) && !isLikelyAutofillFalsePositive) {
+      toast({
+        title: '⚠️ Phát hiện yêu cầu bất thường',
+        description: 'Vui lòng thử lại.',
+        variant: 'destructive',
+      });
       return;
+    }
+
+    if (isLikelyAutofillFalsePositive) {
+      setHoneypot('');
     }
 
     // Anti-bot: Timing check
