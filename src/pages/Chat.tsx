@@ -14,6 +14,7 @@ import { ChatMessage } from '@/components/chat/ChatMessage';
 import { EmojiPicker } from '@/components/chat/EmojiPicker';
 import { FriendsList } from '@/components/chat/FriendsList';
 import { PrivateChat } from '@/components/chat/PrivateChat';
+import { BotChat } from '@/components/chat/BotChat';
 
 interface ChatMessageData {
   id: string;
@@ -59,6 +60,7 @@ export default function Chat() {
     name: string;
     avatar?: string;
   } | null>(null);
+  const [botChatOpen, setBotChatOpen] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -546,6 +548,15 @@ export default function Chat() {
                 <Button
                   variant="outline"
                   size="sm"
+                  onClick={() => setBotChatOpen(true)}
+                  className="gap-1 border-cyan-500/30 hover:bg-cyan-500/10"
+                >
+                  <Bot className="h-4 w-4 text-cyan-500" />
+                  <span className="hidden sm:inline">BonzBot</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={handleContactAdmin}
                   className="gap-1"
                 >
@@ -709,6 +720,9 @@ export default function Chat() {
           }}
         />
       )}
+
+      {/* Bot Chat Modal */}
+      <BotChat isOpen={botChatOpen} onClose={() => setBotChatOpen(false)} />
       </PageWrapper>
     </div>
   );
