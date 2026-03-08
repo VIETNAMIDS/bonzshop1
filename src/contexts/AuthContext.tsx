@@ -137,21 +137,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Check if user is banned
-    const isBanned = await checkBanStatus(currentUser.id);
-    if (isBanned) {
-      console.log('User is banned, signing out...');
-      await supabase.auth.signOut();
-      setUser(null);
-      setSession(null);
-      setIsAdmin(false);
-      setSellerProfile(null);
-      setUserProfile(null);
-      // Show a message after a short delay to avoid race conditions
-      setTimeout(() => {
-        alert('Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.');
-      }, 100);
-      return;
+    // Check admin first, then ban status (admins are exempt from ban)
+    const isAdminResult = await checkAdminRole(currentUser.id);
+    
+    // Only check ban for non-admin users
+    if (!isAdminResult) {
+      const isBanned = await checkBanStatus(currentUser.id);
+      if (isBanned) {
+        console.log('User is banned, signing out...');
+        await supabase.auth.signOut();
+        setUser(null);
+        setSession(null);
+        setIsAdmin(false);
+        setSellerProfile(null);
+        setUserProfile(null);
+        setTimeout(() => {
+          alert('Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.');
+        }, 100);
+        return;
+      }
     }
 
     const [isAdminResult, profile, uProfile] = await Promise.all([
