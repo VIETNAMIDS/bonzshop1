@@ -458,6 +458,15 @@ export default function UserProfile() {
                       Hệ thống sẽ gửi email xác nhận khi bạn thay đổi địa chỉ đăng nhập.
                     </p>
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Số điện thoại</Label>
+                    <Input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="Nhập số điện thoại"
+                    />
+                  </div>
                   <div className="border-t border-border pt-4">
                     <h4 className="font-medium mb-3">Đổi mật khẩu (tùy chọn)</h4>
                     <div className="space-y-3">
