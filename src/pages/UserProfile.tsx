@@ -377,8 +377,20 @@ export default function UserProfile() {
           <Card className="glass border-border/50">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                  <User className="h-8 w-8 text-primary" />
+                <div className="relative">
+                  {formData.avatar_url ? (
+                    <img src={formData.avatar_url} alt="Avatar" className="h-16 w-16 rounded-full object-cover border-2 border-primary/30" />
+                  ) : (
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                      <User className="h-8 w-8 text-primary" />
+                    </div>
+                  )}
+                  {editing && (
+                    <label className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-primary flex items-center justify-center cursor-pointer hover:bg-primary/80 transition-colors">
+                      <Camera className="h-3 w-3 text-primary-foreground" />
+                      <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={avatarUploading} />
+                    </label>
+                  )}
                 </div>
                 <div className="flex-1">
                   <h2 className="text-xl font-bold">{formData.display_name || 'Người dùng'}</h2>
