@@ -48,6 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null);
   const [needsSellerSetup, setNeedsSellerSetup] = useState(false);
   const [userProfile, setUserProfile] = useState<Profile | null>(null);
+  const [isBanned, setIsBanned] = useState(false);
+  const [banReason, setBanReason] = useState('');
 
   const checkAdminRole = async (userId: string) => {
     try {
