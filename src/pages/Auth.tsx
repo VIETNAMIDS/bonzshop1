@@ -893,10 +893,13 @@ export default function Auth() {
               onClick={async () => {
                 try {
                   setIsLoading(true);
-                  const redirectUri = 'https://bonzshop.site/auth';
-                  await lovable.auth.signInWithOAuth('google', {
-                    redirect_uri: redirectUri,
+                  const { error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                      redirectTo: 'https://bonzshop.site/auth',
+                    },
                   });
+                  if (error) throw error;
                 } catch (err: any) {
                   toast({
                     title: 'Lỗi đăng nhập Google',
