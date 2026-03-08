@@ -51,22 +51,29 @@ serve(async (req) => {
       });
     }
 
-    // Check if user is already banned
-    const { data: banData } = await supabase
-      .from("banned_users").select("id").eq("user_id", userId).limit(1);
-    if (banData && banData.length > 0) {
-      return new Response(JSON.stringify({ error: "Tài khoản của bạn đã bị khóa." }), {
-        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Check admin status early (admins skip ban/mute checks)
+    const { data: adminRoleEarly } = await supabase
+      .from("user_roles").select("id").eq("user_id", userId).eq("role", "admin").limit(1);
+    const isAdminUser = adminRoleEarly && adminRoleEarly.length > 0;
 
-    // Check if user is muted from chat
-    const { data: muteData } = await supabase
-      .from("chat_muted_users").select("id").eq("user_id", userId).is("unmuted_at", null).limit(1);
-    if (muteData && muteData.length > 0) {
-      return new Response(JSON.stringify({ error: "Bạn đã bị cấm chat." }), {
-        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // Check if user is already banned (skip for admins)
+    if (!isAdminUser) {
+      const { data: banData } = await supabase
+        .from("banned_users").select("id").eq("user_id", userId).limit(1);
+      if (banData && banData.length > 0) {
+        return new Response(JSON.stringify({ error: "Tài khoản của bạn đã bị khóa." }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Check if user is muted from chat
+      const { data: muteData } = await supabase
+        .from("chat_muted_users").select("id").eq("user_id", userId).is("unmuted_at", null).limit(1);
+      if (muteData && muteData.length > 0) {
+        return new Response(JSON.stringify({ error: "Bạn đã bị cấm chat." }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Handle purchase action directly
