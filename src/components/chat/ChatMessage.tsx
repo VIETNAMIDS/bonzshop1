@@ -96,6 +96,7 @@ export function ChatMessage({
   imageUrl,
   isOwn,
   isRecalled,
+  gradientColor,
   profile,
   createdAt,
   userId,
@@ -110,6 +111,7 @@ export function ChatMessage({
   onAdminUnmute,
   showAnimation = false,
 }: ChatMessageProps) {
+  const isSystemBan = gradientColor === 'system-ban';
   const [showActions, setShowActions] = useState(false);
   const [sparkles, setSparkles] = useState<{ id: number; x: number; y: number; emoji: string }[]>([]);
   const gradient = getGradient(id);
