@@ -121,7 +121,10 @@ serve(async (req) => {
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // === SPAM DETECTION ===
+    // === SPAM DETECTION (skip for admins) ===
+    if (isUserAdmin) {
+      // Admins bypass spam detection
+    } else {
     const oneMinuteAgo = new Date(Date.now() - SPAM_WINDOW_MS).toISOString();
     const { count: recentMsgCount } = await supabase
       .from("bot_chat_messages")
