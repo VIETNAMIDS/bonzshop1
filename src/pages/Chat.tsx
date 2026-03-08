@@ -514,11 +514,16 @@ export default function Chat() {
                   createdAt={msg.created_at}
                   userId={msg.user_id}
                   currentUserId={user?.id}
-                  onRecall={handleRecallMessage}
-                  onAddFriend={handleAddFriend}
-                  onSendPrivateMessage={handleOpenPrivateChat}
-                  showAnimation={newMessageIds.has(msg.id)}
-                />
+                   onRecall={handleRecallMessage}
+                   onAddFriend={handleAddFriend}
+                   onSendPrivateMessage={handleOpenPrivateChat}
+                   isAdmin={isAdmin}
+                   isMuted={mutedUserIds.has(msg.user_id)}
+                   onAdminDelete={handleAdminDeleteMessage}
+                   onAdminMute={handleAdminMute}
+                   onAdminUnmute={handleAdminUnmute}
+                   showAnimation={newMessageIds.has(msg.id)}
+                 />
               ))
             )}
             <div ref={messagesEndRef} />
