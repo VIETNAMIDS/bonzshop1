@@ -122,43 +122,41 @@ serve(async (req) => {
     }
 
     // === SPAM DETECTION (skip for admins) ===
-    if (isUserAdmin) {
-      // Admins bypass spam detection
-    } else {
-    const oneMinuteAgo = new Date(Date.now() - SPAM_WINDOW_MS).toISOString();
-    const { count: recentMsgCount } = await supabase
-      .from("bot_chat_messages")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .eq("role", "user")
-      .gte("created_at", oneMinuteAgo);
-
-    if ((recentMsgCount || 0) >= SPAM_MAX_MESSAGES) {
-      // Record spam violation
-      await supabase.from("bot_violations").insert({
-        user_id: userId,
-        message_content: `SPAM: ${recentMsgCount} messages in 1 minute`,
-        violation_type: "spam",
-      });
-
-      const { count: totalViol } = await supabase
-        .from("bot_violations")
+    if (!isUserAdmin) {
+      const oneMinuteAgo = new Date(Date.now() - SPAM_WINDOW_MS).toISOString();
+      const { count: recentMsgCount } = await supabase
+        .from("bot_chat_messages")
         .select("id", { count: "exact", head: true })
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .eq("role", "user")
+        .gte("created_at", oneMinuteAgo);
 
-      if ((totalViol || 0) >= 3) {
-        await autobanUser(supabase, supabaseUrl, userId, "Spam bot quá nhiều lần");
+      if ((recentMsgCount || 0) >= SPAM_MAX_MESSAGES) {
+        await supabase.from("bot_violations").insert({
+          user_id: userId,
+          message_content: `SPAM: ${recentMsgCount} messages in 1 minute`,
+          violation_type: "spam",
+        });
+
+        const { count: totalViol } = await supabase
+          .from("bot_violations")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId);
+
+        if ((totalViol || 0) >= 3) {
+          await autobanUser(supabase, supabaseUrl, userId, "Spam bot quá nhiều lần");
+          return new Response(JSON.stringify({
+            reply: null,
+            auto_banned: true,
+            error: "Tài khoản đã bị khóa do spam.",
+          }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+
         return new Response(JSON.stringify({
-          reply: null,
-          auto_banned: true,
-          error: "Tài khoản đã bị khóa do spam.",
+          reply: `⚠️ **Bạn đang gửi quá nhanh!** Vui lòng chờ 1 phút trước khi gửi tiếp.\n\n⏳ Cảnh báo: ${totalViol}/3`,
+          warning: true,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
-
-      return new Response(JSON.stringify({
-        reply: `⚠️ **Bạn đang gửi quá nhanh!** Vui lòng chờ 1 phút trước khi gửi tiếp.\n\n⏳ Cảnh báo: ${totalViol}/3`,
-        warning: true,
-      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     // === SAVE USER MESSAGE ===
