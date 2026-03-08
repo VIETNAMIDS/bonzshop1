@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { SEOHead, buildBreadcrumbSchema } from '@/components/seo/SEOHead';
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { PageWrapper } from "@/components/layout/PageWrapper";

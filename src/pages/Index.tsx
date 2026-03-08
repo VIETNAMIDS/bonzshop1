@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, lazy, Suspense } from 'react';
+import { SEOHead, buildFAQSchema } from '@/components/seo/SEOHead';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Footer } from '@/components/Footer';
 import { Search, Filter, Sparkles, ShoppingCart, QrCode, CheckCircle, Loader2, Clock, XCircle, Download, TrendingUp, Users, Package, Star, ArrowRight, Zap, Shield, Rocket } from 'lucide-react';

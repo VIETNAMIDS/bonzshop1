@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { SEOHead, buildBreadcrumbSchema } from '@/components/seo/SEOHead';
 import DOMPurify from 'dompurify';
 import { Navbar } from '@/components/Navbar';
 import { PageWrapper } from '@/components/layout/PageWrapper';
