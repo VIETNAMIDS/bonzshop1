@@ -78,8 +78,13 @@ serve(async (req) => {
     // Get the user's latest message for moderation
     const latestMessage = message || (conversationHistory?.length ? conversationHistory[conversationHistory.length - 1]?.content : "");
 
-    // === CONTENT MODERATION ===
-    const violationType = checkInappropriateContent(latestMessage);
+    // Check if user is admin (admins are exempt from moderation)
+    const { data: adminRole } = await supabase
+      .from("user_roles").select("id").eq("user_id", userId).eq("role", "admin").limit(1);
+    const isUserAdmin = adminRole && adminRole.length > 0;
+
+    // === CONTENT MODERATION (skip for admins) ===
+    const violationType = !isUserAdmin ? checkInappropriateContent(latestMessage) : null;
     if (violationType) {
       // Record violation
       await supabase.from("bot_violations").insert({
@@ -116,41 +121,42 @@ serve(async (req) => {
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // === SPAM DETECTION ===
-    const oneMinuteAgo = new Date(Date.now() - SPAM_WINDOW_MS).toISOString();
-    const { count: recentMsgCount } = await supabase
-      .from("bot_chat_messages")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .eq("role", "user")
-      .gte("created_at", oneMinuteAgo);
-
-    if ((recentMsgCount || 0) >= SPAM_MAX_MESSAGES) {
-      // Record spam violation
-      await supabase.from("bot_violations").insert({
-        user_id: userId,
-        message_content: `SPAM: ${recentMsgCount} messages in 1 minute`,
-        violation_type: "spam",
-      });
-
-      const { count: totalViol } = await supabase
-        .from("bot_violations")
+    // === SPAM DETECTION (skip for admins) ===
+    if (!isUserAdmin) {
+      const oneMinuteAgo = new Date(Date.now() - SPAM_WINDOW_MS).toISOString();
+      const { count: recentMsgCount } = await supabase
+        .from("bot_chat_messages")
         .select("id", { count: "exact", head: true })
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .eq("role", "user")
+        .gte("created_at", oneMinuteAgo);
 
-      if ((totalViol || 0) >= 3) {
-        await autobanUser(supabase, supabaseUrl, userId, "Spam bot quá nhiều lần");
+      if ((recentMsgCount || 0) >= SPAM_MAX_MESSAGES) {
+        await supabase.from("bot_violations").insert({
+          user_id: userId,
+          message_content: `SPAM: ${recentMsgCount} messages in 1 minute`,
+          violation_type: "spam",
+        });
+
+        const { count: totalViol } = await supabase
+          .from("bot_violations")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId);
+
+        if ((totalViol || 0) >= 3) {
+          await autobanUser(supabase, supabaseUrl, userId, "Spam bot quá nhiều lần");
+          return new Response(JSON.stringify({
+            reply: null,
+            auto_banned: true,
+            error: "Tài khoản đã bị khóa do spam.",
+          }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+
         return new Response(JSON.stringify({
-          reply: null,
-          auto_banned: true,
-          error: "Tài khoản đã bị khóa do spam.",
+          reply: `⚠️ **Bạn đang gửi quá nhanh!** Vui lòng chờ 1 phút trước khi gửi tiếp.\n\n⏳ Cảnh báo: ${totalViol}/3`,
+          warning: true,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
-
-      return new Response(JSON.stringify({
-        reply: `⚠️ **Bạn đang gửi quá nhanh!** Vui lòng chờ 1 phút trước khi gửi tiếp.\n\n⏳ Cảnh báo: ${totalViol}/3`,
-        warning: true,
-      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     // === SAVE USER MESSAGE ===
