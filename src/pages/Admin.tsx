@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, Edit, Save, X, Loader2, Users, FolderOpen, Gift, User, ShoppingCart, Store, Coins, Package, Upload, FileText, Settings, Skull, Ticket, Globe, Key } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Edit, Save, X, Loader2, Users, FolderOpen, Gift, User, ShoppingCart, Store, Coins, Package, Upload, FileText, Settings, Skull, Ticket, Globe, Key, Bot } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
