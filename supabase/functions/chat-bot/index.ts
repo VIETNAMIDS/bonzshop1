@@ -34,7 +34,7 @@ serve(async (req) => {
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { message, messages: conversationHistory, action, action_data } = await req.json();
+    const { message, messages: conversationHistory, action, action_data, image_base64 } = await req.json();
 
     // Authenticate user
     const authHeader = req.headers.get("Authorization");
