@@ -670,7 +670,7 @@ export default function Chat() {
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Nhập tin nhắn... (hỗ trợ link)"
+                  placeholder="Nhập tin nhắn... (gõ @bot để hỏi AI)"
                   disabled={sending}
                   className="flex-1"
                 />
