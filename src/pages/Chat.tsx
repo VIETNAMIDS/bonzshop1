@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Send, Image as ImageIcon, AlertTriangle, Loader2, X, Ban, Shield, Bot } from 'lucide-react';
+import { Send, Image as ImageIcon, AlertTriangle, Loader2, X, Ban, Shield, Bot, Pin, ChevronDown, ChevronUp } from 'lucide-react';
 import { ChatMessage } from '@/components/chat/ChatMessage';
 import { EmojiPicker } from '@/components/chat/EmojiPicker';
 import { FriendsList } from '@/components/chat/FriendsList';
