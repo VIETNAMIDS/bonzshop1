@@ -259,9 +259,14 @@ export default function Chat() {
             }, 1000);
           } else if (payload.eventType === 'UPDATE') {
             const updatedMsg = payload.new as ChatMessageData;
-            setMessages(prev => prev.map(m => 
-              m.id === updatedMsg.id ? { ...m, ...updatedMsg } : m
-            ));
+            if (updatedMsg.is_deleted) {
+              // Remove deleted messages from UI
+              setMessages(prev => prev.filter(m => m.id !== updatedMsg.id));
+            } else {
+              setMessages(prev => prev.map(m => 
+                m.id === updatedMsg.id ? { ...m, ...updatedMsg } : m
+              ));
+            }
           }
         }
       )
