@@ -41,9 +41,8 @@ serve(async (req) => {
       const authClient = createClient(supabaseUrl, supabaseAnonKey, {
         global: { headers: { Authorization: authHeader } },
       });
-      const token = authHeader.replace("Bearer ", "");
-      const { data: claimsData } = await authClient.auth.getClaims(token);
-      userId = claimsData?.claims?.sub || null;
+      const { data: { user: authUser } } = await authClient.auth.getUser();
+      userId = authUser?.id || null;
     }
 
     if (!userId) {
@@ -52,22 +51,29 @@ serve(async (req) => {
       });
     }
 
-    // Check if user is already banned
-    const { data: banData } = await supabase
-      .from("banned_users").select("id").eq("user_id", userId).limit(1);
-    if (banData && banData.length > 0) {
-      return new Response(JSON.stringify({ error: "Tài khoản của bạn đã bị khóa." }), {
-        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Check admin status early (admins skip ban/mute checks)
+    const { data: adminRoleEarly } = await supabase
+      .from("user_roles").select("id").eq("user_id", userId).eq("role", "admin").limit(1);
+    const isAdminUser = adminRoleEarly && adminRoleEarly.length > 0;
 
-    // Check if user is muted from chat
-    const { data: muteData } = await supabase
-      .from("chat_muted_users").select("id").eq("user_id", userId).is("unmuted_at", null).limit(1);
-    if (muteData && muteData.length > 0) {
-      return new Response(JSON.stringify({ error: "Bạn đã bị cấm chat." }), {
-        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // Check if user is already banned (skip for admins)
+    if (!isAdminUser) {
+      const { data: banData } = await supabase
+        .from("banned_users").select("id").eq("user_id", userId).limit(1);
+      if (banData && banData.length > 0) {
+        return new Response(JSON.stringify({ error: "Tài khoản của bạn đã bị khóa." }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Check if user is muted from chat
+      const { data: muteData } = await supabase
+        .from("chat_muted_users").select("id").eq("user_id", userId).is("unmuted_at", null).limit(1);
+      if (muteData && muteData.length > 0) {
+        return new Response(JSON.stringify({ error: "Bạn đã bị cấm chat." }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Handle purchase action directly
@@ -78,13 +84,8 @@ serve(async (req) => {
     // Get the user's latest message for moderation
     const latestMessage = message || (conversationHistory?.length ? conversationHistory[conversationHistory.length - 1]?.content : "");
 
-    // Check if user is admin (admins are exempt from moderation)
-    const { data: adminRole } = await supabase
-      .from("user_roles").select("id").eq("user_id", userId).eq("role", "admin").limit(1);
-    const isUserAdmin = adminRole && adminRole.length > 0;
-
     // === CONTENT MODERATION (skip for admins) ===
-    const violationType = !isUserAdmin ? checkInappropriateContent(latestMessage) : null;
+    const violationType = !isAdminUser ? checkInappropriateContent(latestMessage) : null;
     if (violationType) {
       // Record violation
       await supabase.from("bot_violations").insert({
@@ -122,7 +123,7 @@ serve(async (req) => {
     }
 
     // === SPAM DETECTION (skip for admins) ===
-    if (!isUserAdmin) {
+    if (!isAdminUser) {
       const oneMinuteAgo = new Date(Date.now() - SPAM_WINDOW_MS).toISOString();
       const { count: recentMsgCount } = await supabase
         .from("bot_chat_messages")
@@ -325,6 +326,14 @@ function checkInappropriateContent(message: string): string | null {
 
 async function autobanUser(supabase: any, supabaseUrl: string, userId: string, reason: string) {
   try {
+    // Never ban admins
+    const { data: adminCheck } = await supabase
+      .from("user_roles").select("id").eq("user_id", userId).eq("role", "admin").limit(1);
+    if (adminCheck && adminCheck.length > 0) {
+      console.log(`Skipping auto-ban for admin ${userId}`);
+      return;
+    }
+
     // Ban user
     await supabase.from("banned_users").insert({
       user_id: userId,

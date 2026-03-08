@@ -216,15 +216,24 @@ export default function Chat() {
   const handleBotQuery = async (query: string) => {
     setBotThinking(true);
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      
+      if (!token) {
+        toast({ title: 'Bot lỗi', description: 'Bạn cần đăng nhập để sử dụng bot', variant: 'destructive' });
+        setBotThinking(false);
+        return;
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-bot`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            'Authorization': `Bearer ${token}`,
           },
-          body: JSON.stringify({ message: query, user_id: user?.id }),
+          body: JSON.stringify({ message: query }),
         }
       );
 
