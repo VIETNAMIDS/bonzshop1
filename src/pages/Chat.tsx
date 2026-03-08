@@ -219,12 +219,22 @@ export default function Chat() {
             const newMsg = payload.new as ChatMessageData;
             
             // Avoid duplicates
-            setMessages(prev => {
-              if (prev.some(m => m.id === newMsg.id)) return prev;
-              
-              // Fetch profile for new message (async, update after)
-              return prev;
-            });
+            if (newMsg.is_deleted) return;
+
+            // Auto-moderate: if message contains violations, soft-delete it
+            const violation = checkMessageContent(newMsg.content || '');
+            if (violation && newMsg.user_id !== 'bot') {
+              // Auto-delete the violating message (using service-side via edge or direct)
+              supabase
+                .from('chat_messages')
+                .update({ is_deleted: true })
+                .eq('id', newMsg.id)
+                .then(() => {
+                  console.log(`Auto-deleted message ${newMsg.id} for: ${violation}`);
+                });
+              // Don't add to UI
+              return;
+            }
 
             // Fetch profile then add message
             const { data: profile } = await supabase
@@ -249,9 +259,14 @@ export default function Chat() {
             }, 1000);
           } else if (payload.eventType === 'UPDATE') {
             const updatedMsg = payload.new as ChatMessageData;
-            setMessages(prev => prev.map(m => 
-              m.id === updatedMsg.id ? { ...m, ...updatedMsg } : m
-            ));
+            if (updatedMsg.is_deleted) {
+              // Remove deleted messages from UI
+              setMessages(prev => prev.filter(m => m.id !== updatedMsg.id));
+            } else {
+              setMessages(prev => prev.map(m => 
+                m.id === updatedMsg.id ? { ...m, ...updatedMsg } : m
+              ));
+            }
           }
         }
       )
