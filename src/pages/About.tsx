@@ -9,6 +9,16 @@ import { SEOHead, buildBreadcrumbSchema, buildFAQSchema } from '@/components/seo
 export default function About() {
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Về BonzShop"
+        description="Tìm hiểu về BonzShop - nền tảng mua bán tài khoản, key bản quyền, source code uy tín hàng đầu Việt Nam."
+        keywords="về bonzshop, giới thiệu bonzshop, bonzshop uy tín"
+        canonicalPath="/about"
+        structuredData={buildFAQSchema([
+          { question: 'BonzShop có uy tín không?', answer: 'BonzShop là nền tảng uy tín với hàng nghìn giao dịch thành công, hỗ trợ hoàn tiền nếu sản phẩm không đúng mô tả.' },
+          { question: 'Làm sao để liên hệ BonzShop?', answer: 'Bạn có thể liên hệ qua email support@bonzshop.com hoặc chat trực tiếp trên website.' },
+        ])}
+      />
       <Navbar />
 
       {/* Hero */}
