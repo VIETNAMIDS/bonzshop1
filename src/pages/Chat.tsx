@@ -32,6 +32,7 @@ interface ChatMessageData {
     avatar_url: string | null;
     user_id?: string;
   };
+}
 
 // Content moderation - check message text for violations
 function checkMessageContent(message: string): string | null {
