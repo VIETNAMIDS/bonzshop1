@@ -123,6 +123,7 @@ serve(async (req) => {
         const { data: sellersList } = await supabaseAdmin.from('sellers').select('user_id');
 
         // Get latest session info for each user (any session, not just active)
+        // Fetch all sessions to find ones with IP addresses
         const { data: sessions } = await supabaseAdmin
           .from('user_sessions')
           .select('user_id, ip_address, browser, os, device_name, last_active_at')
