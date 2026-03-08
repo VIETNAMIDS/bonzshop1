@@ -133,9 +133,24 @@ export default function UserProfile() {
         updatePayload.email = trimmedEmail;
       }
 
-      // Update basic profile info (name/email)
+      // Update basic profile info (name/email) in auth
       const { error } = await supabase.auth.updateUser(updatePayload);
       if (error) throw error;
+
+      // Update profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          display_name: trimmedDisplayName,
+          phone: formData.phone.trim() || null,
+          avatar_url: formData.avatar_url || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', user?.id);
+
+      if (profileError) {
+        console.error('Error updating profile table:', profileError);
+      }
 
       // If changing password
       if (formData.new_password) {
