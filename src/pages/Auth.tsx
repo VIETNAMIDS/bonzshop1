@@ -893,7 +893,12 @@ export default function Auth() {
               onClick={async () => {
                 try {
                   setIsLoading(true);
-                  const redirectTo = encodeURIComponent(`${window.location.origin}/auth`);
+                  const isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+                  const callbackUrl = isLocalHost
+                    ? `${window.location.origin}/auth`
+                    : 'https://bonzshop.site/auth';
+
+                  const redirectTo = encodeURIComponent(callbackUrl);
                   window.location.href = `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${redirectTo}`;
                   return;
                 } catch (err: any) {
