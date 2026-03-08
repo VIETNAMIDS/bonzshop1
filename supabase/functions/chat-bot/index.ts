@@ -162,7 +162,7 @@ serve(async (req) => {
       // Warning
       const warningsLeft = 3 - totalViolations;
       return new Response(JSON.stringify({
-        reply: `⚠️ **CẢNH BÁO** (${totalViolations}/3)\n\nTin nhắn của bạn vi phạm quy định (${violationType}). Bạn còn **${warningsLeft} lần** cảnh báo trước khi bị **khóa tài khoản vĩnh viễn**.\n\n❌ Không được gửi nội dung 18+, bạo lực, ma túy, hoặc spam.\n\nHãy sử dụng bot đúng mục đích: tìm kiếm và mua sản phẩm.`,
+        reply: `⚠️ **CẢNH BÁO** (${totalViolations}/3)\n\nTin nhắn của bạn vi phạm quy định (${violationType}). Bạn còn **${warningsLeft} lần** cảnh báo trước khi bị **khóa tài khoản vĩnh viễn**.\n\n❌ Không được gửi nội dung 18+, hack, scam, lừa đảo, bạo lực, ma túy, hoặc spam.\n\nHãy sử dụng bot đúng mục đích: tìm kiếm và mua sản phẩm.`,
         warning: true,
         violations_count: totalViolations,
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
