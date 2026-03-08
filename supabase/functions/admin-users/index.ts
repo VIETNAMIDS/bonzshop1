@@ -122,11 +122,10 @@ serve(async (req) => {
 
         const { data: sellersList } = await supabaseAdmin.from('sellers').select('user_id');
 
-        // Get latest session info for each user
+        // Get latest session info for each user (any session, not just active)
         const { data: sessions } = await supabaseAdmin
           .from('user_sessions')
           .select('user_id, ip_address, browser, os, device_name, last_active_at')
-          .eq('is_active', true)
           .order('last_active_at', { ascending: false });
 
         // Get banned users
