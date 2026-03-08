@@ -396,6 +396,10 @@ export default function Chat() {
   };
 
   const handleAdminMute = async (userId: string) => {
+    if (userId === 'bot') {
+      toast({ title: 'Không thể cấm bot' });
+      return;
+    }
     try {
       const { error } = await supabase
         .from('chat_muted_users')
