@@ -720,6 +720,9 @@ export default function Chat() {
           }}
         />
       )}
+
+      {/* Bot Chat Modal */}
+      <BotChat isOpen={botChatOpen} onClose={() => setBotChatOpen(false)} />
       </PageWrapper>
     </div>
   );
