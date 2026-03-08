@@ -35,6 +35,12 @@ export default function UserProfile() {
   const [registeringSeller, setRegisteringSeller] = useState(false);
 
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [showEmailOtp, setShowEmailOtp] = useState(false);
+  const [emailOtp, setEmailOtp] = useState('');
+  const [otpSending, setOtpSending] = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpCooldown, setOtpCooldown] = useState(0);
+  const [pendingEmailChange, setPendingEmailChange] = useState('');
   const [formData, setFormData] = useState({
     display_name: '',
     email: '',
