@@ -714,6 +714,9 @@ export default function Chat() {
             </div>
           )}
 
+          {/* Pinned Announcement */}
+          <PinnedAnnouncement />
+
           {/* Messages */}
           <div className="h-[500px] overflow-y-auto p-4 space-y-4">
             {messages.length === 0 ? (
