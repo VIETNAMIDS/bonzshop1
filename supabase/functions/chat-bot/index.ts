@@ -308,20 +308,20 @@ QUY TẮC:
 
 function checkInappropriateContent(message: string): string | null {
   if (!message || message.trim().length === 0) return null;
+  const lower = message.toLowerCase();
 
-  for (const pattern of INAPPROPRIATE_PATTERNS) {
-    if (pattern.test(message)) {
-      // Reset regex lastIndex
-      pattern.lastIndex = 0;
-      
-      if (/(.)\1{10,}/gi.test(message)) return "spam (ký tự lặp)";
-      if (/\b(sex|porn|xxx|nude|nud[eê]|kh[iỉ]êu\s*d[aâ]m|d[aâ]m|th[uủ]\s*d[aâ]m|l[oồ]n|c[aặ]c|đ[iị]t|đ[uụ]|ch[iị]ch|lo[aạ]n\s*lu[aâ]n|h[ií]p\s*d[aâ]m)\b/gi.test(message)) return "nội dung 18+";
-      if (/\b(gi[eế]t\s*ng[uư][oờ]i|m[aạ]i\s*d[aâ]m|ma\s*t[uú]y|c[aầ]n\s*sa|thu[oố]c\s*l[aắ]c|heroin|cocaine)\b/gi.test(message)) return "nội dung bạo lực/ma túy";
-      if (/\b(hack|ddos|c[aạ]rd|scam|l[uừ]a\s*đ[aả]o)\b/gi.test(message)) return "nội dung lừa đảo/hack";
-      
-      return "nội dung không phù hợp";
-    }
-  }
+  // Spam: repeated characters
+  if (/(.)\1{10,}/gi.test(message)) return "spam (ký tự lặp)";
+
+  // 18+ explicit content
+  if (/\b(sex|porn|xxx|nude|nud[eê]|kh[iỉ]êu\s*d[aâ]m|d[aâ]m\s*d[uụ]c|th[uủ]\s*d[aâ]m|l[oồ]n|c[aặ]c|đ[iị]t|đ[uụ]|ch[iị]ch|s[uứ]c\s*v[aậ]t|lo[aạ]n\s*lu[aâ]n|h[ií]p\s*d[aâ]m)\b/gi.test(message)) return "nội dung 18+";
+
+  // Violence / drugs
+  if (/\b(gi[eế]t\s*ng[uư][oờ]i|m[aạ]i\s*d[aâ]m|ma\s*t[uú]y|c[aầ]n\s*sa|thu[oố]c\s*l[aắ]c|heroin|cocaine)\b/gi.test(message)) return "nội dung bạo lực/ma túy";
+
+  // NOTE: "hack", "scam", "ddos", "lừa đảo" are NOT hard-filtered
+  // The AI will handle these softly via system prompt (refuse but no warning/ban)
+
   return null;
 }
 
