@@ -6,13 +6,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Inappropriate content patterns (Vietnamese + English)
-// Only catch CLEARLY inappropriate content - not general mentions
+// Inappropriate content patterns (Vietnamese + English) - STRICT: warn for ALL sensitive content
 const INAPPROPRIATE_PATTERNS = [
-  // 18+ / sexual content (explicit only)
-  /\b(sex|porn|xxx|nude|nud[eê]|kh[iỉ]êu\s*d[aâ]m|d[aâ]m\s*d[uụ]c|th[uủ]\s*d[aâ]m|l[oồ]n|c[aặ]c|đ[iị]t|đ[uụ]|ch[iị]ch|s[uứ]c\s*v[aậ]t|lo[aạ]n\s*lu[aâ]n|h[ií]p\s*d[aâ]m)\b/gi,
+  // 18+ / sexual content
+  /\b(sex|porn|xxx|nude|nud[eê]|kh[iỉ]êu\s*d[aâ]m|d[aâ]m\s*d[uụ]c|th[uủ]\s*d[aâ]m|l[oồ]n|c[aặ]c|đ[iị]t|đ[uụ]|ch[iị]ch|s[uứ]c\s*v[aậ]t|lo[aạ]n\s*lu[aâ]n|h[ií]p\s*d[aâ]m|onlyfan|nsfw|h[eề]ntai|javhd|jav)\b/gi,
   // Violence / illegal substances
-  /\b(gi[eế]t\s*ng[uư][oờ]i|m[aạ]i\s*d[aâ]m|ma\s*t[uú]y|c[aầ]n\s*sa|thu[oố]c\s*l[aắ]c|heroin|cocaine)\b/gi,
+  /\b(gi[eế]t\s*ng[uư][oờ]i|m[aạ]i\s*d[aâ]m|ma\s*t[uú]y|c[aầ]n\s*sa|thu[oố]c\s*l[aắ]c|heroin|cocaine|ketamine|ecstasy)\b/gi,
+  // Hack / scam / fraud
+  /\b(hack|ddos|dos|c[aạ]rd|carding|scam|l[uừ]a\s*đ[aả]o|phish|keylog|trojan|malware|ransomware|brute\s*force|exploit|inject|bypass|crack|ch[eế]at|b[oẻ]\s*kh[oó]a|fake\s*login|rat\s*tool)\b/gi,
   // Spam patterns
   /(.)\1{10,}/gi, // Repeating characters 10+ times
 ];
