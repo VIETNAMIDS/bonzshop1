@@ -429,6 +429,12 @@ export default function Admin() {
                 Up Key
               </Button>
             </Link>
+            <Link to="/admin/bot-keys" className="contents">
+              <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm border-cyan-500/30 hover:bg-cyan-500/10">
+                <Bot className="h-4 w-4 text-cyan-500" />
+                Bot AI Keys
+              </Button>
+            </Link>
             <Link to="/seller-profile" className="contents">
               <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
                 <Store className="h-4 w-4" />
