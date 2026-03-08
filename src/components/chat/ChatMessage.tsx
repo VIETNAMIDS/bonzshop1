@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { RotateCcw, UserPlus, MessageCircle, ExternalLink } from 'lucide-react';
+import { RotateCcw, UserPlus, MessageCircle, ExternalLink, Trash2, VolumeX, Volume2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Rich gradient colors with more variety
