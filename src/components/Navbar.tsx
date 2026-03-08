@@ -327,9 +327,17 @@ export function Navbar() {
                     <span className="font-semibold text-sm">{coinBalance !== null ? `${coinBalance} xu` : '...'}</span>
                     <div className="flex items-center gap-1">
                       <Sparkles className="h-3 w-3 text-primary/50" />
-                      <Link to="/coin-history" className="text-xs text-muted-foreground hover:text-primary">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          navigate('/coin-history');
+                        }}
+                        className="text-xs text-muted-foreground hover:text-primary"
+                      >
                         Lịch sử
-                      </Link>
+                      </button>
                     </div>
                   </div>
                 )}
