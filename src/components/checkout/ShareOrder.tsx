@@ -23,7 +23,7 @@ interface ShareOrderProps {
   accountId?: string;
 }
 
-const SITE_URL = 'https://bonzshop1.lovable.app';
+const SITE_URL = (import.meta.env.VITE_SITE_URL || 'https://bonzshop.site').replace(/\/$/, '');
 
 export function ShareOrder({ itemTitle, itemPrice, itemImage, productId, accountId }: ShareOrderProps) {
   const [copied, setCopied] = useState(false);
@@ -33,7 +33,8 @@ export function ShareOrder({ itemTitle, itemPrice, itemImage, productId, account
   // Create proper share URL
   const itemType = productId ? 'product' : 'account';
   const itemId = productId || accountId;
-  const shareUrl = `${SITE_URL}/checkout?${itemType}=${itemId}`;
+  const shareUrl = itemId ? `${SITE_URL}/checkout?${itemType}=${itemId}` : `${SITE_URL}/checkout`;
+  const shareHost = new URL(SITE_URL).hostname;
   const shareText = `🛒 Xem sản phẩm "${itemTitle}" với giá ${itemPrice.toLocaleString()} xu tại BonzShop!`;
   
   const handleCopy = async () => {
