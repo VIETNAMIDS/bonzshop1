@@ -241,6 +241,48 @@ export type Database = {
         }
         Relationships: []
       }
+      bot_api_keys: {
+        Row: {
+          api_key: string
+          base_url: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          label: string
+          last_used_at: string | null
+          model: string
+          provider: string
+          usage_count: number
+        }
+        Insert: {
+          api_key: string
+          base_url?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string
+          last_used_at?: string | null
+          model?: string
+          provider?: string
+          usage_count?: number
+        }
+        Update: {
+          api_key?: string
+          base_url?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string
+          last_used_at?: string | null
+          model?: string
+          provider?: string
+          usage_count?: number
+        }
+        Relationships: []
+      }
       bot_chat_messages: {
         Row: {
           content: string
