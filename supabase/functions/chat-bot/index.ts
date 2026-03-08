@@ -6,29 +6,151 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Inappropriate content patterns (Vietnamese + English) - STRICT: warn for ALL sensitive content
-const INAPPROPRIATE_PATTERNS = [
-  // 18+ / sexual content
-  /\b(sex|porn|xxx|nude|nud[eê]|kh[iỉ]êu\s*d[aâ]m|d[aâ]m\s*d[uụ]c|th[uủ]\s*d[aâ]m|l[oồ]n|c[aặ]c|đ[iị]t|đ[uụ]|ch[iị]ch|s[uứ]c\s*v[aậ]t|lo[aạ]n\s*lu[aâ]n|h[ií]p\s*d[aâ]m|onlyfan|nsfw|h[eề]ntai|javhd|jav)\b/gi,
-  // Violence / illegal substances
-  /\b(gi[eế]t\s*ng[uư][oờ]i|m[aạ]i\s*d[aâ]m|ma\s*t[uú]y|c[aầ]n\s*sa|thu[oố]c\s*l[aắ]c|heroin|cocaine|ketamine|ecstasy)\b/gi,
-  // Hack / scam / fraud
-  /\b(hack|ddos|dos|c[aạ]rd|carding|scam|l[uừ]a\s*đ[aả]o|phish|keylog|trojan|malware|ransomware|brute\s*force|exploit|inject|bypass|crack|ch[eế]at|b[oẻ]\s*kh[oó]a|fake\s*login|rat\s*tool)\b/gi,
-  // Spam patterns
-  /(.)\1{10,}/gi, // Repeating characters 10+ times
-];
-
-// Spam detection: too many messages in short time
-const SPAM_WINDOW_MS = 60_000; // 1 minute
+const SPAM_WINDOW_MS = 60_000;
 const SPAM_MAX_MESSAGES = 10;
+
+// Get next API key using round-robin (least recently used)
+async function getNextApiKey(supabase: any): Promise<{ id: string; api_key: string; model: string; base_url: string; provider: string } | null> {
+  const { data: keys } = await supabase
+    .from("bot_api_keys")
+    .select("id, api_key, model, base_url, provider")
+    .eq("is_active", true)
+    .order("last_used_at", { ascending: true, nullsFirst: true })
+    .limit(1);
+
+  if (!keys || keys.length === 0) return null;
+
+  const key = keys[0];
+
+  // Update usage
+  await supabase
+    .from("bot_api_keys")
+    .update({ usage_count: supabase.rpc ? undefined : 0, last_used_at: new Date().toISOString() })
+    .eq("id", key.id);
+
+  // Increment usage_count separately
+  const { data: current } = await supabase.from("bot_api_keys").select("usage_count").eq("id", key.id).single();
+  if (current) {
+    await supabase.from("bot_api_keys").update({ 
+      usage_count: (current.usage_count || 0) + 1,
+      last_used_at: new Date().toISOString()
+    }).eq("id", key.id);
+  }
+
+  return key;
+}
+
+async function callAI(supabase: any, systemPrompt: string, chatMessages: any[], tools: any[]) {
+  // Try custom API keys first
+  const customKey = await getNextApiKey(supabase);
+
+  if (customKey) {
+    console.log(`Using custom key: ${customKey.provider}/${customKey.model} (id: ${customKey.id})`);
+    
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    // Different auth headers for different providers
+    if (customKey.provider === "gemini") {
+      // Google Gemini uses API key in URL or header
+      headers["Authorization"] = `Bearer ${customKey.api_key}`;
+    } else {
+      headers["Authorization"] = `Bearer ${customKey.api_key}`;
+    }
+
+    const body: any = {
+      model: customKey.model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...chatMessages,
+      ],
+    };
+
+    // Only add tools if provider supports it
+    if (tools && tools.length > 0) {
+      body.tools = tools;
+    }
+
+    let url = customKey.base_url;
+    // For Gemini, append key as query param if using googleapis URL
+    if (customKey.provider === "gemini" && url.includes("googleapis.com")) {
+      url = `${url}?key=${customKey.api_key}`;
+      delete headers["Authorization"];
+    }
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    if (response.ok) {
+      return { response, source: "custom" };
+    }
+
+    console.error(`Custom key failed (${response.status}), trying next or fallback...`);
+    
+    // Mark key as inactive if auth error
+    if (response.status === 401 || response.status === 403) {
+      await supabase.from("bot_api_keys").update({ is_active: false }).eq("id", customKey.id);
+      console.log(`Disabled invalid key: ${customKey.id}`);
+    }
+
+    // Try another key
+    const secondKey = await getNextApiKey(supabase);
+    if (secondKey && secondKey.id !== customKey.id) {
+      let url2 = secondKey.base_url;
+      const headers2: Record<string, string> = { "Content-Type": "application/json" };
+
+      if (secondKey.provider === "gemini" && url2.includes("googleapis.com")) {
+        url2 = `${url2}?key=${secondKey.api_key}`;
+      } else {
+        headers2["Authorization"] = `Bearer ${secondKey.api_key}`;
+      }
+
+      const response2 = await fetch(url2, {
+        method: "POST",
+        headers: headers2,
+        body: JSON.stringify({ ...body, model: secondKey.model }),
+      });
+
+      if (response2.ok) {
+        return { response: response2, source: "custom" };
+      }
+    }
+  }
+
+  // Fallback to Lovable AI
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY) {
+    throw new Error("Không có API key nào khả dụng. Vui lòng thêm API key trong trang quản trị.");
+  }
+
+  console.log("Fallback to Lovable AI");
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-3-flash-preview",
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...chatMessages,
+      ],
+      tools,
+    }),
+  });
+
+  return { response, source: "lovable" };
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -53,12 +175,12 @@ serve(async (req) => {
       });
     }
 
-    // Check admin status early (admins skip ban/mute checks)
+    // Check admin status early
     const { data: adminRoleEarly } = await supabase
       .from("user_roles").select("id").eq("user_id", userId).eq("role", "admin").limit(1);
     const isAdminUser = adminRoleEarly && adminRoleEarly.length > 0;
 
-    // Check if user is already banned (skip for admins)
+    // Check if user is banned (skip for admins)
     if (!isAdminUser) {
       const { data: banData } = await supabase
         .from("banned_users").select("id").eq("user_id", userId).limit(1);
@@ -68,7 +190,6 @@ serve(async (req) => {
         });
       }
 
-      // Check if user is muted from chat
       const { data: muteData } = await supabase
         .from("chat_muted_users").select("id").eq("user_id", userId).is("unmuted_at", null).limit(1);
       if (muteData && muteData.length > 0) {
@@ -81,28 +202,20 @@ serve(async (req) => {
     // Handle image moderation
     if (action === "moderate_image" && image_base64) {
       try {
-        const moderationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${LOVABLE_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash-lite",
-            messages: [
-              {
-                role: "user",
-                content: [
-                  { type: "text", text: "Is this image safe for a public chat? Check for: nudity, sexual content, extreme violence, gore, drugs. Reply ONLY with JSON: {\"safe\": true} or {\"safe\": false, \"reason\": \"description\"}" },
-                  { type: "image_url", image_url: { url: image_base64 } }
-                ]
-              }
-            ],
-          }),
-        });
+        const { response: modResp } = await callAI(supabase,
+          "You are a content moderator. Check if the image is safe for public chat.",
+          [{
+            role: "user",
+            content: [
+              { type: "text", text: "Is this image safe for a public chat? Check for: nudity, sexual content, extreme violence, gore, drugs. Reply ONLY with JSON: {\"safe\": true} or {\"safe\": false, \"reason\": \"description\"}" },
+              { type: "image_url", image_url: { url: image_base64 } }
+            ]
+          }],
+          []
+        );
         
-        if (moderationResponse.ok) {
-          const modData = await moderationResponse.json();
+        if (modResp.ok) {
+          const modData = await modResp.json();
           const content = modData.choices?.[0]?.message?.content || "";
           const jsonMatch = content.match(/\{[^}]+\}/);
           if (jsonMatch) {
@@ -122,80 +235,58 @@ serve(async (req) => {
       }
     }
 
-    // Handle purchase action directly
+    // Handle purchase action
     if (action === "purchase" && action_data) {
       return await handlePurchase(supabase, supabaseUrl, userId, action_data, corsHeaders);
     }
 
-    // Get the user's latest message for moderation
     const latestMessage = message || (conversationHistory?.length ? conversationHistory[conversationHistory.length - 1]?.content : "");
 
-    // === CONTENT MODERATION (skip for admins) ===
+    // Content moderation (skip for admins)
     const violationType = !isAdminUser ? checkInappropriateContent(latestMessage) : null;
     if (violationType) {
-      // Record violation
       await supabase.from("bot_violations").insert({
-        user_id: userId,
-        message_content: latestMessage.slice(0, 500),
-        violation_type: violationType,
+        user_id: userId, message_content: latestMessage.slice(0, 500), violation_type: violationType,
       });
 
-      // Count total violations
       const { count } = await supabase
-        .from("bot_violations")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", userId);
-
+        .from("bot_violations").select("id", { count: "exact", head: true }).eq("user_id", userId);
       const totalViolations = count || 1;
 
       if (totalViolations >= 3) {
-        // AUTO-BAN user
         await autobanUser(supabase, supabaseUrl, userId, `Vi phạm nội dung chat bot lần thứ ${totalViolations}: ${violationType}`);
-
         return new Response(JSON.stringify({
-          reply: null,
-          auto_banned: true,
+          reply: null, auto_banned: true,
           error: "Tài khoản của bạn đã bị khóa do vi phạm quy định nhiều lần.",
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // Warning
       const warningsLeft = 3 - totalViolations;
       return new Response(JSON.stringify({
         reply: `⚠️ **CẢNH BÁO** (${totalViolations}/3)\n\nTin nhắn của bạn vi phạm quy định (${violationType}). Bạn còn **${warningsLeft} lần** cảnh báo trước khi bị **khóa tài khoản vĩnh viễn**.\n\n❌ Không được gửi nội dung 18+, hack, scam, lừa đảo, bạo lực, ma túy, hoặc spam.\n\nHãy sử dụng bot đúng mục đích: tìm kiếm và mua sản phẩm.`,
-        warning: true,
-        violations_count: totalViolations,
+        warning: true, violations_count: totalViolations,
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // === SPAM DETECTION (skip for admins) ===
+    // Spam detection (skip for admins)
     if (!isAdminUser) {
       const oneMinuteAgo = new Date(Date.now() - SPAM_WINDOW_MS).toISOString();
       const { count: recentMsgCount } = await supabase
-        .from("bot_chat_messages")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", userId)
-        .eq("role", "user")
-        .gte("created_at", oneMinuteAgo);
+        .from("bot_chat_messages").select("id", { count: "exact", head: true })
+        .eq("user_id", userId).eq("role", "user").gte("created_at", oneMinuteAgo);
 
       if ((recentMsgCount || 0) >= SPAM_MAX_MESSAGES) {
         await supabase.from("bot_violations").insert({
-          user_id: userId,
-          message_content: `SPAM: ${recentMsgCount} messages in 1 minute`,
-          violation_type: "spam",
+          user_id: userId, message_content: `SPAM: ${recentMsgCount} messages in 1 minute`, violation_type: "spam",
         });
 
         const { count: totalViol } = await supabase
-          .from("bot_violations")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", userId);
+          .from("bot_violations").select("id", { count: "exact", head: true }).eq("user_id", userId);
 
         if ((totalViol || 0) >= 3) {
           await autobanUser(supabase, supabaseUrl, userId, "Spam bot quá nhiều lần");
           return new Response(JSON.stringify({
-            reply: null,
-            auto_banned: true,
-            error: "Tài khoản đã bị khóa do spam.",
+            reply: null, auto_banned: true, error: "Tài khoản đã bị khóa do spam.",
           }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
 
@@ -206,11 +297,9 @@ serve(async (req) => {
       }
     }
 
-    // === SAVE USER MESSAGE ===
+    // Save user message
     await supabase.from("bot_chat_messages").insert({
-      user_id: userId,
-      role: "user",
-      content: latestMessage,
+      user_id: userId, role: "user", content: latestMessage,
     });
 
     // Fetch context data
@@ -253,40 +342,28 @@ QUY TẮC:
 
     const chatMessages = conversationHistory || [{ role: "user", content: latestMessage }];
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...chatMessages,
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "purchase_item",
-              description: "Mua một sản phẩm hoặc tài khoản cho người dùng. Chỉ gọi khi người dùng XÁC NHẬN muốn mua.",
-              parameters: {
-                type: "object",
-                properties: {
-                  item_id: { type: "string", description: "ID của sản phẩm hoặc tài khoản" },
-                  item_type: { type: "string", enum: ["product", "account"], description: "Loại: product hoặc account" },
-                  item_title: { type: "string", description: "Tên sản phẩm" },
-                  item_price: { type: "number", description: "Giá bằng xu" },
-                },
-                required: ["item_id", "item_type", "item_title", "item_price"],
-                additionalProperties: false,
-              },
+    const tools = [
+      {
+        type: "function",
+        function: {
+          name: "purchase_item",
+          description: "Mua một sản phẩm hoặc tài khoản cho người dùng. Chỉ gọi khi người dùng XÁC NHẬN muốn mua.",
+          parameters: {
+            type: "object",
+            properties: {
+              item_id: { type: "string", description: "ID của sản phẩm hoặc tài khoản" },
+              item_type: { type: "string", enum: ["product", "account"], description: "Loại: product hoặc account" },
+              item_title: { type: "string", description: "Tên sản phẩm" },
+              item_price: { type: "number", description: "Giá bằng xu" },
             },
+            required: ["item_id", "item_type", "item_title", "item_price"],
+            additionalProperties: false,
           },
-        ],
-      }),
-    });
+        },
+      },
+    ];
+
+    const { response, source } = await callAI(supabase, systemPrompt, chatMessages, tools);
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -300,8 +377,8 @@ QUY TẮC:
         });
       }
       const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
-      throw new Error("AI gateway error");
+      console.error("AI error:", response.status, t, "source:", source);
+      throw new Error("AI error");
     }
 
     const data = await response.json();
@@ -313,7 +390,6 @@ QUY TẮC:
       if (toolCall.function.name === "purchase_item") {
         const args = JSON.parse(toolCall.function.arguments);
 
-        // Save bot's purchase prompt
         const confirmMsg = `🛒 Xác nhận mua: ${args.item_title} - ${args.item_price} xu`;
         await supabase.from("bot_chat_messages").insert({
           user_id: userId, role: "assistant", content: confirmMsg,
@@ -322,10 +398,8 @@ QUY TẮC:
         return new Response(JSON.stringify({
           reply: null,
           purchase_request: {
-            item_id: args.item_id,
-            item_type: args.item_type,
-            item_title: args.item_title,
-            item_price: args.item_price,
+            item_id: args.item_id, item_type: args.item_type,
+            item_title: args.item_title, item_price: args.item_price,
           },
           tool_call_id: toolCall.id,
           assistant_message: choice.message,
@@ -335,7 +409,6 @@ QUY TẮC:
 
     const botReply = choice?.message?.content || "Xin lỗi, tôi không thể trả lời lúc này.";
 
-    // Save bot reply
     await supabase.from("bot_chat_messages").insert({
       user_id: userId, role: "assistant", content: botReply,
     });
@@ -353,64 +426,40 @@ QUY TẮC:
 
 function checkInappropriateContent(message: string): string | null {
   if (!message || message.trim().length === 0) return null;
-
-  // Spam: repeated characters
   if (/(.)\1{10,}/gi.test(message)) return "spam (ký tự lặp)";
-
-  // 18+ explicit content
   if (/\b(sex|porn|xxx|nude|nud[eê]|kh[iỉ]êu\s*d[aâ]m|d[aâ]m\s*d[uụ]c|th[uủ]\s*d[aâ]m|l[oồ]n|c[aặ]c|đ[iị]t|đ[uụ]|ch[iị]ch|s[uứ]c\s*v[aậ]t|lo[aạ]n\s*lu[aâ]n|h[ií]p\s*d[aâ]m|onlyfan|nsfw|h[eề]ntai|javhd|jav)\b/gi.test(message)) return "nội dung 18+";
-
-  // Violence / drugs
   if (/\b(gi[eế]t\s*ng[uư][oờ]i|m[aạ]i\s*d[aâ]m|ma\s*t[uú]y|c[aầ]n\s*sa|thu[oố]c\s*l[aắ]c|heroin|cocaine|ketamine|ecstasy)\b/gi.test(message)) return "nội dung bạo lực/ma túy";
-
-  // Hack / scam / fraud - STRICT: always warn
   if (/\b(hack|ddos|dos|c[aạ]rd|carding|scam|l[uừ]a\s*đ[aả]o|phish|keylog|trojan|malware|ransomware|brute\s*force|exploit|inject|bypass|crack|ch[eế]at|b[oẻ]\s*kh[oó]a|fake\s*login|rat\s*tool)\b/gi.test(message)) return "nội dung lừa đảo/hack";
-
   return null;
 }
 
 async function autobanUser(supabase: any, supabaseUrl: string, userId: string, reason: string) {
   try {
-    // Never ban admins
     const { data: adminCheck } = await supabase
       .from("user_roles").select("id").eq("user_id", userId).eq("role", "admin").limit(1);
-    if (adminCheck && adminCheck.length > 0) {
-      console.log(`Skipping auto-ban for admin ${userId}`);
-      return;
-    }
+    if (adminCheck && adminCheck.length > 0) return;
 
-    // Ban user
     await supabase.from("banned_users").insert({
-      user_id: userId,
-      reason: `[AUTO-BAN BOT] ${reason}`,
-      banned_by: null,
+      user_id: userId, reason: `[AUTO-BAN BOT] ${reason}`, banned_by: null,
     });
 
-    // Also mute from chat
     await supabase.from("chat_muted_users").insert({
-      user_id: userId,
-      reason: `[AUTO-BAN BOT] ${reason}`,
+      user_id: userId, reason: `[AUTO-BAN BOT] ${reason}`,
     });
 
-    // Get user display name
     const { data: profile } = await supabase
       .from("profiles").select("display_name").eq("user_id", userId).single();
     const displayName = profile?.display_name || "Người dùng ẩn danh";
 
-    // Post warning notification in community chat as system message
     await supabase.from("chat_messages").insert({
       user_id: userId,
       content: `⛔ **${displayName}** đã bị BAN VĨNH VIỄN do vi phạm quy định khi sử dụng BonzBot.\n\n📌 Lý do: ${reason}\n\n⚠️ Cảnh báo cộng đồng: Không sử dụng bot cho mục đích 18+, spam, hack, lừa đảo. Vi phạm 3 lần sẽ bị khóa tài khoản vĩnh viễn!`,
-      is_deleted: false,
-      gradient_color: "system-ban",
+      is_deleted: false, gradient_color: "system-ban",
     });
 
-    // Send notification
     await supabase.from("notifications").insert({
-      user_id: userId,
-      title: "⛔ Tài khoản bị khóa",
-      message: `Tài khoản của bạn đã bị khóa tự động do: ${reason}`,
-      type: "ban",
+      user_id: userId, title: "⛔ Tài khoản bị khóa",
+      message: `Tài khoản của bạn đã bị khóa tự động do: ${reason}`, type: "ban",
     });
 
     console.log(`Auto-banned user ${userId}: ${reason}`);
@@ -507,7 +556,6 @@ async function handlePurchase(supabase: any, supabaseUrl: string, userId: string
       type: "purchase", reference_id: order.id,
     });
 
-    // Save purchase result as bot message
     await supabase.from("bot_chat_messages").insert({
       user_id: userId, role: "assistant",
       content: `🎉 Mua thành công "${itemTitle}" - ${item_price} xu. Số dư còn: ${newBalance} xu.`,
