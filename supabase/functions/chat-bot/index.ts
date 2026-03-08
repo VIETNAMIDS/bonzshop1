@@ -337,13 +337,12 @@ async function autobanUser(supabase: any, supabaseUrl: string, userId: string, r
       .from("profiles").select("display_name").eq("user_id", userId).single();
     const displayName = profile?.display_name || "Người dùng ẩn danh";
 
-    // Post notification in community chat
-    const SYSTEM_USER_ID = userId; // Use their own ID since we can't use a system account
-    // We'll insert a system message using service role
+    // Post warning notification in community chat as system message
     await supabase.from("chat_messages").insert({
       user_id: userId,
-      content: `⛔ **${displayName}** đã bị khóa tài khoản tự động do vi phạm quy định khi sử dụng BonzBot.\n\n📌 Lý do: ${reason}\n\n⚠️ Nhắc nhở: Không sử dụng bot cho mục đích vi phạm quy định.`,
+      content: `⛔ **${displayName}** đã bị BAN VĨNH VIỄN do vi phạm quy định khi sử dụng BonzBot.\n\n📌 Lý do: ${reason}\n\n⚠️ Cảnh báo cộng đồng: Không sử dụng bot cho mục đích 18+, spam, hack, lừa đảo. Vi phạm 3 lần sẽ bị khóa tài khoản vĩnh viễn!`,
       is_deleted: false,
+      gradient_color: "system-ban",
     });
 
     // Send notification

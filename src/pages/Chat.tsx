@@ -598,6 +598,7 @@ export default function Chat() {
                   imageUrl={msg.image_url}
                   isOwn={msg.user_id === user?.id}
                   isRecalled={msg.is_recalled}
+                  gradientColor={msg.gradient_color}
                   profile={msg.profile}
                   createdAt={msg.created_at}
                   userId={msg.user_id}

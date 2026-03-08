@@ -70,6 +70,7 @@ interface ChatMessageProps {
   imageUrl?: string | null;
   isOwn: boolean;
   isRecalled?: boolean;
+  gradientColor?: string | null;
   profile?: {
     display_name: string | null;
     avatar_url: string | null;
@@ -95,6 +96,7 @@ export function ChatMessage({
   imageUrl,
   isOwn,
   isRecalled,
+  gradientColor,
   profile,
   createdAt,
   userId,
@@ -109,6 +111,7 @@ export function ChatMessage({
   onAdminUnmute,
   showAnimation = false,
 }: ChatMessageProps) {
+  const isSystemBan = gradientColor === 'system-ban';
   const [showActions, setShowActions] = useState(false);
   const [sparkles, setSparkles] = useState<{ id: number; x: number; y: number; emoji: string }[]>([]);
   const gradient = getGradient(id);
@@ -128,6 +131,45 @@ export function ChatMessage({
       return () => clearTimeout(timeout);
     }
   }, [showAnimation]);
+
+  // System ban message - full width alert
+  if (isSystemBan) {
+    // Parse bold text
+    const parseBold = (text: string) => {
+      const parts = text.split(/(\*\*[^*]+\*\*)/g);
+      return parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return <strong key={i}>{part.slice(2, -2)}</strong>;
+        }
+        return part;
+      });
+    };
+
+    return (
+      <div className="w-full my-3 animate-in fade-in slide-in-from-top-2 duration-500">
+        <div className="rounded-xl border-2 border-destructive/50 bg-destructive/10 p-4 shadow-lg shadow-destructive/10">
+          <div className="flex items-start gap-3">
+            <div className="h-10 w-10 rounded-full bg-destructive flex items-center justify-center shrink-0">
+              <span className="text-white text-lg">⛔</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-bold text-destructive uppercase tracking-wider">
+                  🛡️ Hệ thống bảo vệ cộng đồng
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {format(new Date(createdAt), 'HH:mm dd/MM', { locale: vi })}
+                </span>
+              </div>
+              <p className="text-sm whitespace-pre-wrap break-words text-foreground leading-relaxed">
+                {parseBold(content)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isRecalled) {
     return (
