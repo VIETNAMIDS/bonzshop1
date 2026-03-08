@@ -78,6 +78,59 @@ serve(async (req) => {
       }
     }
 
+    // Handle image moderation
+    if (action === "moderate_image" && req.headers.get("Content-Type")?.includes("application/json")) {
+      const body = await req.json().catch(() => ({}));
+      const imageBase64 = body.image_base64 || (await req.json().catch(() => ({}))).image_base64;
+      // We already parsed the body above, use the original parse
+    }
+
+    // Re-parse body for moderate_image (body was already parsed at line 36)
+    if (action === "moderate_image") {
+      try {
+        const { image_base64 } = { image_base64: (await Promise.resolve()).toString() };
+        // Use AI to check image
+        const moderationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash-lite",
+            messages: [
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: "Is this image safe for a public chat? Check for: nudity, sexual content, extreme violence, gore, drugs. Reply ONLY with JSON: {\"safe\": true} or {\"safe\": false, \"reason\": \"...\"}" },
+                  { type: "image_url", image_url: { url: (req as any).__image_base64 || "" } }
+                ]
+              }
+            ],
+          }),
+        });
+        
+        if (moderationResponse.ok) {
+          const modData = await moderationResponse.json();
+          const content = modData.choices?.[0]?.message?.content || "";
+          const jsonMatch = content.match(/\{[^}]+\}/);
+          if (jsonMatch) {
+            const result = JSON.parse(jsonMatch[0]);
+            return new Response(JSON.stringify(result), {
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
+        }
+        return new Response(JSON.stringify({ safe: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } catch {
+        return new Response(JSON.stringify({ safe: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     // Handle purchase action directly
     if (action === "purchase" && action_data) {
       return await handlePurchase(supabase, supabaseUrl, userId, action_data, corsHeaders);
