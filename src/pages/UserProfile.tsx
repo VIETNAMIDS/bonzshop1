@@ -356,16 +356,16 @@ export default function UserProfile() {
       <PageWrapper>
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6 relative z-10">
           <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <h1 className="text-xl md:text-2xl font-bold">Hồ sơ của tôi</h1>
             <p className="text-sm text-muted-foreground">Quản lý thông tin cá nhân và tài khoản</p>
           </div>
           {!editing && (
-            <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+            <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="shrink-0">
               <Edit2 className="h-4 w-4 mr-2" />
               Chỉnh sửa
             </Button>
