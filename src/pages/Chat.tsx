@@ -548,6 +548,15 @@ export default function Chat() {
                 <Button
                   variant="outline"
                   size="sm"
+                  onClick={() => setBotChatOpen(true)}
+                  className="gap-1 border-cyan-500/30 hover:bg-cyan-500/10"
+                >
+                  <Bot className="h-4 w-4 text-cyan-500" />
+                  <span className="hidden sm:inline">BonzBot</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={handleContactAdmin}
                   className="gap-1"
                 >
