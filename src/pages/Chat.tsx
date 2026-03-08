@@ -180,14 +180,25 @@ export default function Chat() {
           if (payload.eventType === 'INSERT') {
             const newMsg = payload.new as ChatMessageData;
             
-            // Fetch profile for new message
+            // Avoid duplicates
+            setMessages(prev => {
+              if (prev.some(m => m.id === newMsg.id)) return prev;
+              
+              // Fetch profile for new message (async, update after)
+              return prev;
+            });
+
+            // Fetch profile then add message
             const { data: profile } = await supabase
               .from('profiles')
               .select('user_id, display_name, avatar_url')
               .eq('user_id', newMsg.user_id)
               .single();
 
-            setMessages(prev => [...prev, { ...newMsg, profile: profile || undefined }]);
+            setMessages(prev => {
+              if (prev.some(m => m.id === newMsg.id)) return prev;
+              return [...prev, { ...newMsg, profile: profile || undefined }];
+            });
             
             // Mark as new for animation
             setNewMessageIds(prev => new Set(prev).add(newMsg.id));
