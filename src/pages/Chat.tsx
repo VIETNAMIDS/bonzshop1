@@ -371,6 +371,28 @@ export default function Chat() {
     // Check for bot command
     const botMatch = trimmedMessage.match(/^@bot\s+(.+)/i);
 
+    // === ADMIN COMMAND: @bot xoa all ===
+    if (isAdmin && botMatch && /^xoa\s+all$/i.test(botMatch[1].trim())) {
+      setSending(true);
+      try {
+        const { error } = await supabase
+          .from('chat_messages')
+          .update({ is_deleted: true })
+          .neq('is_deleted', true);
+
+        if (error) throw error;
+        setMessages([]);
+        setNewMessage('');
+        toast({ title: '🗑️ Đã xóa tất cả tin nhắn', description: 'Toàn bộ tin nhắn đã bị xóa bởi Admin.' });
+      } catch (error: any) {
+        console.error('Error deleting all messages:', error);
+        toast({ title: 'Lỗi', description: 'Không thể xóa tất cả tin nhắn', variant: 'destructive' });
+      } finally {
+        setSending(false);
+      }
+      return;
+    }
+
     setSending(true);
     try {
       let imageUrl = null;
