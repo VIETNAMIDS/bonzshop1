@@ -50,6 +50,7 @@ import QrScanner from "./pages/QrScanner";
 import TopDeposit from "./pages/TopDeposit";
 import Rewards from "./pages/Rewards";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminBotKeys from "./pages/AdminBotKeys";
 
 const queryClient = new QueryClient();
 
