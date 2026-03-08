@@ -12,7 +12,7 @@ export function PageWrapper({ children, className }: PageWrapperProps) {
 
   return (
     <div className={cn(
-      "transition-all duration-300 relative",
+      "transition-all duration-300 relative isolate",
       !isMobile && "ml-60",
       className
     )}>
