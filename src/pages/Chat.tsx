@@ -42,6 +42,7 @@ export default function Chat() {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [botThinking, setBotThinking] = useState(false);
   const [isBanned, setIsBanned] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [mutedUserIds, setMutedUserIds] = useState<Set<string>>(new Set());
