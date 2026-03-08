@@ -90,12 +90,20 @@ export default function Chat() {
 
   const checkBanStatus = async () => {
     if (!user) return;
-    const { data } = await supabase
+    const { data: banData } = await supabase
       .from('banned_users')
       .select('id')
       .eq('user_id', user.id)
       .single();
-    setIsBanned(!!data);
+    
+    const { data: muteData } = await supabase
+      .from('chat_muted_users')
+      .select('id')
+      .eq('user_id', user.id)
+      .is('unmuted_at', null)
+      .maybeSingle();
+    
+    setIsBanned(!!banData || !!muteData);
   };
 
   const checkAdminStatus = async () => {
