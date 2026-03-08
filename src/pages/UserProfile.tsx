@@ -13,7 +13,7 @@ import { Navbar } from '@/components/Navbar';
 import { PageWrapper } from '@/components/layout/PageWrapper';
 import {
   User, Mail, Lock, Store, Coins, Loader2,
-   ArrowLeft, Edit2, Save, X, CheckCircle, AlertCircle, Wallet, History
+   ArrowLeft, Edit2, Save, X, CheckCircle, AlertCircle, Wallet, History, Phone, Camera
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
  import { ReferralCodeInput } from '@/components/referral/ReferralCodeInput';
@@ -24,7 +24,7 @@ interface UserProfileData {
 }
 
 export default function UserProfile() {
-  const { user, isAdmin, sellerProfile, refreshSellerProfile } = useAuth();
+  const { user, isAdmin, sellerProfile, refreshSellerProfile, refreshUserProfile } = useAuth();
   const navigate = useNavigate();
    
   const [loading, setLoading] = useState(true);
@@ -34,9 +34,12 @@ export default function UserProfile() {
   const [showSellerRegistration, setShowSellerRegistration] = useState(false);
   const [registeringSeller, setRegisteringSeller] = useState(false);
 
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [formData, setFormData] = useState({
     display_name: '',
     email: '',
+    phone: '',
+    avatar_url: '',
     current_password: '',
     new_password: '',
     confirm_password: '',
@@ -53,13 +56,22 @@ export default function UserProfile() {
 
   const fetchUserProfile = async () => {
     try {
-      // Get user metadata and profile data
-      const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || '';
       const email = user?.email || '';
+
+      // Fetch from profiles table
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('display_name, avatar_url, phone')
+        .eq('user_id', user?.id)
+        .maybeSingle();
+
+      const displayName = profile?.display_name || user?.user_metadata?.display_name || user?.email?.split('@')[0] || '';
 
       setFormData({
         display_name: displayName,
         email: email,
+        phone: profile?.phone || '',
+        avatar_url: profile?.avatar_url || '',
         current_password: '',
         new_password: '',
         confirm_password: '',
@@ -121,9 +133,24 @@ export default function UserProfile() {
         updatePayload.email = trimmedEmail;
       }
 
-      // Update basic profile info (name/email)
+      // Update basic profile info (name/email) in auth
       const { error } = await supabase.auth.updateUser(updatePayload);
       if (error) throw error;
+
+      // Update profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          display_name: trimmedDisplayName,
+          phone: formData.phone.trim() || null,
+          avatar_url: formData.avatar_url || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', user?.id);
+
+      if (profileError) {
+        console.error('Error updating profile table:', profileError);
+      }
 
       // If changing password
       if (formData.new_password) {
@@ -148,7 +175,7 @@ export default function UserProfile() {
 
       toast.success(updatePayload.email ? 'Đã cập nhật hồ sơ! Vui lòng kiểm tra email để xác nhận thay đổi.' : 'Đã cập nhật hồ sơ!');
       setEditing(false);
-       
+      await refreshUserProfile();
        
       setFormData(prev => ({
         ...prev,
@@ -169,6 +196,40 @@ export default function UserProfile() {
   const handleCancel = () => {
     fetchUserProfile(); // Reset form data
     setEditing(false);
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Ảnh không được vượt quá 2MB');
+      return;
+    }
+
+    setAvatarUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user?.id}-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(`avatars/${fileName}`, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('images')
+        .getPublicUrl(`avatars/${fileName}`);
+
+      setFormData(prev => ({ ...prev, avatar_url: publicUrl }));
+      toast.success('Đã tải ảnh lên thành công!');
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast.error('Không thể tải ảnh lên');
+    } finally {
+      setAvatarUploading(false);
+    }
   };
 
   const handleSellerRegistration = async () => {
@@ -316,8 +377,20 @@ export default function UserProfile() {
           <Card className="glass border-border/50">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                  <User className="h-8 w-8 text-primary" />
+                <div className="relative">
+                  {formData.avatar_url ? (
+                    <img src={formData.avatar_url} alt="Avatar" className="h-16 w-16 rounded-full object-cover border-2 border-primary/30" />
+                  ) : (
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                      <User className="h-8 w-8 text-primary" />
+                    </div>
+                  )}
+                  {editing && (
+                    <label className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-primary flex items-center justify-center cursor-pointer hover:bg-primary/80 transition-colors">
+                      <Camera className="h-3 w-3 text-primary-foreground" />
+                      <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={avatarUploading} />
+                    </label>
+                  )}
                 </div>
                 <div className="flex-1">
                   <h2 className="text-xl font-bold">{formData.display_name || 'Người dùng'}</h2>
@@ -385,6 +458,15 @@ export default function UserProfile() {
                       Hệ thống sẽ gửi email xác nhận khi bạn thay đổi địa chỉ đăng nhập.
                     </p>
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Số điện thoại</Label>
+                    <Input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="Nhập số điện thoại"
+                    />
+                  </div>
                   <div className="border-t border-border pt-4">
                     <h4 className="font-medium mb-3">Đổi mật khẩu (tùy chọn)</h4>
                     <div className="space-y-3">
@@ -425,6 +507,13 @@ export default function UserProfile() {
                     <div>
                       <p className="text-sm text-muted-foreground">Email</p>
                       <p className="font-medium">{formData.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
+                    <Phone className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Số điện thoại</p>
+                      <p className="font-medium">{formData.phone || 'Chưa cập nhật'}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
