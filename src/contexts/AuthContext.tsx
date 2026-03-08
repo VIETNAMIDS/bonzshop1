@@ -476,7 +476,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refreshSellerProfile,
       refreshUserProfile
     }}>
-      {children}
+      {isBanned ? <BanScreen reason={banReason} /> : children}
     </AuthContext.Provider>
   );
 }
