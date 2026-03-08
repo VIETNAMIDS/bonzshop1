@@ -60,6 +60,7 @@ export default function Chat() {
     name: string;
     avatar?: string;
   } | null>(null);
+  const [botChatOpen, setBotChatOpen] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
