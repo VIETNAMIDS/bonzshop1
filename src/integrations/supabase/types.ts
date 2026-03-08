@@ -357,6 +357,33 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_muted_users: {
+        Row: {
+          id: string
+          muted_at: string
+          muted_by: string | null
+          reason: string | null
+          unmuted_at: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          muted_at?: string
+          muted_by?: string | null
+          reason?: string | null
+          unmuted_at?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          muted_at?: string
+          muted_by?: string | null
+          reason?: string | null
+          unmuted_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       child_website_products: {
         Row: {
           account_id: string | null

@@ -43,6 +43,8 @@ export default function Chat() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [isBanned, setIsBanned] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [mutedUserIds, setMutedUserIds] = useState<Set<string>>(new Set());
   const [uploadingImage, setUploadingImage] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -69,8 +71,10 @@ export default function Chat() {
   useEffect(() => {
     if (user) {
       checkBanStatus();
+      checkAdminStatus();
       fetchMessages();
       fetchAdminId();
+      fetchMutedUsers();
       const unsubscribe = subscribeToMessages();
       return unsubscribe;
     }
@@ -86,12 +90,41 @@ export default function Chat() {
 
   const checkBanStatus = async () => {
     if (!user) return;
-    const { data } = await supabase
+    const { data: banData } = await supabase
       .from('banned_users')
       .select('id')
       .eq('user_id', user.id)
       .single();
-    setIsBanned(!!data);
+    
+    const { data: muteData } = await supabase
+      .from('chat_muted_users')
+      .select('id')
+      .eq('user_id', user.id)
+      .is('unmuted_at', null)
+      .maybeSingle();
+    
+    setIsBanned(!!banData || !!muteData);
+  };
+
+  const checkAdminStatus = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+    setIsAdmin(!!data);
+  };
+
+  const fetchMutedUsers = async () => {
+    const { data } = await supabase
+      .from('chat_muted_users')
+      .select('user_id')
+      .is('unmuted_at', null);
+    if (data) {
+      setMutedUserIds(new Set(data.map(d => d.user_id)));
+    }
   };
 
   const fetchAdminId = async () => {
@@ -252,6 +285,58 @@ export default function Chat() {
         description: 'Không thể thu hồi tin nhắn',
         variant: 'destructive'
       });
+    }
+  };
+
+  const handleAdminDeleteMessage = async (messageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('chat_messages')
+        .update({ is_deleted: true })
+        .eq('id', messageId);
+
+      if (error) throw error;
+      setMessages(prev => prev.filter(m => m.id !== messageId));
+      toast({ title: '🗑️ Đã xóa tin nhắn' });
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      toast({ title: 'Lỗi', description: 'Không thể xóa tin nhắn', variant: 'destructive' });
+    }
+  };
+
+  const handleAdminMute = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('chat_muted_users')
+        .insert({ user_id: userId, muted_by: user?.id });
+
+      if (error) throw error;
+      setMutedUserIds(prev => new Set(prev).add(userId));
+      toast({ title: '🔇 Đã cấm người dùng chat' });
+    } catch (error) {
+      console.error('Error muting user:', error);
+      toast({ title: 'Lỗi', description: 'Không thể cấm người dùng', variant: 'destructive' });
+    }
+  };
+
+  const handleAdminUnmute = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('chat_muted_users')
+        .update({ unmuted_at: new Date().toISOString() })
+        .eq('user_id', userId)
+        .is('unmuted_at', null);
+
+      if (error) throw error;
+      setMutedUserIds(prev => {
+        const next = new Set(prev);
+        next.delete(userId);
+        return next;
+      });
+      toast({ title: '🔊 Đã bỏ cấm người dùng' });
+    } catch (error) {
+      console.error('Error unmuting user:', error);
+      toast({ title: 'Lỗi', description: 'Không thể bỏ cấm', variant: 'destructive' });
     }
   };
 
@@ -437,11 +522,16 @@ export default function Chat() {
                   createdAt={msg.created_at}
                   userId={msg.user_id}
                   currentUserId={user?.id}
-                  onRecall={handleRecallMessage}
-                  onAddFriend={handleAddFriend}
-                  onSendPrivateMessage={handleOpenPrivateChat}
-                  showAnimation={newMessageIds.has(msg.id)}
-                />
+                   onRecall={handleRecallMessage}
+                   onAddFriend={handleAddFriend}
+                   onSendPrivateMessage={handleOpenPrivateChat}
+                   isAdmin={isAdmin}
+                   isMuted={mutedUserIds.has(msg.user_id)}
+                   onAdminDelete={handleAdminDeleteMessage}
+                   onAdminMute={handleAdminMute}
+                   onAdminUnmute={handleAdminUnmute}
+                   showAnimation={newMessageIds.has(msg.id)}
+                 />
               ))
             )}
             <div ref={messagesEndRef} />

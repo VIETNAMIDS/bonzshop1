@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { RotateCcw, UserPlus, MessageCircle, ExternalLink } from 'lucide-react';
+import { RotateCcw, UserPlus, MessageCircle, ExternalLink, Trash2, VolumeX, Volume2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Rich gradient colors with more variety
@@ -78,9 +78,14 @@ interface ChatMessageProps {
   createdAt: string;
   userId: string;
   currentUserId?: string;
+  isAdmin?: boolean;
+  isMuted?: boolean;
   onRecall?: (id: string) => void;
   onAddFriend?: (userId: string) => void;
   onSendPrivateMessage?: (userId: string) => void;
+  onAdminDelete?: (id: string) => void;
+  onAdminMute?: (userId: string) => void;
+  onAdminUnmute?: (userId: string) => void;
   showAnimation?: boolean;
 }
 
@@ -94,9 +99,14 @@ export function ChatMessage({
   createdAt,
   userId,
   currentUserId,
+  isAdmin = false,
+  isMuted = false,
   onRecall,
   onAddFriend,
   onSendPrivateMessage,
+  onAdminDelete,
+  onAdminMute,
+  onAdminUnmute,
   showAnimation = false,
 }: ChatMessageProps) {
   const [showActions, setShowActions] = useState(false);
@@ -260,6 +270,48 @@ export function ChatMessage({
               <RotateCcw className="h-3 w-3 mr-1" />
               Thu hồi
             </Button>
+          </div>
+        )}
+
+        {/* Admin moderation buttons */}
+        {showActions && isAdmin && !isOwn && (
+          <div className={cn("flex gap-1 mt-1", isOwn ? "justify-end" : "justify-start")}>
+            {onAdminDelete && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 text-xs px-2 text-destructive hover:bg-destructive/10"
+                onClick={() => onAdminDelete(id)}
+              >
+                <Trash2 className="h-3 w-3 mr-1" />
+                Xóa
+              </Button>
+            )}
+            {isMuted ? (
+              onAdminUnmute && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 text-xs px-2 text-green-500 hover:bg-green-500/10"
+                  onClick={() => onAdminUnmute(userId)}
+                >
+                  <Volume2 className="h-3 w-3 mr-1" />
+                  Bỏ cấm
+                </Button>
+              )
+            ) : (
+              onAdminMute && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 text-xs px-2 text-orange-500 hover:bg-orange-500/10"
+                  onClick={() => onAdminMute(userId)}
+                >
+                  <VolumeX className="h-3 w-3 mr-1" />
+                  Cấm chat
+                </Button>
+              )
+            )}
           </div>
         )}
       </div>
