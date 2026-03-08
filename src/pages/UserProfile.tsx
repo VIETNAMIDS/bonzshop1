@@ -35,6 +35,12 @@ export default function UserProfile() {
   const [registeringSeller, setRegisteringSeller] = useState(false);
 
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [showEmailOtp, setShowEmailOtp] = useState(false);
+  const [emailOtp, setEmailOtp] = useState('');
+  const [otpSending, setOtpSending] = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpCooldown, setOtpCooldown] = useState(0);
+  const [pendingEmailChange, setPendingEmailChange] = useState('');
   const [formData, setFormData] = useState({
     display_name: '',
     email: '',
@@ -119,6 +125,18 @@ export default function UserProfile() {
       return;
     }
 
+    // If email is changing, require OTP verification on old email first
+    if (trimmedEmail !== user?.email) {
+      setPendingEmailChange(trimmedEmail);
+      setShowEmailOtp(true);
+      setEmailOtp('');
+      return;
+    }
+
+    await saveProfileData(trimmedDisplayName, trimmedEmail);
+  };
+
+  const saveProfileData = async (displayName: string, newEmail: string, emailChanged = false) => {
     setSaving(true);
     try {
       const updatePayload: {
@@ -126,11 +144,11 @@ export default function UserProfile() {
         password?: string;
         data: Record<string, string>;
       } = {
-        data: { display_name: trimmedDisplayName }
+        data: { display_name: displayName }
       };
 
-      if (trimmedEmail !== user?.email) {
-        updatePayload.email = trimmedEmail;
+      if (emailChanged) {
+        updatePayload.email = newEmail;
       }
 
       // Update basic profile info (name/email) in auth
@@ -141,7 +159,7 @@ export default function UserProfile() {
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
-          display_name: trimmedDisplayName,
+          display_name: displayName,
           phone: formData.phone.trim() || null,
           avatar_url: formData.avatar_url || null,
           updated_at: new Date().toISOString(),
@@ -173,14 +191,14 @@ export default function UserProfile() {
         if (passwordError) throw passwordError;
       }
 
-      toast.success(updatePayload.email ? 'Đã cập nhật hồ sơ! Vui lòng kiểm tra email để xác nhận thay đổi.' : 'Đã cập nhật hồ sơ!');
+      toast.success(emailChanged ? 'Đã cập nhật hồ sơ! Email mới sẽ được cập nhật sau khi xác nhận.' : 'Đã cập nhật hồ sơ!');
       setEditing(false);
       await refreshUserProfile();
        
       setFormData(prev => ({
         ...prev,
-        display_name: trimmedDisplayName,
-        email: trimmedEmail,
+        display_name: displayName,
+        email: emailChanged ? user?.email || '' : newEmail,
         current_password: '',
         new_password: '',
         confirm_password: '',
@@ -190,6 +208,69 @@ export default function UserProfile() {
       toast.error('Không thể cập nhật hồ sơ');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSendEmailOtp = async () => {
+    if (!user?.email) return;
+    setOtpSending(true);
+    try {
+      const response = await supabase.functions.invoke('send-otp', {
+        body: { email: user.email, action: 'send' }
+      });
+
+      if (response.error) throw response.error;
+      const data = response.data;
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+
+      toast.success('Đã gửi mã xác thực đến email hiện tại của bạn');
+      setOtpCooldown(60);
+      const interval = setInterval(() => {
+        setOtpCooldown(prev => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      toast.error('Không thể gửi mã xác thực');
+    } finally {
+      setOtpSending(false);
+    }
+  };
+
+  const handleVerifyEmailOtp = async () => {
+    if (!user?.email || !emailOtp) return;
+    setOtpVerifying(true);
+    try {
+      const response = await supabase.functions.invoke('send-otp', {
+        body: { email: user.email, action: 'verify', otp: emailOtp }
+      });
+
+      if (response.error) throw response.error;
+      const data = response.data;
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+
+      if (data?.verified) {
+        setShowEmailOtp(false);
+        setEmailOtp('');
+        toast.success('Xác thực thành công! Đang cập nhật email...');
+        await saveProfileData(formData.display_name.trim(), pendingEmailChange, true);
+      }
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      toast.error('Không thể xác thực mã OTP');
+    } finally {
+      setOtpVerifying(false);
     }
   };
 
@@ -713,6 +794,87 @@ export default function UserProfile() {
                 Nạp xu
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Email Change OTP Dialog */}
+      <Dialog open={showEmailOtp} onOpenChange={setShowEmailOtp}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5 text-primary" />
+              Xác thực thay đổi email
+            </DialogTitle>
+            <DialogDescription>
+              Để bảo mật, chúng tôi cần xác thực qua email hiện tại của bạn trước khi thay đổi.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="bg-secondary/50 rounded-lg p-4 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Email hiện tại:</span>
+                <span className="font-medium">{user?.email}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Email mới:</span>
+                <span className="font-medium text-primary">{pendingEmailChange}</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Mã xác thực (OTP)</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={emailOtp}
+                  onChange={(e) => setEmailOtp(e.target.value)}
+                  placeholder="Nhập mã 6 số"
+                  maxLength={6}
+                  className="flex-1"
+                />
+                <Button
+                  variant="outline"
+                  onClick={handleSendEmailOtp}
+                  disabled={otpSending || otpCooldown > 0}
+                  className="shrink-0"
+                >
+                  {otpSending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : otpCooldown > 0 ? (
+                    `${otpCooldown}s`
+                  ) : (
+                    'Gửi mã'
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Nhấn "Gửi mã" để nhận mã xác thực qua email hiện tại.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setShowEmailOtp(false)} className="w-full sm:w-auto">
+              Hủy
+            </Button>
+            <Button
+              onClick={handleVerifyEmailOtp}
+              disabled={otpVerifying || emailOtp.length < 6}
+              className="w-full sm:w-auto"
+            >
+              {otpVerifying ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Đang xác thực...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Xác nhận thay đổi
+                </>
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
