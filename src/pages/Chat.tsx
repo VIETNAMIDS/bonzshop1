@@ -71,8 +71,10 @@ export default function Chat() {
   useEffect(() => {
     if (user) {
       checkBanStatus();
+      checkAdminStatus();
       fetchMessages();
       fetchAdminId();
+      fetchMutedUsers();
       const unsubscribe = subscribeToMessages();
       return unsubscribe;
     }
