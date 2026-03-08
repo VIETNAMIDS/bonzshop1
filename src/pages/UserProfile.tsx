@@ -198,6 +198,40 @@ export default function UserProfile() {
     setEditing(false);
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Ảnh không được vượt quá 2MB');
+      return;
+    }
+
+    setAvatarUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user?.id}-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(`avatars/${fileName}`, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('images')
+        .getPublicUrl(`avatars/${fileName}`);
+
+      setFormData(prev => ({ ...prev, avatar_url: publicUrl }));
+      toast.success('Đã tải ảnh lên thành công!');
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast.error('Không thể tải ảnh lên');
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
   const handleSellerRegistration = async () => {
     const SELLER_REGISTRATION_COST = 10;
 
