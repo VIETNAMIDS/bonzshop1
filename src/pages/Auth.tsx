@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { lovable } from '@/integrations/lovable';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Mail, Lock, User, Eye, EyeOff, Loader2, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
