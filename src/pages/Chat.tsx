@@ -43,6 +43,8 @@ export default function Chat() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [isBanned, setIsBanned] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [mutedUserIds, setMutedUserIds] = useState<Set<string>>(new Set());
   const [uploadingImage, setUploadingImage] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
