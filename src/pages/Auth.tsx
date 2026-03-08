@@ -893,7 +893,7 @@ export default function Auth() {
               onClick={async () => {
                 try {
                   setIsLoading(true);
-                  const redirectTo = encodeURIComponent('https://bonzshop.site/auth');
+                  const redirectTo = encodeURIComponent(`${window.location.origin}/auth`);
                   window.location.href = `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${redirectTo}`;
                   return;
                 } catch (err: any) {
