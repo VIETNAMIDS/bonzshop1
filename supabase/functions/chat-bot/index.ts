@@ -84,13 +84,8 @@ serve(async (req) => {
     // Get the user's latest message for moderation
     const latestMessage = message || (conversationHistory?.length ? conversationHistory[conversationHistory.length - 1]?.content : "");
 
-    // Check if user is admin (admins are exempt from moderation)
-    const { data: adminRole } = await supabase
-      .from("user_roles").select("id").eq("user_id", userId).eq("role", "admin").limit(1);
-    const isUserAdmin = adminRole && adminRole.length > 0;
-
     // === CONTENT MODERATION (skip for admins) ===
-    const violationType = !isUserAdmin ? checkInappropriateContent(latestMessage) : null;
+    const violationType = !isAdminUser ? checkInappropriateContent(latestMessage) : null;
     if (violationType) {
       // Record violation
       await supabase.from("bot_violations").insert({
