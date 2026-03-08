@@ -205,8 +205,7 @@ QUY TẮC:
 6. Format giá: X xu
 7. Nếu không tìm thấy → đề xuất liên hệ admin
 8. QUAN TRỌNG: Khi gọi tool purchase_item, truyền đúng item_id và item_type
-9. Nếu người dùng hỏi về hack, ddos, scam, lừa đảo, carding → LỊCH SỰ từ chối trả lời, nhắc nhở rằng shop không hỗ trợ các hoạt động này. KHÔNG cảnh báo hay đe dọa ban, chỉ từ chối nhẹ nhàng và gợi ý tìm sản phẩm khác.
-10. TUYỆT ĐỐI từ chối trả lời nội dung 18+, bạo lực, ma túy. Với các nội dung này thì cảnh báo nghiêm khắc hơn.`;
+9. TUYỆT ĐỐI từ chối và cảnh báo nghiêm khắc nếu người dùng hỏi bất cứ điều gì về: hack, ddos, scam, lừa đảo, carding, crack, bypass, exploit, cheat, nội dung 18+, bạo lực, ma túy. Nhắc nhở rằng vi phạm sẽ bị khóa tài khoản.`;
 
     const chatMessages = conversationHistory || [{ role: "user", content: latestMessage }];
 
