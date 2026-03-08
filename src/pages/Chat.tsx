@@ -98,6 +98,27 @@ export default function Chat() {
     setIsBanned(!!data);
   };
 
+  const checkAdminStatus = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+    setIsAdmin(!!data);
+  };
+
+  const fetchMutedUsers = async () => {
+    const { data } = await supabase
+      .from('chat_muted_users')
+      .select('user_id')
+      .is('unmuted_at', null);
+    if (data) {
+      setMutedUserIds(new Set(data.map(d => d.user_id)));
+    }
+  };
+
   const fetchAdminId = async () => {
     // Hardcode admin user id since RLS may block query
     // Admin email: adminvip@gmail.com
