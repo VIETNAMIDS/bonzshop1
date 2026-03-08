@@ -24,7 +24,7 @@ interface UserProfileData {
 }
 
 export default function UserProfile() {
-  const { user, isAdmin, sellerProfile, refreshSellerProfile } = useAuth();
+  const { user, isAdmin, sellerProfile, refreshSellerProfile, refreshUserProfile } = useAuth();
   const navigate = useNavigate();
    
   const [loading, setLoading] = useState(true);
