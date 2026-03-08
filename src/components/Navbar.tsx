@@ -237,7 +237,7 @@ export function Navbar() {
   // Desktop vertical sidebar
   return (
     <aside className={cn(
-      "fixed left-0 top-0 h-screen z-50 transition-all duration-300 bg-background border-r-2 border-border",
+      "fixed left-0 top-0 h-screen z-40 transition-all duration-300 bg-background border-r-2 border-border",
       sidebarCollapsed ? "w-16" : "w-60"
     )}>
       <div className="flex flex-col h-full p-3">
