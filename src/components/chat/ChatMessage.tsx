@@ -70,6 +70,7 @@ interface ChatMessageProps {
   imageUrl?: string | null;
   isOwn: boolean;
   isRecalled?: boolean;
+  gradientColor?: string | null;
   profile?: {
     display_name: string | null;
     avatar_url: string | null;
