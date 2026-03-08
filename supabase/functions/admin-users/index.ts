@@ -123,6 +123,7 @@ serve(async (req) => {
         const { data: sellersList } = await supabaseAdmin.from('sellers').select('user_id');
 
         // Get latest session info for each user (any session, not just active)
+        // Fetch all sessions to find ones with IP addresses
         const { data: sessions } = await supabaseAdmin
           .from('user_sessions')
           .select('user_id, ip_address, browser, os, device_name, last_active_at')
@@ -139,7 +140,9 @@ serve(async (req) => {
         const sessionMap = new Map<string, any>();
         if (sessions) {
           for (const s of sessions) {
-            if (!sessionMap.has(s.user_id)) {
+            const existing = sessionMap.get(s.user_id);
+            // Prefer session with IP address, otherwise use most recent
+            if (!existing || (!existing.ip_address && s.ip_address)) {
               sessionMap.set(s.user_id, s);
             }
           }
