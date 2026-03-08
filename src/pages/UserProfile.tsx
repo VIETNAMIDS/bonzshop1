@@ -175,7 +175,7 @@ export default function UserProfile() {
 
       toast.success(updatePayload.email ? 'Đã cập nhật hồ sơ! Vui lòng kiểm tra email để xác nhận thay đổi.' : 'Đã cập nhật hồ sơ!');
       setEditing(false);
-       
+      await refreshUserProfile();
        
       setFormData(prev => ({
         ...prev,
