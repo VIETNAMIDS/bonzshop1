@@ -123,7 +123,7 @@ serve(async (req) => {
     }
 
     // === SPAM DETECTION (skip for admins) ===
-    if (!isUserAdmin) {
+    if (!isAdminUser) {
       const oneMinuteAgo = new Date(Date.now() - SPAM_WINDOW_MS).toISOString();
       const { count: recentMsgCount } = await supabase
         .from("bot_chat_messages")
