@@ -241,6 +241,30 @@ export type Database = {
         }
         Relationships: []
       }
+      bot_chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       bot_rental_requests: {
         Row: {
           admin_note: string | null
@@ -281,6 +305,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      bot_violations: {
+        Row: {
+          created_at: string
+          id: string
+          message_content: string
+          user_id: string
+          violation_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_content: string
+          user_id: string
+          violation_type?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_content?: string
+          user_id?: string
+          violation_type?: string
+        }
+        Relationships: []
       }
       categories: {
         Row: {
