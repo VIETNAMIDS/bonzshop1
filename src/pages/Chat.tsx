@@ -603,6 +603,25 @@ export default function Chat() {
                  />
               ))
             )}
+            {/* Bot thinking indicator */}
+            {botThinking && (
+              <div className="flex gap-3">
+                <div className="h-8 w-8 shrink-0 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center ring-2 ring-primary/20">
+                  <Bot className="h-4 w-4 text-white" />
+                </div>
+                <div className="max-w-[70%]">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-medium text-accent">🤖 BonzBot</span>
+                  </div>
+                  <div className="inline-block px-4 py-3 rounded-2xl rounded-tl-none bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm">Đang suy nghĩ...</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
 
