@@ -121,6 +121,14 @@ export const adminUsersApi = {
   async deleteUser(userId: string) {
     return callAdminFunction('admin-users', { action: 'deleteUser', data: { userId } });
   },
+
+  async banUser(userId: string, reason: string) {
+    return callAdminFunction('admin-users', { action: 'banUser', data: { userId, reason } });
+  },
+
+  async unbanUser(userId: string) {
+    return callAdminFunction('admin-users', { action: 'unbanUser', data: { userId } });
+  },
 };
 
 // Accounts API - All logic runs on backend

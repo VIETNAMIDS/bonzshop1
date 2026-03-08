@@ -109,12 +109,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const checkBanStatus = async (userId: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('banned_users')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error checking ban status:', error);
+        return false;
+      }
+      return !!data;
+    } catch (err) {
+      console.error('Error in checkBanStatus:', err);
+      return false;
+    }
+  };
+
   const updateRoleAndSellerState = async (currentUser: User | null) => {
     if (!currentUser) {
       setIsAdmin(false);
       setSellerProfile(null);
       setNeedsSellerSetup(false);
       setUserProfile(null);
+      return;
+    }
+
+    // Check if user is banned
+    const isBanned = await checkBanStatus(currentUser.id);
+    if (isBanned) {
+      console.log('User is banned, signing out...');
+      await supabase.auth.signOut();
+      setUser(null);
+      setSession(null);
+      setIsAdmin(false);
+      setSellerProfile(null);
+      setUserProfile(null);
+      // Show a message after a short delay to avoid race conditions
+      setTimeout(() => {
+        alert('Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.');
+      }, 100);
       return;
     }
 
@@ -127,8 +163,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAdmin(isAdminResult);
     setSellerProfile(profile);
     setUserProfile(uProfile);
-    // Only require seller setup if admin doesn't have a seller profile at all
-    // If profile exists (even incomplete), don't force setup - they can update later
     setNeedsSellerSetup(false);
   };
 
