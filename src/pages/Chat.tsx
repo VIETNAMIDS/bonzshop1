@@ -280,6 +280,58 @@ export default function Chat() {
     }
   };
 
+  const handleAdminDeleteMessage = async (messageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('chat_messages')
+        .update({ is_deleted: true })
+        .eq('id', messageId);
+
+      if (error) throw error;
+      setMessages(prev => prev.filter(m => m.id !== messageId));
+      toast({ title: '🗑️ Đã xóa tin nhắn' });
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      toast({ title: 'Lỗi', description: 'Không thể xóa tin nhắn', variant: 'destructive' });
+    }
+  };
+
+  const handleAdminMute = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('chat_muted_users')
+        .insert({ user_id: userId, muted_by: user?.id });
+
+      if (error) throw error;
+      setMutedUserIds(prev => new Set(prev).add(userId));
+      toast({ title: '🔇 Đã cấm người dùng chat' });
+    } catch (error) {
+      console.error('Error muting user:', error);
+      toast({ title: 'Lỗi', description: 'Không thể cấm người dùng', variant: 'destructive' });
+    }
+  };
+
+  const handleAdminUnmute = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('chat_muted_users')
+        .update({ unmuted_at: new Date().toISOString() })
+        .eq('user_id', userId)
+        .is('unmuted_at', null);
+
+      if (error) throw error;
+      setMutedUserIds(prev => {
+        const next = new Set(prev);
+        next.delete(userId);
+        return next;
+      });
+      toast({ title: '🔊 Đã bỏ cấm người dùng' });
+    } catch (error) {
+      console.error('Error unmuting user:', error);
+      toast({ title: 'Lỗi', description: 'Không thể bỏ cấm', variant: 'destructive' });
+    }
+  };
+
   const handleAddFriend = async (friendId: string) => {
     if (!user || friendId === user.id) return;
 
