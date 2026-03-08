@@ -299,6 +299,22 @@ export default function Chat() {
     const trimmedMessage = newMessage.trim();
     if (!trimmedMessage && !selectedImage) return;
 
+    // === CONTENT MODERATION (skip for admin) ===
+    if (!isAdmin && trimmedMessage) {
+      const violation = checkMessageContent(trimmedMessage);
+      if (violation) {
+        toast({
+          title: '⚠️ Cảnh báo',
+          description: `Tin nhắn vi phạm quy định (${violation}). Không được gửi nội dung nhạy cảm!`,
+          variant: 'destructive',
+        });
+        setNewMessage('');
+        setSelectedImage(null);
+        setPreviewUrl(null);
+        return;
+      }
+    }
+
     // Check for bot command
     const botMatch = trimmedMessage.match(/^@bot\s+(.+)/i);
 
@@ -309,6 +325,24 @@ export default function Chat() {
       // Upload image if selected
       if (selectedImage) {
         setUploadingImage(true);
+
+        // === IMAGE MODERATION: check for 18+ content via AI ===
+        if (!isAdmin) {
+          const isImageSafe = await moderateImage(selectedImage);
+          if (!isImageSafe) {
+            toast({
+              title: '⛔ Ảnh bị chặn',
+              description: 'Ảnh chứa nội dung không phù hợp (18+/bạo lực). Tin nhắn đã bị hủy.',
+              variant: 'destructive',
+            });
+            setSending(false);
+            setUploadingImage(false);
+            setSelectedImage(null);
+            setPreviewUrl(null);
+            return;
+          }
+        }
+
         const fileExt = selectedImage.name.split('.').pop();
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
         const filePath = `chat-images/${fileName}`;
