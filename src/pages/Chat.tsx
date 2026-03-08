@@ -14,6 +14,7 @@ import { ChatMessage } from '@/components/chat/ChatMessage';
 import { EmojiPicker } from '@/components/chat/EmojiPicker';
 import { FriendsList } from '@/components/chat/FriendsList';
 import { PrivateChat } from '@/components/chat/PrivateChat';
+import { BotChat } from '@/components/chat/BotChat';
 
 interface ChatMessageData {
   id: string;
