@@ -211,11 +211,74 @@ export default function Chat() {
     };
   };
 
+  const handleBotQuery = async (query: string) => {
+    setBotThinking(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-bot`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ message: query, user_id: user?.id }),
+        }
+      );
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Bot error');
+      }
+
+      const data = await response.json();
+      
+      // Insert bot reply as a special message
+      const botMessage: ChatMessageData = {
+        id: `bot-${Date.now()}`,
+        user_id: 'bot',
+        content: data.reply,
+        image_url: null,
+        file_url: null,
+        file_name: null,
+        created_at: new Date().toISOString(),
+        is_deleted: false,
+        is_recalled: false,
+        gradient_color: null,
+        profile: {
+          display_name: '🤖 BonzBot',
+          avatar_url: null,
+        },
+      };
+      
+      setMessages(prev => [...prev, botMessage]);
+      setNewMessageIds(prev => new Set(prev).add(botMessage.id));
+      setTimeout(() => {
+        setNewMessageIds(prev => {
+          const next = new Set(prev);
+          next.delete(botMessage.id);
+          return next;
+        });
+      }, 1000);
+    } catch (error: any) {
+      toast({
+        title: 'Bot lỗi',
+        description: error.message || 'Không thể lấy phản hồi từ bot',
+        variant: 'destructive',
+      });
+    } finally {
+      setBotThinking(false);
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!user || isBanned) return;
     
     const trimmedMessage = newMessage.trim();
     if (!trimmedMessage && !selectedImage) return;
+
+    // Check for bot command
+    const botMatch = trimmedMessage.match(/^@bot\s+(.+)/i);
 
     setSending(true);
     try {
@@ -255,6 +318,11 @@ export default function Chat() {
       setNewMessage('');
       setSelectedImage(null);
       setPreviewUrl(null);
+
+      // If it's a bot command, query the bot after sending
+      if (botMatch) {
+        handleBotQuery(botMatch[1]);
+      }
     } catch (error: any) {
       console.error('Error sending message:', error);
       toast({
