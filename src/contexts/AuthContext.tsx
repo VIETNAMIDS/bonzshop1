@@ -158,8 +158,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    const [isAdminResult, profile, uProfile] = await Promise.all([
-      checkAdminRole(currentUser.id),
+    const [, profile, uProfile] = await Promise.all([
+      Promise.resolve(isAdminResult), // already checked above
       checkSellerProfile(currentUser.id),
       checkUserProfile(currentUser.id)
     ]);
