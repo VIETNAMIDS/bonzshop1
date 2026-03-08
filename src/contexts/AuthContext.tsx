@@ -161,9 +161,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsAdmin(false);
         setSellerProfile(null);
         setUserProfile(null);
-        setTimeout(() => {
-          alert('Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.');
-        }, 100);
+        setIsBanned(true);
+        setBanReason(banResult.reason);
         return;
       }
     }
