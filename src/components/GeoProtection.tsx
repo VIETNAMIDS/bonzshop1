@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Shield, MapPin, Loader2, CheckCircle2 } from 'lucide-react';
+import { BanScreen } from '@/components/BanScreen';
 
 const CAPTCHA_KEY = 'bonz_captcha_verified';
 const GEO_KEY = 'bonz_geo_verified';
@@ -21,6 +22,8 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
   const [targetNumber, setTargetNumber] = useState<number>(0);
   const [captchaError, setCaptchaError] = useState('');
   const [redirecting, setRedirecting] = useState(false);
+  const [isBanned, setIsBanned] = useState(false);
+  const [banReason, setBanReason] = useState('');
 
   // Generate random captcha
   const generateCaptcha = useCallback(() => {
@@ -34,6 +37,33 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
   // Check if already verified
   useEffect(() => {
     const checkVerification = async () => {
+      // Check IP ban first (unauthenticated - just checks IP)
+      try {
+        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+        const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        if (SUPABASE_URL && SUPABASE_KEY) {
+          const banRes = await fetch(`${SUPABASE_URL}/functions/v1/check-ban`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': SUPABASE_KEY,
+            },
+            body: JSON.stringify({ action: 'check' }),
+          });
+          if (banRes.ok) {
+            const banData = await banRes.json();
+            if (banData.banned) {
+              setIsBanned(true);
+              setBanReason(banData.reason || '');
+              setIsVerifying(false);
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.log('[GeoProtection] Ban check failed (non-critical):', err);
+      }
+
       // Check captcha verification
       const captchaData = localStorage.getItem(CAPTCHA_KEY);
       if (captchaData) {
@@ -69,13 +99,11 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
           sessionStorage.setItem(GEO_KEY, 'VN');
           setIsVerifying(false);
           
-          // Check if captcha needed
           if (!captchaData || Date.now() - JSON.parse(captchaData).timestamp >= CAPTCHA_EXPIRY) {
             setShowCaptcha(true);
             generateCaptcha();
           }
         } else {
-          // Non-Vietnam - redirect to Google
           console.log('[GeoProtection] Blocked country:', data.country_code);
           setIsBlocked(true);
           setRedirecting(true);
@@ -85,7 +113,6 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error('[GeoProtection] Error:', error);
-        // If geo check fails, allow access but require captcha
         setIsVerifying(false);
         if (!captchaData) {
           setShowCaptcha(true);
@@ -100,18 +127,21 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
   // Handle captcha click
   const handleCaptchaClick = (number: number) => {
     if (number === targetNumber) {
-      // Correct!
       localStorage.setItem(CAPTCHA_KEY, JSON.stringify({ timestamp: Date.now() }));
       setCaptchaComplete(true);
       setShowCaptcha(false);
     } else {
-      // Wrong - regenerate
       setCaptchaError('Sai rồi! Thử lại nhé.');
       generateCaptcha();
     }
   };
 
-  // Blocked screen
+  // Ban screen - highest priority
+  if (isBanned) {
+    return <BanScreen reason={banReason} />;
+  }
+
+  // Blocked screen (geo)
   if (isBlocked) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center z-[9999]">
@@ -159,7 +189,6 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
       <div className="fixed inset-0 bg-background flex items-center justify-center z-[9999] p-4">
         <div className="w-full max-w-md">
           <div className="glass rounded-2xl p-6 sm:p-8 border border-primary/30">
-            {/* Header */}
             <div className="text-center mb-6">
               <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
                 <Shield className="w-10 h-10 text-primary" />
@@ -170,7 +199,6 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
               </p>
             </div>
 
-            {/* Captcha Grid */}
             <div className="grid grid-cols-3 gap-3 mb-6">
               {captchaNumbers.map((num, idx) => (
                 <button
@@ -183,14 +211,12 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
               ))}
             </div>
 
-            {/* Error message */}
             {captchaError && (
               <div className="text-center text-red-500 text-sm mb-4 animate-pulse">
                 {captchaError}
               </div>
             )}
 
-            {/* Footer */}
             <div className="text-center text-xs text-muted-foreground">
               <p>🇻🇳 Website chỉ dành cho người dùng Việt Nam</p>
             </div>
@@ -214,6 +240,5 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // All verified - render children
   return <>{children}</>;
 }

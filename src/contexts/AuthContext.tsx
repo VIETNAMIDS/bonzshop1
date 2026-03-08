@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useSessionHeartbeat, deactivateCurrentSession } from '@/hooks/useSessionManager';
+import { BanScreen } from '@/components/BanScreen';
 
 interface Profile {
   id: string;
@@ -47,6 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null);
   const [needsSellerSetup, setNeedsSellerSetup] = useState(false);
   const [userProfile, setUserProfile] = useState<Profile | null>(null);
+  const [isBanned, setIsBanned] = useState(false);
+  const [banReason, setBanReason] = useState('');
 
   const checkAdminRole = async (userId: string) => {
     try {
@@ -158,9 +161,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsAdmin(false);
         setSellerProfile(null);
         setUserProfile(null);
-        setTimeout(() => {
-          alert('Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.');
-        }, 100);
+        setIsBanned(true);
+        setBanReason(banResult.reason);
         return;
       }
     }
@@ -474,7 +476,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refreshSellerProfile,
       refreshUserProfile
     }}>
-      {children}
+      {isBanned ? <BanScreen reason={banReason} /> : children}
     </AuthContext.Provider>
   );
 }
