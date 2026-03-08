@@ -272,6 +272,48 @@ export function ChatMessage({
             </Button>
           </div>
         )}
+
+        {/* Admin moderation buttons */}
+        {showActions && isAdmin && !isOwn && (
+          <div className={cn("flex gap-1 mt-1", isOwn ? "justify-end" : "justify-start")}>
+            {onAdminDelete && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 text-xs px-2 text-destructive hover:bg-destructive/10"
+                onClick={() => onAdminDelete(id)}
+              >
+                <Trash2 className="h-3 w-3 mr-1" />
+                Xóa
+              </Button>
+            )}
+            {isMuted ? (
+              onAdminUnmute && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 text-xs px-2 text-green-500 hover:bg-green-500/10"
+                  onClick={() => onAdminUnmute(userId)}
+                >
+                  <Volume2 className="h-3 w-3 mr-1" />
+                  Bỏ cấm
+                </Button>
+              )
+            ) : (
+              onAdminMute && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 text-xs px-2 text-orange-500 hover:bg-orange-500/10"
+                  onClick={() => onAdminMute(userId)}
+                >
+                  <VolumeX className="h-3 w-3 mr-1" />
+                  Cấm chat
+                </Button>
+              )
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
