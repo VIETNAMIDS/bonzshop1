@@ -34,6 +34,44 @@ interface ChatMessageData {
   };
 }
 
+// Content moderation - check message text for violations
+function checkMessageContent(message: string): string | null {
+  if (!message || message.trim().length === 0) return null;
+  if (/\b(sex|porn|xxx|nude|nud[eê]|kh[iỉ]êu\s*d[aâ]m|d[aâ]m\s*d[uụ]c|th[uủ]\s*d[aâ]m|l[oồ]n|c[aặ]c|đ[iị]t|đ[uụ]|ch[iị]ch|s[uứ]c\s*v[aậ]t|lo[aạ]n\s*lu[aâ]n|h[ií]p\s*d[aâ]m|onlyfan|nsfw|h[eề]ntai|javhd|jav)\b/gi.test(message)) return "nội dung 18+";
+  if (/\b(gi[eế]t\s*ng[uư][oờ]i|m[aạ]i\s*d[aâ]m|ma\s*t[uú]y|c[aầ]n\s*sa|thu[oố]c\s*l[aắ]c|heroin|cocaine|ketamine|ecstasy)\b/gi.test(message)) return "bạo lực/ma túy";
+  if (/\b(hack|ddos|dos|c[aạ]rd|carding|scam|l[uừ]a\s*đ[aả]o|phish|keylog|trojan|malware|ransomware|brute\s*force|exploit|inject|bypass|crack|ch[eế]at|b[oẻ]\s*kh[oó]a|fake\s*login|rat\s*tool)\b/gi.test(message)) return "hack/lừa đảo";
+  if (/(.)\1{10,}/gi.test(message)) return "spam";
+  return null;
+}
+
+// Image moderation using AI vision
+async function moderateImage(file: File): Promise<boolean> {
+  try {
+    const base64 = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (!token) return true;
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-bot`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ action: 'moderate_image', image_base64: base64 }),
+      }
+    );
+    if (!response.ok) return true;
+    const data = await response.json();
+    return data.safe !== false;
+  } catch {
+    return true;
+  }
+}
+
 export default function Chat() {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
@@ -299,6 +337,22 @@ export default function Chat() {
     const trimmedMessage = newMessage.trim();
     if (!trimmedMessage && !selectedImage) return;
 
+    // === CONTENT MODERATION (skip for admin) ===
+    if (!isAdmin && trimmedMessage) {
+      const violation = checkMessageContent(trimmedMessage);
+      if (violation) {
+        toast({
+          title: '⚠️ Cảnh báo',
+          description: `Tin nhắn vi phạm quy định (${violation}). Không được gửi nội dung nhạy cảm!`,
+          variant: 'destructive',
+        });
+        setNewMessage('');
+        setSelectedImage(null);
+        setPreviewUrl(null);
+        return;
+      }
+    }
+
     // Check for bot command
     const botMatch = trimmedMessage.match(/^@bot\s+(.+)/i);
 
@@ -309,6 +363,24 @@ export default function Chat() {
       // Upload image if selected
       if (selectedImage) {
         setUploadingImage(true);
+
+        // === IMAGE MODERATION: check for 18+ content via AI ===
+        if (!isAdmin) {
+          const isImageSafe = await moderateImage(selectedImage);
+          if (!isImageSafe) {
+            toast({
+              title: '⛔ Ảnh bị chặn',
+              description: 'Ảnh chứa nội dung không phù hợp (18+/bạo lực). Tin nhắn đã bị hủy.',
+              variant: 'destructive',
+            });
+            setSending(false);
+            setUploadingImage(false);
+            setSelectedImage(null);
+            setPreviewUrl(null);
+            return;
+          }
+        }
+
         const fileExt = selectedImage.name.split('.').pop();
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
         const filePath = `chat-images/${fileName}`;

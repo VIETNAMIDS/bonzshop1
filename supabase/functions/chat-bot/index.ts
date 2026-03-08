@@ -6,13 +6,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Inappropriate content patterns (Vietnamese + English)
-// Only catch CLEARLY inappropriate content - not general mentions
+// Inappropriate content patterns (Vietnamese + English) - STRICT: warn for ALL sensitive content
 const INAPPROPRIATE_PATTERNS = [
-  // 18+ / sexual content (explicit only)
-  /\b(sex|porn|xxx|nude|nud[eê]|kh[iỉ]êu\s*d[aâ]m|d[aâ]m\s*d[uụ]c|th[uủ]\s*d[aâ]m|l[oồ]n|c[aặ]c|đ[iị]t|đ[uụ]|ch[iị]ch|s[uứ]c\s*v[aậ]t|lo[aạ]n\s*lu[aâ]n|h[ií]p\s*d[aâ]m)\b/gi,
+  // 18+ / sexual content
+  /\b(sex|porn|xxx|nude|nud[eê]|kh[iỉ]êu\s*d[aâ]m|d[aâ]m\s*d[uụ]c|th[uủ]\s*d[aâ]m|l[oồ]n|c[aặ]c|đ[iị]t|đ[uụ]|ch[iị]ch|s[uứ]c\s*v[aậ]t|lo[aạ]n\s*lu[aâ]n|h[ií]p\s*d[aâ]m|onlyfan|nsfw|h[eề]ntai|javhd|jav)\b/gi,
   // Violence / illegal substances
-  /\b(gi[eế]t\s*ng[uư][oờ]i|m[aạ]i\s*d[aâ]m|ma\s*t[uú]y|c[aầ]n\s*sa|thu[oố]c\s*l[aắ]c|heroin|cocaine)\b/gi,
+  /\b(gi[eế]t\s*ng[uư][oờ]i|m[aạ]i\s*d[aâ]m|ma\s*t[uú]y|c[aầ]n\s*sa|thu[oố]c\s*l[aắ]c|heroin|cocaine|ketamine|ecstasy)\b/gi,
+  // Hack / scam / fraud
+  /\b(hack|ddos|dos|c[aạ]rd|carding|scam|l[uừ]a\s*đ[aả]o|phish|keylog|trojan|malware|ransomware|brute\s*force|exploit|inject|bypass|crack|ch[eế]at|b[oẻ]\s*kh[oó]a|fake\s*login|rat\s*tool)\b/gi,
   // Spam patterns
   /(.)\1{10,}/gi, // Repeating characters 10+ times
 ];
@@ -33,7 +34,7 @@ serve(async (req) => {
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { message, messages: conversationHistory, action, action_data } = await req.json();
+    const { message, messages: conversationHistory, action, action_data, image_base64 } = await req.json();
 
     // Authenticate user
     const authHeader = req.headers.get("Authorization");
@@ -73,6 +74,50 @@ serve(async (req) => {
       if (muteData && muteData.length > 0) {
         return new Response(JSON.stringify({ error: "Bạn đã bị cấm chat." }), {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // Handle image moderation
+    if (action === "moderate_image" && image_base64) {
+      try {
+        const moderationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash-lite",
+            messages: [
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: "Is this image safe for a public chat? Check for: nudity, sexual content, extreme violence, gore, drugs. Reply ONLY with JSON: {\"safe\": true} or {\"safe\": false, \"reason\": \"description\"}" },
+                  { type: "image_url", image_url: { url: image_base64 } }
+                ]
+              }
+            ],
+          }),
+        });
+        
+        if (moderationResponse.ok) {
+          const modData = await moderationResponse.json();
+          const content = modData.choices?.[0]?.message?.content || "";
+          const jsonMatch = content.match(/\{[^}]+\}/);
+          if (jsonMatch) {
+            const result = JSON.parse(jsonMatch[0]);
+            return new Response(JSON.stringify(result), {
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
+        }
+        return new Response(JSON.stringify({ safe: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } catch {
+        return new Response(JSON.stringify({ safe: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
     }
@@ -117,7 +162,7 @@ serve(async (req) => {
       // Warning
       const warningsLeft = 3 - totalViolations;
       return new Response(JSON.stringify({
-        reply: `⚠️ **CẢNH BÁO** (${totalViolations}/3)\n\nTin nhắn của bạn vi phạm quy định (${violationType}). Bạn còn **${warningsLeft} lần** cảnh báo trước khi bị **khóa tài khoản vĩnh viễn**.\n\n❌ Không được gửi nội dung 18+, bạo lực, ma túy, hoặc spam.\n\nHãy sử dụng bot đúng mục đích: tìm kiếm và mua sản phẩm.`,
+        reply: `⚠️ **CẢNH BÁO** (${totalViolations}/3)\n\nTin nhắn của bạn vi phạm quy định (${violationType}). Bạn còn **${warningsLeft} lần** cảnh báo trước khi bị **khóa tài khoản vĩnh viễn**.\n\n❌ Không được gửi nội dung 18+, hack, scam, lừa đảo, bạo lực, ma túy, hoặc spam.\n\nHãy sử dụng bot đúng mục đích: tìm kiếm và mua sản phẩm.`,
         warning: true,
         violations_count: totalViolations,
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -204,8 +249,7 @@ QUY TẮC:
 6. Format giá: X xu
 7. Nếu không tìm thấy → đề xuất liên hệ admin
 8. QUAN TRỌNG: Khi gọi tool purchase_item, truyền đúng item_id và item_type
-9. Nếu người dùng hỏi về hack, ddos, scam, lừa đảo, carding → LỊCH SỰ từ chối trả lời, nhắc nhở rằng shop không hỗ trợ các hoạt động này. KHÔNG cảnh báo hay đe dọa ban, chỉ từ chối nhẹ nhàng và gợi ý tìm sản phẩm khác.
-10. TUYỆT ĐỐI từ chối trả lời nội dung 18+, bạo lực, ma túy. Với các nội dung này thì cảnh báo nghiêm khắc hơn.`;
+9. TUYỆT ĐỐI từ chối và cảnh báo nghiêm khắc nếu người dùng hỏi bất cứ điều gì về: hack, ddos, scam, lừa đảo, carding, crack, bypass, exploit, cheat, nội dung 18+, bạo lực, ma túy. Nhắc nhở rằng vi phạm sẽ bị khóa tài khoản.`;
 
     const chatMessages = conversationHistory || [{ role: "user", content: latestMessage }];
 
@@ -309,19 +353,18 @@ QUY TẮC:
 
 function checkInappropriateContent(message: string): string | null {
   if (!message || message.trim().length === 0) return null;
-  const lower = message.toLowerCase();
 
   // Spam: repeated characters
   if (/(.)\1{10,}/gi.test(message)) return "spam (ký tự lặp)";
 
   // 18+ explicit content
-  if (/\b(sex|porn|xxx|nude|nud[eê]|kh[iỉ]êu\s*d[aâ]m|d[aâ]m\s*d[uụ]c|th[uủ]\s*d[aâ]m|l[oồ]n|c[aặ]c|đ[iị]t|đ[uụ]|ch[iị]ch|s[uứ]c\s*v[aậ]t|lo[aạ]n\s*lu[aâ]n|h[ií]p\s*d[aâ]m)\b/gi.test(message)) return "nội dung 18+";
+  if (/\b(sex|porn|xxx|nude|nud[eê]|kh[iỉ]êu\s*d[aâ]m|d[aâ]m\s*d[uụ]c|th[uủ]\s*d[aâ]m|l[oồ]n|c[aặ]c|đ[iị]t|đ[uụ]|ch[iị]ch|s[uứ]c\s*v[aậ]t|lo[aạ]n\s*lu[aâ]n|h[ií]p\s*d[aâ]m|onlyfan|nsfw|h[eề]ntai|javhd|jav)\b/gi.test(message)) return "nội dung 18+";
 
   // Violence / drugs
-  if (/\b(gi[eế]t\s*ng[uư][oờ]i|m[aạ]i\s*d[aâ]m|ma\s*t[uú]y|c[aầ]n\s*sa|thu[oố]c\s*l[aắ]c|heroin|cocaine)\b/gi.test(message)) return "nội dung bạo lực/ma túy";
+  if (/\b(gi[eế]t\s*ng[uư][oờ]i|m[aạ]i\s*d[aâ]m|ma\s*t[uú]y|c[aầ]n\s*sa|thu[oố]c\s*l[aắ]c|heroin|cocaine|ketamine|ecstasy)\b/gi.test(message)) return "nội dung bạo lực/ma túy";
 
-  // NOTE: "hack", "scam", "ddos", "lừa đảo" are NOT hard-filtered
-  // The AI will handle these softly via system prompt (refuse but no warning/ban)
+  // Hack / scam / fraud - STRICT: always warn
+  if (/\b(hack|ddos|dos|c[aạ]rd|carding|scam|l[uừ]a\s*đ[aả]o|phish|keylog|trojan|malware|ransomware|brute\s*force|exploit|inject|bypass|crack|ch[eế]at|b[oẻ]\s*kh[oó]a|fake\s*login|rat\s*tool)\b/gi.test(message)) return "nội dung lừa đảo/hack";
 
   return null;
 }
