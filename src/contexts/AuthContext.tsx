@@ -109,22 +109,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const checkBanStatus = async (userId: string): Promise<boolean> => {
+  // Check ban via edge function (checks both user_id AND IP)
+  const checkBanViaServer = async (): Promise<{ banned: boolean; reason: string }> => {
     try {
-      const { data, error } = await supabase
-        .from('banned_users')
-        .select('id')
-        .eq('user_id', userId)
-        .maybeSingle();
-      
-      if (error) {
-        console.error('Error checking ban status:', error);
-        return false;
-      }
-      return !!data;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return { banned: false, reason: '' };
+
+      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/check-ban`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({ action: 'check' }),
+      });
+
+      if (!res.ok) return { banned: false, reason: '' };
+      const data = await res.json();
+      return { banned: !!data.banned, reason: data.reason || '' };
     } catch (err) {
-      console.error('Error in checkBanStatus:', err);
-      return false;
+      console.error('Error checking ban status:', err);
+      return { banned: false, reason: '' };
     }
   };
 
@@ -137,14 +144,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Check admin first, then ban status (admins are exempt from ban)
+    // Check admin first, then ban status (admins are exempt - handled server-side)
     const isAdminResult = await checkAdminRole(currentUser.id);
     
-    // Only check ban for non-admin users
+    // Check ban for non-admin users via server (checks user_id + IP)
     if (!isAdminResult) {
-      const isBanned = await checkBanStatus(currentUser.id);
-      if (isBanned) {
-        console.log('User is banned, signing out...');
+      const banResult = await checkBanViaServer();
+      if (banResult.banned) {
+        console.log('User is banned (by user_id or IP), signing out...');
         await supabase.auth.signOut();
         setUser(null);
         setSession(null);
