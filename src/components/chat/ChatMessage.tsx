@@ -99,9 +99,14 @@ export function ChatMessage({
   createdAt,
   userId,
   currentUserId,
+  isAdmin = false,
+  isMuted = false,
   onRecall,
   onAddFriend,
   onSendPrivateMessage,
+  onAdminDelete,
+  onAdminMute,
+  onAdminUnmute,
   showAnimation = false,
 }: ChatMessageProps) {
   const [showActions, setShowActions] = useState(false);
