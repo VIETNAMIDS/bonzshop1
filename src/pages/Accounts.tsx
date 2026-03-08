@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { SEOHead, buildBreadcrumbSchema } from '@/components/seo/SEOHead';
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { PageWrapper } from "@/components/layout/PageWrapper";
@@ -365,6 +366,16 @@ const Accounts = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Mua Bán Tài Khoản"
+        description="Mua bán tài khoản game, Netflix, Spotify, ChatGPT giá rẻ tại BonzShop. Giao dịch tự động, nhận hàng ngay, bảo hành uy tín."
+        keywords="mua tài khoản, bán acc, acc netflix giá rẻ, acc spotify, acc chatgpt, mua acc game"
+        canonicalPath="/accounts"
+        structuredData={buildBreadcrumbSchema([
+          { name: 'Trang chủ', url: '/' },
+          { name: 'Tài khoản', url: '/accounts' },
+        ])}
+      />
       <Navbar />
       <PageWrapper>
         <main className="container mx-auto px-4 py-8">

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { SEOHead, buildBreadcrumbSchema } from '@/components/seo/SEOHead';
 import DOMPurify from 'dompurify';
 import { Navbar } from '@/components/Navbar';
 import { PageWrapper } from '@/components/layout/PageWrapper';
@@ -245,6 +246,16 @@ export default function Posts() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Bài Viết & Tin Tức"
+        description="Cập nhật tin tức, hướng dẫn mua bán tài khoản, key bản quyền mới nhất từ BonzShop."
+        keywords="tin tức bonzshop, hướng dẫn mua acc, key bản quyền mới nhất, blog bonzshop"
+        canonicalPath="/posts"
+        structuredData={buildBreadcrumbSchema([
+          { name: 'Trang chủ', url: '/' },
+          { name: 'Bài viết', url: '/posts' },
+        ])}
+      />
       <Navbar />
       <PageWrapper>
       <main className="container mx-auto px-4 py-8">
