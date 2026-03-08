@@ -79,17 +79,8 @@ serve(async (req) => {
     }
 
     // Handle image moderation
-    if (action === "moderate_image" && req.headers.get("Content-Type")?.includes("application/json")) {
-      const body = await req.json().catch(() => ({}));
-      const imageBase64 = body.image_base64 || (await req.json().catch(() => ({}))).image_base64;
-      // We already parsed the body above, use the original parse
-    }
-
-    // Re-parse body for moderate_image (body was already parsed at line 36)
-    if (action === "moderate_image") {
+    if (action === "moderate_image" && image_base64) {
       try {
-        const { image_base64 } = { image_base64: (await Promise.resolve()).toString() };
-        // Use AI to check image
         const moderationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -102,8 +93,8 @@ serve(async (req) => {
               {
                 role: "user",
                 content: [
-                  { type: "text", text: "Is this image safe for a public chat? Check for: nudity, sexual content, extreme violence, gore, drugs. Reply ONLY with JSON: {\"safe\": true} or {\"safe\": false, \"reason\": \"...\"}" },
-                  { type: "image_url", image_url: { url: (req as any).__image_base64 || "" } }
+                  { type: "text", text: "Is this image safe for a public chat? Check for: nudity, sexual content, extreme violence, gore, drugs. Reply ONLY with JSON: {\"safe\": true} or {\"safe\": false, \"reason\": \"description\"}" },
+                  { type: "image_url", image_url: { url: image_base64 } }
                 ]
               }
             ],
