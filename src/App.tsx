@@ -106,6 +106,7 @@ const App = () => (
               <Route path="/top-deposit" element={<TopDeposit />} />
               <Route path="/rewards" element={<Rewards />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/bot-keys" element={<AdminBotKeys />} />
               
               <Route path="/terms" element={<Terms />} />
               <Route path="/guide" element={<Guide />} />
