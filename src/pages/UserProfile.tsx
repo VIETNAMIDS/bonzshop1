@@ -13,7 +13,7 @@ import { Navbar } from '@/components/Navbar';
 import { PageWrapper } from '@/components/layout/PageWrapper';
 import {
   User, Mail, Lock, Store, Coins, Loader2,
-   ArrowLeft, Edit2, Save, X, CheckCircle, AlertCircle, Wallet, History
+   ArrowLeft, Edit2, Save, X, CheckCircle, AlertCircle, Wallet, History, Phone, Camera
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
  import { ReferralCodeInput } from '@/components/referral/ReferralCodeInput';
