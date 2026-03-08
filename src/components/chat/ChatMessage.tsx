@@ -78,9 +78,14 @@ interface ChatMessageProps {
   createdAt: string;
   userId: string;
   currentUserId?: string;
+  isAdmin?: boolean;
+  isMuted?: boolean;
   onRecall?: (id: string) => void;
   onAddFriend?: (userId: string) => void;
   onSendPrivateMessage?: (userId: string) => void;
+  onAdminDelete?: (id: string) => void;
+  onAdminMute?: (userId: string) => void;
+  onAdminUnmute?: (userId: string) => void;
   showAnimation?: boolean;
 }
 
