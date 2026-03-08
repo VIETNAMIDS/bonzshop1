@@ -73,6 +73,16 @@ export default function Categories() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Danh Mục Sản Phẩm"
+        description="Khám phá danh mục sản phẩm tại BonzShop: tài khoản game, key bản quyền, source code, templates và nhiều hơn nữa."
+        keywords="danh mục bonzshop, key bản quyền, source code, tài khoản game, templates"
+        canonicalPath="/categories"
+        structuredData={buildBreadcrumbSchema([
+          { name: 'Trang chủ', url: '/' },
+          { name: 'Danh mục', url: '/categories' },
+        ])}
+      />
       <Navbar />
       <PageWrapper>
       <main className="container mx-auto px-4 py-8">

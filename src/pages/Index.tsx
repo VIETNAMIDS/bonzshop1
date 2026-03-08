@@ -362,8 +362,21 @@ export default function Index() {
 
   if (!user) return null;
 
+  const homeFaqs = buildFAQSchema([
+    { question: 'BonzShop là gì?', answer: 'BonzShop là nền tảng mua bán tài khoản, key bản quyền, source code uy tín hàng đầu Việt Nam.' },
+    { question: 'Làm sao để mua tài khoản trên BonzShop?', answer: 'Đăng ký tài khoản, nạp xu và chọn sản phẩm bạn muốn mua. Giao dịch tự động, nhận hàng ngay.' },
+    { question: 'BonzShop có an toàn không?', answer: 'BonzShop cam kết bảo mật thông tin, hỗ trợ 24/7 và hoàn tiền nếu sản phẩm không đúng mô tả.' },
+  ]);
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Trang Chủ"
+        description="BonzShop - Nền tảng mua bán tài khoản, key bản quyền, source code uy tín #1 Việt Nam. Giá rẻ, giao dịch tự động, hỗ trợ 24/7."
+        keywords="mua tài khoản, bán tài khoản, key bản quyền, source code, BonzShop, mua acc giá rẻ, key windows, key office, acc netflix, acc spotify"
+        canonicalPath="/"
+        structuredData={homeFaqs}
+      />
       <Navbar />
       <div className={cn("transition-all duration-300", !isMobile && "ml-60")}>
 
