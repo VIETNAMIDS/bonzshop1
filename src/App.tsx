@@ -50,6 +50,7 @@ import QrScanner from "./pages/QrScanner";
 import TopDeposit from "./pages/TopDeposit";
 import Rewards from "./pages/Rewards";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminBotKeys from "./pages/AdminBotKeys";
 
 const queryClient = new QueryClient();
 
@@ -105,6 +106,7 @@ const App = () => (
               <Route path="/top-deposit" element={<TopDeposit />} />
               <Route path="/rewards" element={<Rewards />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/bot-keys" element={<AdminBotKeys />} />
               
               <Route path="/terms" element={<Terms />} />
               <Route path="/guide" element={<Guide />} />
