@@ -140,7 +140,9 @@ serve(async (req) => {
         const sessionMap = new Map<string, any>();
         if (sessions) {
           for (const s of sessions) {
-            if (!sessionMap.has(s.user_id)) {
+            const existing = sessionMap.get(s.user_id);
+            // Prefer session with IP address, otherwise use most recent
+            if (!existing || (!existing.ip_address && s.ip_address)) {
               sessionMap.set(s.user_id, s);
             }
           }
