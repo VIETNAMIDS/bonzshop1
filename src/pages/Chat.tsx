@@ -72,6 +72,94 @@ async function moderateImage(file: File): Promise<boolean> {
   }
 }
 
+function PinnedAnnouncement() {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="border-b border-amber-500/20 bg-gradient-to-r from-amber-500/10 via-yellow-500/5 to-amber-500/10">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full p-3 flex items-center gap-2 text-left hover:bg-amber-500/5 transition-colors"
+      >
+        <Pin className="h-4 w-4 text-amber-500 shrink-0" />
+        <span className="text-sm font-bold text-amber-400 truncate">
+          📌 💎🔥 BẢNG DỊCH VỤ VIP – SIÊU RẺ – UY TÍN 🔥💎
+        </span>
+        {expanded ? (
+          <ChevronUp className="h-4 w-4 text-amber-500 shrink-0 ml-auto" />
+        ) : (
+          <ChevronDown className="h-4 w-4 text-amber-500 shrink-0 ml-auto" />
+        )}
+      </button>
+      {expanded && (
+        <div className="px-4 pb-4 text-sm text-foreground/90 space-y-3 max-h-[400px] overflow-y-auto">
+          <p className="text-muted-foreground">
+            Link Web Shop: <a href="https://bonzshop.site/" target="_blank" rel="noopener" className="text-primary underline">bonzshop.site</a>
+            {' | '}
+            <a href="https://zalo.me/g/urdqse600" target="_blank" rel="noopener" className="text-primary underline">Nhóm Zalo 1</a>
+            {' | '}
+            <a href="https://zalo.me/g/chpafn970" target="_blank" rel="noopener" className="text-primary underline">Nhóm Zalo 2</a>
+            {' | '}
+            <a href="https://zalo.me/g/lqsosk574" target="_blank" rel="noopener" className="text-primary underline">Nhóm Zalo 3</a>
+          </p>
+
+          <div>
+            <p className="font-bold text-amber-400">🤖 I. DỊCH VỤ BOT ZALO – FACEBOOK</p>
+            <p>• Bot nhiều chức năng VIP: <b>100K</b></p>
+            <p>• Bot Zalo ngẫu nhiên: <b>50K</b></p>
+            <p>• Thuê Bot: 1 tháng <b>30K</b> | 2 tháng <b>60K</b> | 3 tháng <b>90K</b></p>
+            <p>• Thuê Group Zalo: 200TV <b>20K/ngày</b> | 300TV <b>30K</b> | 500TV <b>45K</b> | 600TV <b>60K</b> | 1000TV <b>100K</b></p>
+            <p>• Xác thực Zalo: <b>100K/tài khoản</b></p>
+          </div>
+
+          <div>
+            <p className="font-bold text-amber-400">👥 II. BÁN GROUP & CỘNG ĐỒNG</p>
+            <p>• 200TV <b>50K</b> | 400TV <b>100K</b> | 600TV <b>200K</b> | 800TV <b>250K</b></p>
+            <p>• Group Mem Ảo: <b>10K - 40K</b> (Có bảo hành)</p>
+          </div>
+
+          <div>
+            <p className="font-bold text-amber-400">💖 III. BUFF MXH</p>
+            <p>• Buff tim, View, Yêu thích, Share, Mắt live — Chỉ từ <b>5K</b></p>
+          </div>
+
+          <div>
+            <p className="font-bold text-amber-400">🚀 IV. PR BẰNG BOT (600+ nhóm Zalo)</p>
+            <p>• 1 ngày <b>10K</b> | 7 ngày <b>70K</b> (tặng 1 ngày) | 30 ngày <b>250K</b></p>
+          </div>
+
+          <div>
+            <p className="font-bold text-amber-400">🌐 V. LÀM WEB</p>
+            <p>• Giá từ <b>300K</b> — Web cá nhân, Landing page, Bán hàng, Mini game...</p>
+          </div>
+
+          <div>
+            <p className="font-bold text-amber-400">💻 VI. TOOL, TÀI KHOẢN & SIM</p>
+            <p>• Tool buff MXH, Tool spam, Tool quản lý tiện ích</p>
+            <p>• Tài khoản Zalo mới <b>50K</b> | Zalo Trust <b>100K</b> | Sim <b>50K</b></p>
+            <p>• ChatGPT Plus/Pro, Canva Pro, Windsurf, Cursor — Dưới <b>100K</b></p>
+            <p>• Kho tài liệu THCS – THPT vô hạn</p>
+          </div>
+
+          <div>
+            <p className="font-bold text-amber-400">🏖️ VII. VILLA VŨNG TÀU VIEW BIỂN</p>
+            <p>• Gói cơ bản từ <b>1.000.000đ</b> | VIP giảm sâu | Luxury <b>10.000.000đ</b></p>
+          </div>
+
+          <div>
+            <p className="font-bold text-amber-400">🔥 VIII. VPS SIÊU TIẾT KIỆM</p>
+            <p>• 1CPU/1GB RAM <b>50K/tháng</b> | 1CPU/2GB <b>70K</b> | 2CPU/4GB <b>120K</b></p>
+          </div>
+
+          <p className="text-center font-bold text-amber-400 pt-2 border-t border-amber-500/20">
+            ☎️ Zalo/Hotline: <span className="text-primary">0785.000.270</span>
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Chat() {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
