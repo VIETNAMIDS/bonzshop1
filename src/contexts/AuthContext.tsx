@@ -3,8 +3,6 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useSessionHeartbeat, deactivateCurrentSession } from '@/hooks/useSessionManager';
 import { BanScreen } from '@/components/BanScreen';
-import { supabase } from '@/integrations/supabase/client';
-import { useSessionHeartbeat, deactivateCurrentSession } from '@/hooks/useSessionManager';
 
 interface Profile {
   id: string;
