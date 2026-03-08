@@ -7,11 +7,12 @@ const corsHeaders = {
 };
 
 // Inappropriate content patterns (Vietnamese + English)
+// Only catch CLEARLY inappropriate content - not general mentions
 const INAPPROPRIATE_PATTERNS = [
-  // 18+ / sexual content
+  // 18+ / sexual content (explicit only)
   /\b(sex|porn|xxx|nude|nud[eê]|kh[iỉ]êu\s*d[aâ]m|d[aâ]m\s*d[uụ]c|th[uủ]\s*d[aâ]m|l[oồ]n|c[aặ]c|đ[iị]t|đ[uụ]|ch[iị]ch|s[uứ]c\s*v[aậ]t|lo[aạ]n\s*lu[aâ]n|h[ií]p\s*d[aâ]m)\b/gi,
-  // Violence / illegal
-  /\b(gi[eế]t\s*ng[uư][oờ]i|m[aạ]i\s*d[aâ]m|ma\s*t[uú]y|c[aầ]n\s*sa|thu[oố]c\s*l[aắ]c|heroin|cocaine|hack|ddos|c[aạ]rd|scam|l[uừ]a\s*đ[aả]o)\b/gi,
+  // Violence / illegal substances
+  /\b(gi[eế]t\s*ng[uư][oờ]i|m[aạ]i\s*d[aâ]m|ma\s*t[uú]y|c[aầ]n\s*sa|thu[oố]c\s*l[aắ]c|heroin|cocaine)\b/gi,
   // Spam patterns
   /(.)\1{10,}/gi, // Repeating characters 10+ times
 ];
