@@ -50,3 +50,15 @@ verify_jwt = false
 
 [functions.public-api]
 verify_jwt = false
+
+[functions.check-ban]
+verify_jwt = false
+
+[functions.dynamic-sitemap]
+verify_jwt = false
+
+[functions.send-post-notification]
+verify_jwt = false
+
+[functions.qr-login]
+verify_jwt = false
