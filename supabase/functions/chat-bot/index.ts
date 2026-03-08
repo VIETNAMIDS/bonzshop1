@@ -326,6 +326,14 @@ function checkInappropriateContent(message: string): string | null {
 
 async function autobanUser(supabase: any, supabaseUrl: string, userId: string, reason: string) {
   try {
+    // Never ban admins
+    const { data: adminCheck } = await supabase
+      .from("user_roles").select("id").eq("user_id", userId).eq("role", "admin").limit(1);
+    if (adminCheck && adminCheck.length > 0) {
+      console.log(`Skipping auto-ban for admin ${userId}`);
+      return;
+    }
+
     // Ban user
     await supabase.from("banned_users").insert({
       user_id: userId,
