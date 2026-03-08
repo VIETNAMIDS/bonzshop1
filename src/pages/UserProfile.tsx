@@ -34,9 +34,12 @@ export default function UserProfile() {
   const [showSellerRegistration, setShowSellerRegistration] = useState(false);
   const [registeringSeller, setRegisteringSeller] = useState(false);
 
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [formData, setFormData] = useState({
     display_name: '',
     email: '',
+    phone: '',
+    avatar_url: '',
     current_password: '',
     new_password: '',
     confirm_password: '',
