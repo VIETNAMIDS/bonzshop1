@@ -688,8 +688,8 @@ export default function Chat() {
               </div>
 
               <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                <AlertTriangle className="h-3 w-3" />
-                Nhấn vào avatar để kết bạn hoặc nhắn riêng
+                <Bot className="h-3 w-3" />
+                Gõ <span className="font-medium text-primary">@bot</span> + câu hỏi để hỏi AI (VD: @bot tìm tài khoản Netflix)
               </p>
             </div>
           )}
