@@ -106,6 +106,23 @@ export async function registerSession(userId: string): Promise<void> {
         is_active: true,
       });
   }
+
+  // Update IP via edge function (can't get real IP client-side)
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+      fetch(`${SUPABASE_URL}/functions/v1/check-ban`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({ action: 'update-session-ip', sessionToken }),
+      }).catch(() => {}); // fire and forget
+    }
+  } catch {}
 }
 
 // Force deactivate a specific session
