@@ -56,13 +56,22 @@ export default function UserProfile() {
 
   const fetchUserProfile = async () => {
     try {
-      // Get user metadata and profile data
-      const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || '';
       const email = user?.email || '';
+
+      // Fetch from profiles table
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('display_name, avatar_url, phone')
+        .eq('user_id', user?.id)
+        .maybeSingle();
+
+      const displayName = profile?.display_name || user?.user_metadata?.display_name || user?.email?.split('@')[0] || '';
 
       setFormData({
         display_name: displayName,
         email: email,
+        phone: profile?.phone || '',
+        avatar_url: profile?.avatar_url || '',
         current_password: '',
         new_password: '',
         confirm_password: '',
