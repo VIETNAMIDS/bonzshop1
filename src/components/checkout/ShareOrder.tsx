@@ -152,7 +152,7 @@ export function ShareOrder({ itemTitle, itemPrice, itemImage, productId, account
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium line-clamp-2 text-sm">{itemTitle}</h4>
                 <p className="text-primary font-bold mt-1">{itemPrice.toLocaleString()} xu</p>
-                <p className="text-xs text-muted-foreground mt-1">bonzshop1.lovable.app</p>
+                <p className="text-xs text-muted-foreground mt-1">{shareHost}</p>
               </div>
             </div>
           </div>
