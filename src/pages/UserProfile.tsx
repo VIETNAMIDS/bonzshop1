@@ -797,6 +797,87 @@ export default function UserProfile() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Email Change OTP Dialog */}
+      <Dialog open={showEmailOtp} onOpenChange={setShowEmailOtp}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5 text-primary" />
+              Xác thực thay đổi email
+            </DialogTitle>
+            <DialogDescription>
+              Để bảo mật, chúng tôi cần xác thực qua email hiện tại của bạn trước khi thay đổi.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="bg-secondary/50 rounded-lg p-4 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Email hiện tại:</span>
+                <span className="font-medium">{user?.email}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Email mới:</span>
+                <span className="font-medium text-primary">{pendingEmailChange}</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Mã xác thực (OTP)</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={emailOtp}
+                  onChange={(e) => setEmailOtp(e.target.value)}
+                  placeholder="Nhập mã 6 số"
+                  maxLength={6}
+                  className="flex-1"
+                />
+                <Button
+                  variant="outline"
+                  onClick={handleSendEmailOtp}
+                  disabled={otpSending || otpCooldown > 0}
+                  className="shrink-0"
+                >
+                  {otpSending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : otpCooldown > 0 ? (
+                    `${otpCooldown}s`
+                  ) : (
+                    'Gửi mã'
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Nhấn "Gửi mã" để nhận mã xác thực qua email hiện tại.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setShowEmailOtp(false)} className="w-full sm:w-auto">
+              Hủy
+            </Button>
+            <Button
+              onClick={handleVerifyEmailOtp}
+              disabled={otpVerifying || emailOtp.length < 6}
+              className="w-full sm:w-auto"
+            >
+              {otpVerifying ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Đang xác thực...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Xác nhận thay đổi
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       </PageWrapper>
     </div>
   );
