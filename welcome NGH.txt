@@ -1,0 +1,638 @@
+import os
+from io import BytesIO
+from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageFilter, ImageChops
+import requests
+import base64
+import emoji
+from datetime import datetime
+import concurrent.futures
+import json
+import random
+import time
+import string
+import threading
+from typing import List, Tuple
+from zlapi.models import *
+
+des = {'version': "1.3.2", 'credits': "Khanh Sang", 'description': "welcome", 'power': "Thanh vien"}
+
+EVENT_SETTINGS_FILE = "data/welcome_setting.json"
+DEFAULT_COVER_PATH = "modules/cache/PTA.jpg"
+
+EVENT_COLORS = {
+    GroupEventType.JOIN: (102, 255, 178),
+    GroupEventType.LEAVE: (255, 102, 102),
+    GroupEventType.REMOVE_MEMBER: (255, 178, 102),
+    GroupEventType.ADD_ADMIN: (102, 178, 255),
+    GroupEventType.REMOVE_ADMIN: (204, 102, 255)
+}
+
+EVENT_TEXT_COLORS = {
+    GroupEventType.JOIN: (153, 255, 204),
+    GroupEventType.LEAVE: (255, 153, 153),
+    GroupEventType.REMOVE_MEMBER: (255, 204, 153),
+    GroupEventType.ADD_ADMIN: (153, 204, 255),
+    GroupEventType.REMOVE_ADMIN: (204, 153, 255)
+}
+
+EVENT_ICONS = {
+    GroupEventType.JOIN: "",
+    GroupEventType.LEAVE: "",
+    GroupEventType.REMOVE_MEMBER: "",
+    GroupEventType.ADD_ADMIN: "",
+    GroupEventType.REMOVE_ADMIN: ""
+}
+
+EVENT_NAMES = {
+    GroupEventType.JOIN: "JOIN",
+    GroupEventType.LEAVE: "LEAVE",
+    GroupEventType.REMOVE_MEMBER: "KICK",
+    GroupEventType.ADD_ADMIN: "ADMIN ADDED",
+    GroupEventType.REMOVE_ADMIN: "ADMIN REMOVED"
+}
+
+def random_gradient():
+    return [
+        (random.randint(150,255), random.randint(80,255), random.randint(80,255))
+        for _ in range(6)
+    ]
+    
+def load_allowed_groups():
+    if os.path.exists(EVENT_SETTINGS_FILE):
+        with open(EVENT_SETTINGS_FILE, "r") as f:
+            return json.load(f).get("groups", [])
+    return []
+
+def load_welcome_setting():
+    if os.path.exists(EVENT_SETTINGS_FILE):
+        with open(EVENT_SETTINGS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {
+        "groups": [],
+        "sash_text": "Master"
+    }
+
+def save_welcome_setting(data):
+    os.makedirs(os.path.dirname(EVENT_SETTINGS_FILE), exist_ok=True)
+    with open(EVENT_SETTINGS_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+        
+def load_fonts():
+    try:
+        fonts = {
+            "large": ImageFont.truetype("modules/cache/font/BeVietnamPro-Bold.ttf", 48),
+            "big": ImageFont.truetype("modules/cache/font/BeVietnamPro-Bold.ttf", 32),
+            "small": ImageFont.truetype("modules/cache/font/BeVietnamPro-Bold.ttf", 22),
+            "bot": ImageFont.truetype("modules/cache/font/BeVietnamPro-Bold.ttf", 28),
+            "time": ImageFont.truetype("modules/cache/font/BeVietnamPro-Bold.ttf", 13),
+            "emoji": ImageFont.truetype("modules/cache/font/emoji.ttf", 40),
+            "emoji_large": ImageFont.truetype("modules/cache/font/emoji.ttf", 158),
+            "name": ImageFont.truetype("modules/cache/font/BeVietnamPro-Bold.ttf", 32),
+            "large_bold": ImageFont.truetype("modules/cache/font/BeVietnamPro-Bold.ttf", 40),
+        }
+    except Exception as e:
+        print(f" Li ti font: {e}")
+        fonts = {key: ImageFont.load_default() for key in
+                 ["large", "big", "small", "bot", "time", "emoji", "emoji_large", "name", "large_bold"]}
+    return fonts
+   
+def random_contrast_color(base_color):
+    return tuple(min(255, max(0, c + random.randint(-50, 50))) for c in base_color)
+
+def create_gradient_colors(num_colors: int) -> List[Tuple[int, int, int]]:
+    return [(random.randint(30, 255), random.randint(30, 255), random.randint(30, 255)) for _ in range(num_colors)]
+
+def draw_sash(image: Image.Image, text: str):
+    w, h = image.size
+
+    sash_layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(sash_layer)
+
+    # màu băng rôn random
+    sash_color = (
+        random.randint(50, 255),
+        random.randint(50, 255),
+        random.randint(50, 255),
+        220
+    )
+
+    sash_height = 90
+
+    # vẽ băng ngang rồi xoay
+    draw.rectangle(
+        [(-300, h//2 - sash_height),
+         (w + 300, h//2 + sash_height)],
+        fill=sash_color
+    )
+
+    sash_layer = sash_layer.rotate(-25, expand=True)
+    image.alpha_composite(sash_layer, (0, 0))
+
+    # vẽ chữ
+    font = load_fonts()["large_bold"]
+    draw_main = ImageDraw.Draw(image)
+    bbox = draw_main.textbbox((0, 0), text, font=font)
+
+    x = (w - (bbox[2] - bbox[0])) // 2
+    y = h // 2 - 30
+
+    # shadow
+    draw_main.text((x+2, y+2), text, font=font, fill=(0, 0, 0, 180))
+    # chữ đỏ
+    draw_main.text((x, y), text, font=font, fill=(255, 0, 0, 255))
+    
+def interpolate_colors(colors: List[Tuple[int, int, int]], text_length: int, change_every: int) -> List[Tuple[int, int, int]]:
+    gradient = []
+    num_segments = len(colors) - 1
+    steps_per_segment = max((text_length // change_every) + 1, 1)
+    for i in range(num_segments):
+        for j in range(steps_per_segment):
+            if len(gradient) < text_length:
+                ratio = j / steps_per_segment
+                interpolated_color = (
+                    int(colors[i][0] * (1 - ratio) + colors[i + 1][0] * ratio),
+                    int(colors[i][1] * (1 - ratio) + colors[i + 1][1] * ratio),
+                    int(colors[i][2] * (1 - ratio) + colors[i + 1][2] * ratio)
+                )
+                gradient.append(interpolated_color)
+    while len(gradient) < text_length:
+        gradient.append(colors[-1])
+    return gradient[:text_length]
+
+def is_emoji(character: str) -> bool:
+    return character in emoji.EMOJI_DATA
+
+def create_text(draw: ImageDraw.Draw, text: str, font: ImageFont.FreeTypeFont,
+                            emoji_font: ImageFont.FreeTypeFont, text_position: Tuple[int,int],
+                            gradient_colors: List[Tuple[int,int,int]], shadow_offset=3):
+    gradient = interpolate_colors(gradient_colors, len(text), 1)
+    x, y = text_position
+    for i, char in enumerate(text):
+        color = tuple(gradient[i])
+        selected_font = emoji_font if is_emoji(char) and emoji_font else font
+        draw.text((x+shadow_offset, y+shadow_offset), char, fill=(0,0,0,180), font=selected_font)
+        draw.text((x, y), char, fill=color, font=selected_font)
+        text_bbox = draw.textbbox((x,y), char, font=selected_font)
+        x += text_bbox[2] - text_bbox[0]
+
+def draw_gradient_border(draw: ImageDraw.Draw, center_x: int, center_y: int,
+                        radius: int, border_thickness: int,
+                        gradient_colors: List[Tuple[int, int, int]]):
+    num_segments = 80
+    gradient = interpolate_colors(gradient_colors, num_segments, change_every=10)
+    for i in range(num_segments):
+        start_angle = i * (360 / num_segments)
+        end_angle = (i + 1) * (360 / num_segments)
+        color = tuple(gradient[i])
+        draw.arc(
+            [center_x - radius, center_y - radius, center_x + radius, center_y + radius],
+            start=start_angle, end=end_angle, fill=color, width=border_thickness
+        )
+
+def load_image_from_url(url: str) -> Image.Image:
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        return Image.open(BytesIO(response.content)).convert('RGBA')
+    except Exception as e:
+        print(f"Li khi ti nh t URL {url}: {e}")
+        return Image.new('RGBA', (100, 100), (0, 0, 0, 0))
+
+def generate_short_filename(length: int = 10) -> str:
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+
+def load_random_background(background_dir: str = "background") -> Image.Image:
+    if not os.path.exists(background_dir):
+        print(f"Error: Background folder '{background_dir}' does not exist.")
+        return None
+    background_files = [os.path.join(background_dir, f) for f in os.listdir(background_dir) 
+                       if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+    if not background_files:
+        print(f"Error: No valid image files found in '{background_dir}'")
+        return None
+    background_path = random.choice(background_files)
+    try:
+        return Image.open(background_path).convert("RGBA")
+    except Exception as e:
+        print(f"Error loading image {background_path}: {e}")
+        return None
+
+def create_default_background(width: int, height: int) -> Image.Image:
+    return Image.new('RGBA', (width, height), (0, 100, 0, 255))
+
+def create_default_avatar(name: str) -> Image.Image:
+    avatar = Image.new('RGBA', (170, 170), (200, 200, 200, 255))
+    draw = ImageDraw.Draw(avatar)
+    draw.ellipse((0, 0, 170, 170), fill=(100, 100, 255, 255))
+    initials = (name[:2].upper() if name else "??")
+    font = ImageFont.truetype("modules/cache/font/BeVietnamPro-Bold.ttf", 60)
+    text_bbox = draw.textbbox((0, 0), initials, font=font)
+    text_width = text_bbox[2] - text_bbox[0]
+    text_height = text_bbox[3] - text_bbox[1]
+    draw.text(
+        ((170 - text_width) // 2, (170 - text_height) // 2),
+        initials,
+        font=font,
+        fill=(255, 255, 255, 255)
+    )
+    return avatar
+
+def create_banner(bot, uid: str, thread_id: str, group_name: str = None,
+                 avatar_url: str = None, event_type: str = None,
+                 event_data=None, background_dir: str = "background", total_members: int = 0) -> str:
+    try:
+        member_info = bot.fetchUserInfo(uid).changed_profiles.get(uid)
+        if not member_info:
+            print(f"[ERROR] Không tìm thấy thông tin user {uid}")
+            return None
+
+        avatar_url = member_info.avatar if not avatar_url else avatar_url
+        user_name = getattr(member_info, 'zaloName', f"User{uid}")
+
+        ow_name = ""
+        ow_avatar_url = ""
+        if event_data and hasattr(event_data, 'sourceId'):
+            try:
+                ow_info = bot.fetchUserInfo(event_data.sourceId).changed_profiles.get(event_data.sourceId)
+                ow_name = getattr(ow_info, 'zaloName', f"Admin{event_data.sourceId}") if ow_info else "Quản trị viên"
+                ow_avatar_url = ow_info.avatar if ow_info else ""
+            except Exception as e:
+                print(f"[WARNING] Lỗi khi lấy thông tin admin: {e}")
+                ow_name = "Quản trị viên"
+
+        event_config = {
+            GroupEventType.JOIN: {
+                'main_text': f'Chào mừng, {user_name}💞',
+                'group_name_text': group_name,
+                'credit_text': "Đã tham gia nhóm✔️",
+                'msg': f" {user_name}",
+                'mention': None
+            },
+            GroupEventType.LEAVE: {
+                'main_text': f'Tạm biệt, {user_name}👋',
+                'group_name_text': group_name,
+                'credit_text': "Đã rời khỏi nhóm👋",
+                'msg': f' {user_name}',
+                'mention': None
+            },
+            GroupEventType.ADD_ADMIN: {
+                'main_text': f'Chúc mừng, {user_name}🥳',
+                'group_name_text': group_name,
+                'credit_text': f"Đã được lên chức phó nhóm🗝️",
+                'msg': f' {user_name}',
+                'mention': None
+            },
+            GroupEventType.REMOVE_ADMIN: {
+                'main_text': f'Rất tiếc, {user_name}😓',
+                'group_name_text': group_name,
+                'credit_text': f"Đã bị huỷ chức phó nhóm🗝️",
+                'msg': f' {user_name}',
+                'mention': None
+            },
+            GroupEventType.REMOVE_MEMBER: {
+                'main_text': f'Nhây này, {user_name}🚷',
+                'group_name_text': group_name,
+                'credit_text': f"Đã bị kick khỏi group này❌",
+                'msg': f' {user_name}',
+                'mention': None
+            },
+            GroupEventType.JOIN_REQUEST: {
+                'main_text': f'Thông báo, {user_name}📢',
+                'group_name_text': group_name,
+                'credit_text': f"Vừa yêu cầu tham gia cộng đồng🤝",
+                'msg': f' {user_name}',
+                'mention': None
+            }
+        }
+
+        config = event_config.get(event_type)
+        if not config:
+            print(f"[ERROR] Sự kiện {event_type} không c h tr")
+            return None
+
+        banner_width, banner_height = 1010, 435
+
+        cover_photo = None
+        try:
+            if hasattr(member_info, "cover") and member_info.cover:
+                cover_response = requests.get(member_info.cover, timeout=10)
+                if cover_response.status_code == 200:
+                    cover_photo = Image.open(BytesIO(cover_response.content)).convert("RGBA")
+                    cover_photo = cover_photo.resize((banner_width, banner_height), Image.LANCZOS)
+                    cover_photo = cover_photo.filter(ImageFilter.GaussianBlur(radius=10))
+                    cover_overlay = Image.new("RGBA", (banner_width, banner_height), (0, 0, 0, 70))
+                    cover_photo = Image.alpha_composite(cover_photo, cover_overlay)
+        except Exception as e:
+            print(f"[WARNING] Error loading cover photo: {e}")
+
+        if cover_photo:
+            background = cover_photo
+        else:
+            background = load_random_background(background_dir) or create_default_background(banner_width, banner_height)
+
+        background = background.resize((banner_width, banner_height), Image.LANCZOS)
+        background_blurred = background.filter(ImageFilter.GaussianBlur(radius=5))
+
+        overlay = Image.new("RGBA", (banner_width, banner_height), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(overlay)
+
+        glass_color = (
+            random.randint(120, 180),
+            random.randint(120, 180),
+            random.randint(120, 180),
+            random.randint(190, 210)
+        )
+
+        rect_margin = 60
+        rect_x0, rect_y0 = rect_margin, 70
+        rect_x1, rect_y1 = banner_width - rect_margin, banner_height - 90
+        draw.rounded_rectangle([rect_x0, rect_y0, rect_x1, rect_y1], radius=38, fill=glass_color)
+
+        member_circle_radius = 22
+        member_circle_x = rect_x1 - member_circle_radius - 30
+        member_circle_y = rect_y0 + member_circle_radius + 5
+
+        draw.ellipse(
+            (
+                member_circle_x - member_circle_radius,
+                member_circle_y - member_circle_radius,
+                member_circle_x + member_circle_radius,
+                member_circle_y + member_circle_radius
+            ),
+            fill=(255, 190, 120, 255),
+        )
+
+        member_count_text = str(total_members)
+        member_bbox = draw.textbbox((0, 0), member_count_text, font=load_fonts()["small"])
+
+        member_text_x = member_circle_x - (member_bbox[2] - member_bbox[0]) // 2 
+        member_text_y = member_circle_y - (member_bbox[3] - member_bbox[1]) // 2 - 5
+
+        draw.text(
+            (member_text_x, member_text_y),
+            member_count_text,
+            font=load_fonts()["small"],
+            fill=(255, 255, 255, 255)
+        )
+
+        banner = Image.alpha_composite(background_blurred, overlay)
+
+        try:
+            avatar = load_image_from_url(avatar_url) or create_default_avatar(user_name)
+            avatar_size = 150
+            mask = Image.new('L', (avatar_size, avatar_size), 0)
+            draw_mask = ImageDraw.Draw(mask)
+            draw_mask.ellipse((0, 0, avatar_size, avatar_size), fill=255)
+            avatar = avatar.resize((avatar_size, avatar_size), Image.LANCZOS)
+            avatar_x = rect_x0 + 25
+            avatar_y = rect_y1 - avatar_size - 80
+            banner.paste(avatar, (avatar_x, avatar_y), mask)
+            center_x = avatar_x + avatar_size//2
+            center_y = avatar_y + avatar_size//2
+            draw_gradient_border(ImageDraw.Draw(banner), center_x, center_y,
+                                 avatar_size//2+3, 2,
+                                 [(255,0,0),(255,127,0),(255,255,0),
+                                  (0,255,0),(0,0,255),(75,0,130),(148,0,211)])
+        except Exception as e:
+            print(f"[WARNING] Li avatar ngi d�ng: {e}")
+
+        if ow_avatar_url:
+            try:
+                ow_avatar = load_image_from_url(ow_avatar_url) or create_default_avatar(ow_name)
+                ow_avatar = ow_avatar.resize((avatar_size, avatar_size), Image.LANCZOS)
+                ow_avatar_x = rect_x1 - avatar_size - 25
+                ow_avatar_y = avatar_y
+                banner.paste(ow_avatar, (ow_avatar_x, ow_avatar_y), mask)
+                center_x = ow_avatar_x + avatar_size//2
+                center_y = ow_avatar_y + avatar_size//2
+                draw_gradient_border(ImageDraw.Draw(banner), center_x, center_y, avatar_size//2+3, 2,
+                                     [(255,0,0),(255,127,0),(255,255,0),(0,255,0),(0,0,255),(75,0,130),(148,0,211)])
+            except Exception as e:
+                print(f"[WARNING] Li avatar admin: {e}")
+
+        draw = ImageDraw.Draw(banner)
+
+        text_lines = [config['main_text'], config['group_name_text'], config['credit_text']]
+        text_colors = [(255,0,0),(255,127,0),(255,255,255)]
+        text_fonts = ["large_bold","big","bot"]
+
+        total_text_height = sum(
+            draw.textbbox((0,0), text_lines[i], font=load_fonts()[text_fonts[i]])[3] - draw.textbbox((0,0), text_lines[i], font=load_fonts()[text_fonts[i]])[1] 
+            for i in range(len(text_lines))
+        ) + 20
+        start_y = rect_y0 + (rect_y1 - rect_y0 - total_text_height)//2 - 50
+        current_y = start_y
+
+        for i, line in enumerate(text_lines):
+            font_key = text_fonts[i]
+            font_to_use = load_fonts().get(font_key)
+            emoji_font_to_use = load_fonts()["emoji"] if any(is_emoji(c) for c in line) else font_to_use
+
+            if i == 1:
+                max_width = rect_x1 - rect_x0 - 300
+                if draw.textlength(line, font=font_to_use) > max_width:
+                    line = "Tên nhóm dài vl😓"
+                text_bbox = draw.textbbox((0,0), line, font=font_to_use)
+                create_text(
+                    draw,
+                    line,
+                    font_to_use,
+                    emoji_font_to_use,
+                    ((rect_x0+rect_x1)//2 - (text_bbox[2]-text_bbox[0])//2, current_y),
+                    random_gradient()
+                )
+            else:
+                text_bbox = draw.textbbox((0,0), line, font=font_to_use)
+                create_text(
+                    draw,
+                    line,
+                    font_to_use,
+                    emoji_font_to_use,
+                    ((rect_x0+rect_x1)//2 - (text_bbox[2]-text_bbox[0])//2, current_y),
+                    random_gradient()
+                )
+
+            current_y += text_bbox[3]-text_bbox[1] + 28
+
+        time_text = f"🏙️{time.strftime('%d/%m/%Y')} {time.strftime('%H:%M:%S')} 🗝️Executed By {ow_name}" if ow_name else f"{time.strftime('%d/%m/%Y')} {time.strftime('%H:%M:%S')}"
+        last_font_key = text_fonts[-1]
+        footer_font = load_fonts().get(last_font_key)
+        emoji_font_to_use = load_fonts()["emoji"]
+
+        footer_bbox = draw.textbbox((0,0), time_text, font=footer_font)
+        footer_x = rect_x0 + (rect_x1-rect_x0 - (footer_bbox[2]-footer_bbox[0]))//2 - 15
+        footer_y = rect_y1 - (footer_bbox[3]-footer_bbox[1]) - 45
+        create_text(
+            draw,
+            time_text,
+            footer_font,
+            emoji_font_to_use,
+            (footer_x, footer_y),
+            [(220,220,220)] * len(time_text)
+        )
+
+        file_name = f"banner_{int(time.time())}.jpg"
+        banner.convert('RGB').save(file_name, quality=95)
+        return file_name
+
+    except Exception as e:
+        print(f"[CRITICAL] Li nghi�m trng: {str(e)}")
+        return None
+
+def delete_file(file_path: str):
+    try:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            print(f"� x�a tp: {file_path}")
+    except Exception as e:
+        print(f"Li khi x�a tp: {e}")
+
+def create_banner_event(self, member_id, text, group_id, event_time, event_type, event_data=None):
+    group_info = self.fetchGroupInfo(group_id).gridInfoMap.get(group_id, {})
+    group_name = group_info.get('name', 'Nh�m kh�ng x�c nh')
+    total_members = group_info.get('totalMember', 0)
+    user_info = self.fetchUserInfo(member_id)
+    avatar_url = None
+    if user_info and 'changed_profiles' in user_info and member_id in user_info['changed_profiles']:
+        avatar_url = user_info['changed_profiles'][member_id].get('avatar')
+    
+    banner_path = create_banner(
+        self, 
+        member_id, 
+        group_id, 
+        group_name=group_name, 
+        avatar_url=avatar_url, 
+        event_type=event_type, 
+        event_data=event_data, 
+        background_dir="background",
+        total_members=total_members
+    )
+    return banner_path
+
+def buildWelcomeMessage(self, groupName, joinMembers, sourceId=None, is_join_request=False, group_type_name="Cng ng"):
+    member_list = ', '.join([member.get('dName') for member in joinMembers])
+    if sourceId:
+        adder_info = self.fetchUserInfo(sourceId)
+        adder_name = adder_info["changed_profiles"][sourceId].get("displayName", "Kh�ng x�c nh") if adder_info and "changed_profiles" in adder_info and sourceId in adder_info["changed_profiles"] else "Kh�ng x�c nh"
+        if adder_name != "Kh�ng x�c nh":
+            if is_join_request:
+                text = f"{groupName}\nCh�o Mng {member_list}\n� Tham Gia {group_type_name}\nDuyt Bi {adder_name}"
+            else:
+                text = f"{groupName}\nCh�o Mng {member_list}\n� Tham Gia {group_type_name}\nTh�m Bi {adder_name}"
+        else:
+            text = f"{groupName}\nCh�o Mng {member_list}\n� Tham Gia {group_type_name}\nTham Gia Trc Tip T Link Hoc c Mi"
+    else:
+        text = f"{groupName}\nCh�o Mng {member_list}\n� Tham Gia {group_type_name}\nTham Gia Trc Tip T Link Hoc c Mi"
+    return text
+
+def buildLeaveMessage(self, groupName, updateMembers, eventType, sourceId=None, group_type_name="Cng ng"):
+    member_name = updateMembers[0].get('dName')
+    if eventType == GroupEventType.LEAVE:
+        text = f"Member Left The Group\n{member_name}\nVa Ri Khi {group_type_name}\n{groupName}"
+    elif eventType == GroupEventType.REMOVE_MEMBER:
+        remover_info = self.fetchUserInfo(sourceId)
+        remover_name = remover_info["changed_profiles"][sourceId].get("displayName", "Kh�ng x�c nh") if remover_info and "changed_profiles" in remover_info and sourceId in remover_info["changed_profiles"] else "Kh�ng x�c nh"
+        if remover_name != "Kh�ng x�c nh":
+            text = f"Kick Out Member\n{member_name}\n� B {remover_name} Kick Khi {group_type_name}\n{groupName}"
+        else:
+            text = f"Kick Out Member\n{member_name}\n� B S�t Khi {group_type_name} {groupName}."
+    else:
+        return
+    return text
+
+def handleGroupEvent(self, eventData, eventType):
+    groupId = eventData.get('groupId')
+    if not groupId:
+        return
+    allowed_groups = load_allowed_groups()
+    if groupId not in allowed_groups:
+        return
+    group_type = self.fetchGroupInfo(groupId).gridInfoMap[groupId].type
+    group_type_name = "Cng ng" if group_type == 2 else "Nh�m"
+    if eventType == GroupEventType.JOIN:
+        groupName = eventData.get('groupName', "group")
+        joinMembers = eventData.get('updateMembers', [])
+        sourceId = eventData.get("sourceId")
+        is_join_request = False
+        if sourceId and not any(sourceId == member.get("id") for member in joinMembers):
+            is_join_request = True
+        if not joinMembers:
+            return
+        text = buildWelcomeMessage(self, groupName, joinMembers, sourceId, is_join_request, group_type_name)
+        event_time = datetime.now()
+        memberIds = [member.get('id') for member in joinMembers]
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for member_id in memberIds:
+                executor.submit(process_group_event_image, self, member_id, text, groupId, event_time, "ZALOBOT_welcome.jpg", has_mention=True, event_type=eventType, event_data=eventData)
+    elif eventType in {GroupEventType.LEAVE, GroupEventType.REMOVE_MEMBER}:
+        groupName = eventData.get('groupName', "group")
+        updateMembers = eventData.get('updateMembers', [])
+        sourceId = eventData.get("sourceId")
+        if not updateMembers:
+            return
+        text = buildLeaveMessage(self, groupName, updateMembers, eventType, sourceId, group_type_name)
+        event_time = datetime.now()
+        memberIds = [member.get('id') for member in updateMembers]
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for member_id in memberIds:
+                executor.submit(process_group_event_image, self, member_id, text, groupId, event_time, "ZALOBOT_leave.jpg", has_mention=False, event_type=eventType, event_data=eventData)
+    elif eventType == GroupEventType.REMOVE_ADMIN:
+        groupName = eventData.get('groupName', "group")
+        updateMembers = eventData.get('updateMembers', [])
+        ow_id = eventData.get("sourceId")
+        if not updateMembers:
+            return
+        member_name = updateMembers[0].get('dName')
+        ow_name = self.fetchUserInfo(ow_id).get('changed_profiles', {}).get(ow_id, {}).get('displayName', "Kh�ng x�c nh") if self.fetchUserInfo(ow_id) and self.fetchUserInfo(ow_id).get('changed_profiles') and ow_id in self.fetchUserInfo(ow_id).get('changed_profiles') else "Kh�ng x�c nh"
+        text = f'{groupName}\n{member_name}\n� c {ow_name} Cho Bay M�u Khi Danh S�ch Qun Tr Vi�n {group_type_name}'
+        event_time = datetime.now()
+        member_id = updateMembers[0].get('id')
+        process_group_event_image(self, member_id, text, groupId, event_time, "ZALOBOT_remove_admin.jpg", has_mention=True, event_type=eventType, event_data=eventData)
+    elif eventType == GroupEventType.ADD_ADMIN:
+        groupName = eventData.get('groupName', "group")
+        updateMembers = eventData.get('updateMembers', [])
+        ow_id = eventData.get("sourceId")
+        if not updateMembers:
+            return
+        member_name = updateMembers[0].get('dName')
+        ow_name = self.fetchUserInfo(ow_id).get('changed_profiles', {}).get(ow_id, {}).get('displayName', "Kh�ng x�c nh") if self.fetchUserInfo(ow_id) and self.fetchUserInfo(ow_id).get('changed_profiles') and ow_id in self.fetchUserInfo(ow_id).get('changed_profiles') else "Kh�ng x�c nh"
+        text = f'{groupName}\n{member_name}\n� c {ow_name} B Nhim L�m Qun Tr Vi�n {group_type_name}'
+        event_time = datetime.now()
+        member_id = updateMembers[0].get('id')
+        process_group_event_image(self, member_id, text, groupId, event_time, "ZALOBOT_add_admin.jpg", has_mention=True, event_type=eventType, event_data=eventData)
+
+def process_group_event_image(self, member_id, text, groupId, event_time, filename, has_mention=False, event_type=None, event_data=None):
+    try:
+        banner_path = create_banner_event(self, member_id, text, groupId, event_time, event_type, event_data)
+        
+        if banner_path and os.path.exists(banner_path):
+            if has_mention:
+                self.sendLocalImage(
+                    banner_path, 
+                    thread_id=groupId, 
+                    thread_type=ThreadType.GROUP, 
+                    width=980,
+                    height=350, 
+                    message=Message(
+                        text="@Member", 
+                        mention=Mention(member_id, length=len("@Member"), offset=0)
+                    ),
+                    ttl=320000
+                )
+            else:
+                self.sendLocalImage(
+                    banner_path, 
+                    thread_id=groupId, 
+                    thread_type=ThreadType.GROUP, 
+                    width=980, 
+                    height=350,
+                    ttl=320000
+                )
+    except Exception as e:
+        print(f"Error processing group event image: {e}")
+    finally:
+        if banner_path and os.path.exists(banner_path):
+            os.remove(banner_path)
+
+def PTA():
+    return {}

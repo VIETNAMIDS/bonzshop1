@@ -120,7 +120,11 @@ export function enableCopyProtection() {
   // Disable text selection on sensitive elements
   document.addEventListener('selectstart', (e) => {
     const target = e.target as HTMLElement;
+<<<<<<< HEAD
     if (target && typeof target.closest === 'function' && target.closest('input, textarea, [contenteditable]')) return;
+=======
+    if (target.closest('input, textarea, [contenteditable]')) return; // Allow in inputs
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
     // Allow selection in normal content, just prevent on sensitive areas
   });
 
@@ -136,7 +140,11 @@ export function enableCopyProtection() {
   // Disable drag
   document.addEventListener('dragstart', (e) => {
     const target = e.target as HTMLElement;
+<<<<<<< HEAD
     if (target?.tagName === 'IMG') {
+=======
+    if (target.tagName === 'IMG') {
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       e.preventDefault();
     }
   });

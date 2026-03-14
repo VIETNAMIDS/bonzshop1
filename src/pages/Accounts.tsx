@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
+<<<<<<< HEAD
 import { SEOHead, buildBreadcrumbSchema } from '@/components/seo/SEOHead';
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { PageWrapper } from "@/components/layout/PageWrapper";
@@ -366,6 +369,7 @@ const Accounts = () => {
 
   return (
     <div className="min-h-screen bg-background">
+<<<<<<< HEAD
       <SEOHead
         title="Mua Bán Tài Khoản"
         description="Mua bán tài khoản game, Netflix, Spotify, ChatGPT giá rẻ tại BonzShop. Giao dịch tự động, nhận hàng ngay, bảo hành uy tín."
@@ -376,6 +380,8 @@ const Accounts = () => {
           { name: 'Tài khoản', url: '/accounts' },
         ])}
       />
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       <Navbar />
       <PageWrapper>
         <main className="container mx-auto px-4 py-8">

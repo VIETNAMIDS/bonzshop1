@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Shield, MapPin, Loader2, CheckCircle2 } from 'lucide-react';
+<<<<<<< HEAD
 import { BanScreen } from '@/components/BanScreen';
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
 const CAPTCHA_KEY = 'bonz_captcha_verified';
 const GEO_KEY = 'bonz_geo_verified';
@@ -22,8 +25,11 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
   const [targetNumber, setTargetNumber] = useState<number>(0);
   const [captchaError, setCaptchaError] = useState('');
   const [redirecting, setRedirecting] = useState(false);
+<<<<<<< HEAD
   const [isBanned, setIsBanned] = useState(false);
   const [banReason, setBanReason] = useState('');
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
   // Generate random captcha
   const generateCaptcha = useCallback(() => {
@@ -37,6 +43,7 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
   // Check if already verified
   useEffect(() => {
     const checkVerification = async () => {
+<<<<<<< HEAD
       // Check IP ban first (unauthenticated - just checks IP)
       try {
         const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -64,6 +71,8 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
         console.log('[GeoProtection] Ban check failed (non-critical):', err);
       }
 
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       // Check captcha verification
       const captchaData = localStorage.getItem(CAPTCHA_KEY);
       if (captchaData) {
@@ -99,11 +108,19 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
           sessionStorage.setItem(GEO_KEY, 'VN');
           setIsVerifying(false);
           
+<<<<<<< HEAD
+=======
+          // Check if captcha needed
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           if (!captchaData || Date.now() - JSON.parse(captchaData).timestamp >= CAPTCHA_EXPIRY) {
             setShowCaptcha(true);
             generateCaptcha();
           }
         } else {
+<<<<<<< HEAD
+=======
+          // Non-Vietnam - redirect to Google
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           console.log('[GeoProtection] Blocked country:', data.country_code);
           setIsBlocked(true);
           setRedirecting(true);
@@ -113,6 +130,10 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error('[GeoProtection] Error:', error);
+<<<<<<< HEAD
+=======
+        // If geo check fails, allow access but require captcha
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         setIsVerifying(false);
         if (!captchaData) {
           setShowCaptcha(true);
@@ -127,21 +148,33 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
   // Handle captcha click
   const handleCaptchaClick = (number: number) => {
     if (number === targetNumber) {
+<<<<<<< HEAD
+=======
+      // Correct!
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       localStorage.setItem(CAPTCHA_KEY, JSON.stringify({ timestamp: Date.now() }));
       setCaptchaComplete(true);
       setShowCaptcha(false);
     } else {
+<<<<<<< HEAD
+=======
+      // Wrong - regenerate
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       setCaptchaError('Sai rồi! Thử lại nhé.');
       generateCaptcha();
     }
   };
 
+<<<<<<< HEAD
   // Ban screen - highest priority
   if (isBanned) {
     return <BanScreen reason={banReason} />;
   }
 
   // Blocked screen (geo)
+=======
+  // Blocked screen
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   if (isBlocked) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center z-[9999]">
@@ -189,6 +222,10 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
       <div className="fixed inset-0 bg-background flex items-center justify-center z-[9999] p-4">
         <div className="w-full max-w-md">
           <div className="glass rounded-2xl p-6 sm:p-8 border border-primary/30">
+<<<<<<< HEAD
+=======
+            {/* Header */}
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
             <div className="text-center mb-6">
               <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
                 <Shield className="w-10 h-10 text-primary" />
@@ -199,6 +236,10 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
               </p>
             </div>
 
+<<<<<<< HEAD
+=======
+            {/* Captcha Grid */}
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
             <div className="grid grid-cols-3 gap-3 mb-6">
               {captchaNumbers.map((num, idx) => (
                 <button
@@ -211,12 +252,20 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
               ))}
             </div>
 
+<<<<<<< HEAD
+=======
+            {/* Error message */}
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
             {captchaError && (
               <div className="text-center text-red-500 text-sm mb-4 animate-pulse">
                 {captchaError}
               </div>
             )}
 
+<<<<<<< HEAD
+=======
+            {/* Footer */}
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
             <div className="text-center text-xs text-muted-foreground">
               <p>🇻🇳 Website chỉ dành cho người dùng Việt Nam</p>
             </div>
@@ -240,5 +289,9 @@ export function GeoProtection({ children }: { children: React.ReactNode }) {
     );
   }
 
+<<<<<<< HEAD
+=======
+  // All verified - render children
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   return <>{children}</>;
 }

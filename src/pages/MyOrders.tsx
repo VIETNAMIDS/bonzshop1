@@ -1,6 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+<<<<<<< HEAD
 import { Loader2, Clock, CheckCircle, XCircle, Eye, EyeOff, Copy, ShoppingBag, Bell, Download, Package, User, Key } from 'lucide-react';
+=======
+import { Loader2, Clock, CheckCircle, XCircle, Eye, EyeOff, Copy, ShoppingBag, Bell, Download, Package, User } from 'lucide-react';
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 import { Navbar } from '@/components/Navbar';
 import { PageWrapper } from '@/components/layout/PageWrapper';
 import { Button } from '@/components/ui/button';
@@ -15,8 +19,11 @@ interface Order {
   id: string;
   account_id: string | null;
   product_id: string | null;
+<<<<<<< HEAD
   order_type: string;
   login_credentials: any;
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   status: 'pending' | 'approved' | 'rejected';
   amount: number;
   created_at: string;
@@ -68,8 +75,11 @@ export default function MyOrders() {
           id,
           account_id,
           product_id,
+<<<<<<< HEAD
           order_type,
           login_credentials,
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           status,
           amount,
           created_at,
@@ -183,6 +193,7 @@ export default function MyOrders() {
 
   // Helper to get order item info (works for both account and product orders)
   const getOrderItem = (order: Order) => {
+<<<<<<< HEAD
     if (order.order_type === 'key_purchase' && order.login_credentials) {
       const creds = order.login_credentials as any;
       return {
@@ -194,14 +205,20 @@ export default function MyOrders() {
         key_value: creds.key_value || null,
       };
     }
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
     if (order.product_id && order.products) {
       return {
         type: 'product' as const,
         title: order.products.title,
         category: order.products.category,
         image_url: order.products.image_url,
+<<<<<<< HEAD
         download_url: order.products.download_url,
         key_value: null,
+=======
+        download_url: order.products.download_url
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       };
     }
     if (order.account_id && order.accounts) {
@@ -210,17 +227,24 @@ export default function MyOrders() {
         title: order.accounts.title,
         category: order.accounts.category,
         image_url: order.accounts.image_url,
+<<<<<<< HEAD
         download_url: null,
         key_value: null,
+=======
+        download_url: null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       };
     }
     return null;
   };
 
   const getOrderTypeBadge = (order: Order) => {
+<<<<<<< HEAD
     if (order.order_type === 'key_purchase') {
       return <Badge variant="outline" className="gap-1 text-xs"><Key className="h-3 w-3" /> Key</Badge>;
     }
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
     if (order.product_id) {
       return <Badge variant="outline" className="gap-1 text-xs"><Package className="h-3 w-3" /> Source Code</Badge>;
     }
@@ -397,6 +421,7 @@ export default function MyOrders() {
                             </p>
                           </div>
                         </div>
+<<<<<<< HEAD
                         {item?.type === 'key' && item.key_value ? (
                           <div className="mt-4 space-y-2">
                             <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
@@ -425,6 +450,9 @@ export default function MyOrders() {
                             </div>
                           </div>
                         ) : isProduct ? (
+=======
+                        {isProduct ? (
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                           item?.download_url ? (
                             <Button 
                               className="w-full mt-4 gap-2"

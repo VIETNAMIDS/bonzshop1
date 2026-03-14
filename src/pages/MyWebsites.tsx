@@ -21,6 +21,7 @@ import {
   Edit, 
   Eye,
   Palette,
+<<<<<<< HEAD
   Building2,
   BookOpen,
   ChevronDown,
@@ -28,6 +29,9 @@ import {
   Link2,
   Copy,
   Check
+=======
+  Building2
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -43,7 +47,10 @@ interface ChildWebsite {
   bank_name: string | null;
   bank_account_name: string | null;
   bank_account_number: string | null;
+<<<<<<< HEAD
   custom_domain: string | null;
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   is_active: boolean;
   created_at: string;
 }
@@ -71,8 +78,11 @@ export default function MyWebsites() {
   const [bankName, setBankName] = useState('');
   const [bankAccountName, setBankAccountName] = useState('');
   const [bankAccountNumber, setBankAccountNumber] = useState('');
+<<<<<<< HEAD
   const [customDomain, setCustomDomain] = useState('');
   const [showGuide, setShowGuide] = useState(false);
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -200,7 +210,10 @@ export default function MyWebsites() {
           bank_name: bankName.trim() || null,
           bank_account_name: bankAccountName.trim() || null,
           bank_account_number: bankAccountNumber.trim() || null,
+<<<<<<< HEAD
           custom_domain: customDomain.trim() || null,
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         })
         .select()
         .single();
@@ -221,7 +234,10 @@ export default function MyWebsites() {
       setBankName('');
       setBankAccountName('');
       setBankAccountNumber('');
+<<<<<<< HEAD
       setCustomDomain('');
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       setIsCreateDialogOpen(false);
       
       // Refresh data
@@ -253,7 +269,10 @@ export default function MyWebsites() {
           bank_name: bankName.trim() || null,
           bank_account_name: bankAccountName.trim() || null,
           bank_account_number: bankAccountNumber.trim() || null,
+<<<<<<< HEAD
           custom_domain: customDomain.trim() || null,
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         })
         .eq('id', editingWebsite.id);
       
@@ -318,7 +337,10 @@ export default function MyWebsites() {
     setBankName(website.bank_name || '');
     setBankAccountName(website.bank_account_name || '');
     setBankAccountNumber(website.bank_account_number || '');
+<<<<<<< HEAD
     setCustomDomain(website.custom_domain || '');
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   };
 
   const resetForm = () => {
@@ -330,7 +352,10 @@ export default function MyWebsites() {
     setBankName('');
     setBankAccountName('');
     setBankAccountNumber('');
+<<<<<<< HEAD
     setCustomDomain('');
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   };
 
   if (authLoading || isLoading) {
@@ -498,6 +523,7 @@ export default function MyWebsites() {
                       </div>
                     </div>
                   </div>
+<<<<<<< HEAD
 
                   <div className="border-t pt-4 mt-4">
                     <h4 className="font-medium flex items-center gap-2 mb-3">
@@ -515,6 +541,8 @@ export default function MyWebsites() {
                       </p>
                     </div>
                   </div>
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                 </div>
                 
                 <DialogFooter>
@@ -544,6 +572,7 @@ export default function MyWebsites() {
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* Guide Section */}
         <Card className="mb-8 border-primary/20">
           <CardContent className="p-0">
@@ -606,6 +635,8 @@ export default function MyWebsites() {
           </CardContent>
         </Card>
 
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         {/* Websites Grid */}
         {websites.length === 0 ? (
           <Card className="text-center py-12">
@@ -645,9 +676,12 @@ export default function MyWebsites() {
                       <CardTitle className="text-lg">{website.name}</CardTitle>
                       <CardDescription className="text-xs mt-1">
                         /store/{website.slug}
+<<<<<<< HEAD
                         {website.custom_domain && (
                           <span className="block text-primary">🌐 {website.custom_domain}</span>
                         )}
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                       </CardDescription>
                     </div>
                     <div 
@@ -823,6 +857,7 @@ export default function MyWebsites() {
                   </div>
                 </div>
               </div>
+<<<<<<< HEAD
 
               <div className="border-t pt-4 mt-4">
                 <h4 className="font-medium flex items-center gap-2 mb-3">
@@ -840,6 +875,8 @@ export default function MyWebsites() {
                   </p>
                 </div>
               </div>
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
             </div>
             
             <DialogFooter>

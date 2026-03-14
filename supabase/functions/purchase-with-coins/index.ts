@@ -63,14 +63,20 @@ Deno.serve(async (req) => {
       );
     }
 
+<<<<<<< HEAD
     // Get current user coin balance (auto-create if missing)
     let { data: coinData, error: coinError } = await supabase
+=======
+    // Get current user coin balance
+    const { data: coinData, error: coinError } = await supabase
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       .from('user_coins')
       .select('id, balance')
       .eq('user_id', userId)
       .single();
 
     if (coinError || !coinData) {
+<<<<<<< HEAD
       console.log('No coin record found, creating one for user:', userId);
       const { data: newCoin, error: insertError } = await supabase
         .from('user_coins')
@@ -86,6 +92,13 @@ Deno.serve(async (req) => {
         );
       }
       coinData = newCoin;
+=======
+      console.error('Coin balance not found:', coinError);
+      return new Response(
+        JSON.stringify({ error: 'Không tìm thấy số dư xu' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
     }
 
     console.log('Current balance:', coinData.balance, 'Required:', requiredCoins);

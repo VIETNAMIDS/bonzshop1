@@ -5,8 +5,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ChevronRight, ChevronLeft, Sparkles, ShoppingBag, MessageCircle, Coins, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+<<<<<<< HEAD
 import { motion, AnimatePresence } from 'framer-motion';
 import { GradientText, LetterReveal, FloatingParticles, NeonText } from '@/components/motion/TextEffects';
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 import bonzshopLogo from '@/assets/bonzshop-logo.png';
 
 const OnboardingScene3D = lazy(() => 
@@ -128,6 +131,7 @@ export default function Welcome() {
         </button>
       </div>
 
+<<<<<<< HEAD
       {/* Floating particles */}
       <FloatingParticles count={30} className="fixed" />
 
@@ -146,6 +150,18 @@ export default function Welcome() {
             className="h-16 md:h-20 w-auto object-contain"
           />
         </motion.div>
+=======
+      {/* Main content */}
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 pb-8">
+        {/* Logo */}
+        <div className="mb-4 animate-fade-in">
+          <img 
+            src={bonzshopLogo} 
+            alt="BonzShop" 
+            className="h-16 md:h-20 w-auto object-contain opacity-80"
+          />
+        </div>
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
         {/* 3D Scene */}
         <div className="w-full max-w-lg mb-6">
@@ -159,6 +175,7 @@ export default function Welcome() {
         </div>
 
         {/* Step content */}
+<<<<<<< HEAD
         <AnimatePresence mode="wait">
           <motion.div 
             className="text-center max-w-md mx-auto" 
@@ -191,6 +208,22 @@ export default function Welcome() {
             >
               {step.description}
             </motion.p>
+=======
+        <div className="text-center max-w-md mx-auto animate-fade-in" key={currentStep}>
+          <div className={cn(
+            "inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4 bg-gradient-to-r",
+            step.gradient
+          )}>
+            <step.icon className="h-7 w-7 text-white" />
+          </div>
+          
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3">
+            {step.title}
+          </h1>
+          <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-8">
+            {step.description}
+          </p>
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
           {/* Progress dots */}
           <div className="flex justify-center gap-2.5 mb-8">
@@ -233,8 +266,12 @@ export default function Welcome() {
               )}
             </Button>
           </div>
+<<<<<<< HEAD
           </motion.div>
         </AnimatePresence>
+=======
+        </div>
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
         {/* Step counter */}
         <div className="mt-8 text-xs text-muted-foreground">

@@ -4,7 +4,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
+<<<<<<< HEAD
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+=======
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -19,6 +23,7 @@ function getEmailTemplate(otp: string, email: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
 </head>
 <body style="margin:0; padding:20px; font-family:Arial, sans-serif; background:#f5f5f5;">
   <table style="max-width:500px; margin:0 auto; background:#fff; border-radius:8px; padding:30px; border:1px solid #ddd;">
@@ -44,6 +49,69 @@ function getEmailTemplate(otp: string, email: string): string {
         <p style="margin:0 0 4px; color:#555; font-size:13px;">📱 SĐT/Zalo: 0762694589</p>
         <p style="margin:0 0 4px; color:#555; font-size:13px;">💬 Facebook: fb.com/bonzshop</p>
         <p style="margin:10px 0 0; color:#aaa; font-size:11px;">© 2024 BONZ STORE</p>
+=======
+  <title>Mã xác thực</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0a0a0a;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td align="center" style="padding: 40px 0;">
+        <table role="presentation" style="width: 600px; max-width: 100%; border-collapse: collapse; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+          
+          <!-- Header -->
+          <tr>
+            <td style="padding: 40px 40px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
+              <div style="display: inline-block; padding: 12px 24px; background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%); border-radius: 8px; margin-bottom: 20px;">
+                <span style="color: #000; font-size: 24px; font-weight: bold; letter-spacing: 2px;">BONZ STORE</span>
+              </div>
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">Xác thực tài khoản</h1>
+            </td>
+          </tr>
+          
+          <!-- Body -->
+          <tr>
+            <td style="padding: 40px;">
+              <p style="margin: 0 0 20px; color: #b0b0b0; font-size: 16px; line-height: 1.6;">
+                Xin chào <strong style="color: #00d4ff;">${email}</strong>,
+              </p>
+              <p style="margin: 0 0 30px; color: #b0b0b0; font-size: 16px; line-height: 1.6;">
+                Chúng tôi nhận được yêu cầu xác thực tài khoản của bạn. Vui lòng sử dụng mã OTP bên dưới để hoàn tất quá trình:
+              </p>
+              
+              <!-- OTP Box -->
+              <div style="text-align: center; margin: 30px 0;">
+                <div style="display: inline-block; padding: 20px 40px; background: linear-gradient(135deg, #1e3a5f 0%, #0d2137 100%); border: 2px solid #00d4ff; border-radius: 12px; box-shadow: 0 0 30px rgba(0,212,255,0.3);">
+                  <span style="font-size: 42px; font-weight: bold; color: #00d4ff; letter-spacing: 12px; font-family: 'Courier New', monospace;">${otp}</span>
+                </div>
+              </div>
+              
+              <p style="margin: 30px 0 0; color: #888; font-size: 14px; text-align: center;">
+                ⏱️ Mã có hiệu lực trong <strong style="color: #ff6b6b;">5 phút</strong>
+              </p>
+              
+              <!-- Warning -->
+              <div style="margin-top: 30px; padding: 20px; background: rgba(255,107,107,0.1); border-left: 4px solid #ff6b6b; border-radius: 0 8px 8px 0;">
+                <p style="margin: 0; color: #ff6b6b; font-size: 14px;">
+                  ⚠️ <strong>Cảnh báo bảo mật:</strong> Không chia sẻ mã này với bất kỳ ai. Nhân viên BONZ STORE sẽ không bao giờ yêu cầu mã OTP của bạn.
+                </p>
+              </div>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 30px 40px; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.1);">
+              <p style="margin: 0 0 10px; color: #666; font-size: 12px; text-align: center;">
+                Nếu bạn không yêu cầu mã này, vui lòng bỏ qua email hoặc liên hệ hỗ trợ.
+              </p>
+              <p style="margin: 0; color: #444; font-size: 12px; text-align: center;">
+                © 2024 BONZ STORE. All rights reserved.
+              </p>
+            </td>
+          </tr>
+          
+        </table>
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       </td>
     </tr>
   </table>
@@ -88,6 +156,7 @@ async function sendEmailWithGmail(to: string, subject: string, html: string): Pr
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
+<<<<<<< HEAD
     return new Response("ok", { headers: corsHeaders });
   }
 
@@ -97,6 +166,41 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const body = await req.json();
+=======
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
+  try {
+    if (req.method !== "POST") {
+      return new Response(
+        JSON.stringify({ error: "Method not allowed" }),
+        { status: 405, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return new Response(
+        JSON.stringify({
+          error: "Server misconfigured",
+          details: "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY",
+        }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    let body: any;
+    try {
+      body = await req.json();
+    } catch (_e) {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON body" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
     const { email, action, otp: userOtp, checkEmailExists } = body;
 
     if (!email) {
@@ -106,6 +210,10 @@ serve(async (req) => {
       );
     }
 
+<<<<<<< HEAD
+=======
+    // Check if email exists in system (for password reset)
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
     if (checkEmailExists) {
       const { data: users, error: listError } = await supabase.auth.admin.listUsers();
       
@@ -125,6 +233,7 @@ serve(async (req) => {
           { status: 404, headers: { "Content-Type": "application/json", ...corsHeaders } }
         );
       }
+<<<<<<< HEAD
 
       if (!action) {
         return new Response(
@@ -135,6 +244,12 @@ serve(async (req) => {
     }
 
     if (action === "send") {
+=======
+    }
+
+    if (action === "send") {
+      // Check if already sent recently (rate limiting)
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       const { data: existing } = await supabase
         .from('otp_codes')
         .select('*')
@@ -148,6 +263,10 @@ serve(async (req) => {
         const createdAt = new Date(existing.created_at).getTime();
         const timeSinceSend = Date.now() - createdAt;
         
+<<<<<<< HEAD
+=======
+        // Rate limit: 60 seconds between sends
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         if (timeSinceSend < 60000) {
           const waitTime = Math.ceil((60000 - timeSinceSend) / 1000);
           return new Response(
@@ -157,14 +276,26 @@ serve(async (req) => {
         }
       }
 
+<<<<<<< HEAD
+=======
+      // Delete old OTPs for this email
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       await supabase
         .from('otp_codes')
         .delete()
         .eq('email', email);
 
+<<<<<<< HEAD
       const otp = generateOTP();
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
+=======
+      // Generate new OTP
+      const otp = generateOTP();
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes
+
+      // Store OTP in database
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       const { error: insertError } = await supabase
         .from('otp_codes')
         .insert({
@@ -179,8 +310,25 @@ serve(async (req) => {
         throw new Error("Failed to store OTP");
       }
 
+<<<<<<< HEAD
       const subject = `Mã xác thực BONZ STORE: ${otp}`;
       await sendEmailWithGmail(email, subject, getEmailTemplate(otp, email));
+=======
+      // Send email via Gmail
+      const subject = `🔐 Mã xác thực BONZ STORE - ${otp.substring(0, 2)}****`;
+      try {
+        await sendEmailWithGmail(email, subject, getEmailTemplate(otp, email));
+      } catch (e) {
+        console.error("Failed to send OTP email:", e);
+        return new Response(
+          JSON.stringify({
+            error: "Không thể gửi OTP. Vui lòng thử lại sau.",
+            details: e instanceof Error ? e.message : String(e),
+          }),
+          { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } },
+        );
+      }
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
       console.log("OTP email sent to:", email);
 
@@ -190,6 +338,10 @@ serve(async (req) => {
       );
 
     } else if (action === "verify") {
+<<<<<<< HEAD
+=======
+      // Get stored OTP from database
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       const { data: stored, error: fetchError } = await supabase
         .from('otp_codes')
         .select('*')
@@ -207,6 +359,10 @@ serve(async (req) => {
 
       const expiresAt = new Date(stored.expires_at).getTime();
       if (expiresAt < Date.now()) {
+<<<<<<< HEAD
+=======
+        // Delete expired OTP
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         await supabase.from('otp_codes').delete().eq('id', stored.id);
         return new Response(
           JSON.stringify({ error: "Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới." }),
@@ -218,6 +374,10 @@ serve(async (req) => {
         const newAttempts = stored.attempts + 1;
         
         if (newAttempts >= 5) {
+<<<<<<< HEAD
+=======
+          // Delete OTP after too many attempts
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           await supabase.from('otp_codes').delete().eq('id', stored.id);
           return new Response(
             JSON.stringify({ error: "Nhập sai quá nhiều lần. Vui lòng yêu cầu mã OTP mới." }),
@@ -225,6 +385,10 @@ serve(async (req) => {
           );
         }
 
+<<<<<<< HEAD
+=======
+        // Update attempts count
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         await supabase
           .from('otp_codes')
           .update({ attempts: newAttempts })
@@ -236,6 +400,10 @@ serve(async (req) => {
         );
       }
 
+<<<<<<< HEAD
+=======
+      // Success - delete OTP
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       await supabase.from('otp_codes').delete().eq('id', stored.id);
 
       return new Response(
@@ -249,6 +417,7 @@ serve(async (req) => {
       { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
 
+<<<<<<< HEAD
   } catch (error: any) {
     console.error("Error in send-otp function:", error);
     return new Response(
@@ -257,3 +426,13 @@ serve(async (req) => {
     );
   }
 });
+=======
+  } catch (error) {
+    console.error("Error in send-otp function:", error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : String(error) }),
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+    );
+  }
+});
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af

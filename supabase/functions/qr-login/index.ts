@@ -157,7 +157,11 @@ Deno.serve(async (req) => {
     })
   } catch (error) {
     console.error('QR Login error:', error)
+<<<<<<< HEAD
     return new Response(JSON.stringify({ error: error.message }), {
+=======
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

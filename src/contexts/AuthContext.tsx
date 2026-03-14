@@ -2,7 +2,10 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useSessionHeartbeat, deactivateCurrentSession } from '@/hooks/useSessionManager';
+<<<<<<< HEAD
 import { BanScreen } from '@/components/BanScreen';
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
 interface Profile {
   id: string;
@@ -48,8 +51,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null);
   const [needsSellerSetup, setNeedsSellerSetup] = useState(false);
   const [userProfile, setUserProfile] = useState<Profile | null>(null);
+<<<<<<< HEAD
   const [isBanned, setIsBanned] = useState(false);
   const [banReason, setBanReason] = useState('');
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
   const checkAdminRole = async (userId: string) => {
     try {
@@ -112,6 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+<<<<<<< HEAD
   // Check ban via edge function (checks both user_id AND IP)
   const checkBanViaServer = async (): Promise<{ banned: boolean; reason: string }> => {
     try {
@@ -138,6 +145,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   const updateRoleAndSellerState = async (currentUser: User | null) => {
     if (!currentUser) {
       setIsAdmin(false);
@@ -147,6 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+<<<<<<< HEAD
     // Check admin first, then ban status (admins are exempt - handled server-side)
     const isAdminResult = await checkAdminRole(currentUser.id);
     
@@ -169,6 +179,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const [, profile, uProfile] = await Promise.all([
       Promise.resolve(isAdminResult), // already checked above
+=======
+    const [isAdminResult, profile, uProfile] = await Promise.all([
+      checkAdminRole(currentUser.id),
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       checkSellerProfile(currentUser.id),
       checkUserProfile(currentUser.id)
     ]);
@@ -176,6 +190,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAdmin(isAdminResult);
     setSellerProfile(profile);
     setUserProfile(uProfile);
+<<<<<<< HEAD
+=======
+    // Only require seller setup if admin doesn't have a seller profile at all
+    // If profile exists (even incomplete), don't force setup - they can update later
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
     setNeedsSellerSetup(false);
   };
 
@@ -476,7 +495,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refreshSellerProfile,
       refreshUserProfile
     }}>
+<<<<<<< HEAD
       {isBanned ? <BanScreen reason={banReason} /> : children}
+=======
+      {children}
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
     </AuthContext.Provider>
   );
 }

@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
+<<<<<<< HEAD
 import { SEOHead, buildBreadcrumbSchema } from '@/components/seo/SEOHead';
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 import DOMPurify from 'dompurify';
 import { Navbar } from '@/components/Navbar';
 import { PageWrapper } from '@/components/layout/PageWrapper';
@@ -246,6 +249,7 @@ export default function Posts() {
 
   return (
     <div className="min-h-screen bg-background">
+<<<<<<< HEAD
       <SEOHead
         title="Bài Viết & Tin Tức"
         description="Cập nhật tin tức, hướng dẫn mua bán tài khoản, key bản quyền mới nhất từ BonzShop."
@@ -256,6 +260,8 @@ export default function Posts() {
           { name: 'Bài viết', url: '/posts' },
         ])}
       />
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       <Navbar />
       <PageWrapper>
       <main className="container mx-auto px-4 py-8">

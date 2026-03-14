@@ -106,6 +106,7 @@ export async function registerSession(userId: string): Promise<void> {
         is_active: true,
       });
   }
+<<<<<<< HEAD
 
   // Update IP via edge function (can't get real IP client-side)
   try {
@@ -113,6 +114,8 @@ export async function registerSession(userId: string): Promise<void> {
       body: { action: 'update-session-ip', sessionToken },
     });
   } catch {}
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 }
 
 // Force deactivate a specific session
@@ -164,7 +167,11 @@ export async function registerDevice(userId: string): Promise<void> {
 
 // Hook: keeps session alive with heartbeat and listens for kicks
 export function useSessionHeartbeat(userId: string | null) {
+<<<<<<< HEAD
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+=======
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   const registeredRef = useRef(false);
 
   const heartbeat = useCallback(async () => {

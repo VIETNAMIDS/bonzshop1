@@ -10,7 +10,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+<<<<<<< HEAD
 import { ShoppingCart, Search, Loader2, Package, Coins, Key, Minus, Plus } from "lucide-react";
+=======
+import { ShoppingCart, Search, Loader2, Package, Coins, Key, Copy, Eye, EyeOff } from "lucide-react";
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
 interface Seller {
   id: string;
@@ -32,6 +36,7 @@ interface KeyItem {
   created_at: string;
 }
 
+<<<<<<< HEAD
 interface KeyGroup {
   title: string;
   description: string | null;
@@ -43,6 +48,8 @@ interface KeyGroup {
   availableCount: number;
 }
 
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 const Keys = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -53,9 +60,14 @@ const Keys = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   // Purchase modal
+<<<<<<< HEAD
   const [selectedGroup, setSelectedGroup] = useState<KeyGroup | null>(null);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [quantity, setQuantity] = useState(1);
+=======
+  const [selectedKey, setSelectedKey] = useState<KeyItem | null>(null);
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   const [submitting, setSubmitting] = useState(false);
   const [userCoinBalance, setUserCoinBalance] = useState(0);
 
@@ -110,6 +122,7 @@ const Keys = () => {
 
   const uniqueCategories = [...new Set(keys.map(k => k.category).filter(Boolean))];
 
+<<<<<<< HEAD
   // Group keys by title+category
   const keyGroups: KeyGroup[] = (() => {
     const grouped: Record<string, KeyGroup> = {};
@@ -140,18 +153,33 @@ const Keys = () => {
 
     return Object.values(grouped);
   })();
+=======
+  const filteredKeys = keys.filter(key => {
+    const matchesSearch = key.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (key.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+    const matchesCategory = selectedCategory === "all" || key.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("vi-VN").format(price) + ' VNĐ';
 
+<<<<<<< HEAD
   const handleOpenPurchase = (group: KeyGroup) => {
     if (!user) { navigate("/auth"); return; }
     setSelectedGroup(group);
     setQuantity(1);
+=======
+  const handleOpenPurchase = (key: KeyItem) => {
+    if (!user) { navigate("/auth"); return; }
+    setSelectedKey(key);
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
     setShowPurchaseModal(true);
   };
 
   const handlePurchase = async () => {
+<<<<<<< HEAD
     if (!selectedGroup || !user) return;
 
     const totalCost = selectedGroup.price * quantity;
@@ -163,6 +191,12 @@ const Keys = () => {
 
     if (quantity > selectedGroup.availableCount) {
       toast.error(`Chỉ còn ${selectedGroup.availableCount} key có sẵn!`);
+=======
+    if (!selectedKey || !user) return;
+
+    if (userCoinBalance < selectedKey.price) {
+      toast.error(`Không đủ xu! Cần ${selectedKey.price} xu, bạn có ${userCoinBalance} xu.`);
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       return;
     }
 
@@ -172,6 +206,7 @@ const Keys = () => {
       // Deduct coins
       const { error: coinError } = await supabase
         .from('user_coins')
+<<<<<<< HEAD
         .update({ balance: userCoinBalance - totalCost, updated_at: new Date().toISOString() })
         .eq('user_id', user.id);
       if (coinError) throw coinError;
@@ -199,13 +234,44 @@ const Keys = () => {
           login_credentials: { key_value: key.key_value, key_title: key.title },
         });
       }
+=======
+        .update({ balance: userCoinBalance - selectedKey.price, updated_at: new Date().toISOString() })
+        .eq('user_id', user.id);
+      if (coinError) throw coinError;
+
+      // Mark key as sold
+      await supabase.from('keys').update({
+        is_sold: true,
+        sold_to: user.id,
+        sold_at: new Date().toISOString(),
+        buyer_id: user.id,
+      }).eq('id', selectedKey.id);
+
+      // Create order
+      await supabase.from("orders").insert({
+        buyer_id: user.id,
+        user_id: user.id,
+        amount: selectedKey.price,
+        status: 'approved',
+        approved_at: new Date().toISOString(),
+        approved_by: user.id,
+        order_type: 'key_purchase',
+        login_credentials: { key_value: selectedKey.key_value, key_title: selectedKey.title },
+      });
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
       // Coin history
       await supabase.from('coin_history').insert({
         user_id: user.id,
+<<<<<<< HEAD
         amount: -totalCost,
         type: 'key_purchase',
         description: `Mua ${quantity} key "${selectedGroup.title}"`,
+=======
+        amount: -selectedKey.price,
+        type: 'key_purchase',
+        description: `Mua key "${selectedKey.title}"`,
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       });
 
       // Send telegram notification
@@ -217,14 +283,24 @@ const Keys = () => {
           body: JSON.stringify({
             type: 'key_purchase',
             userEmail: user.email,
+<<<<<<< HEAD
             productTitle: `${selectedGroup.title} x${quantity}`,
             amount: totalCost,
+=======
+            productTitle: selectedKey.title,
+            amount: selectedKey.price,
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           })
         });
       } catch {}
 
+<<<<<<< HEAD
       setUserCoinBalance(prev => prev - totalCost);
       toast.success(`Mua thành công ${quantity} key! Xem trong Đơn hàng của tôi.`);
+=======
+      setUserCoinBalance(prev => prev - selectedKey.price);
+      toast.success("Mua key thành công! Xem trong Đơn hàng của tôi.");
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       setShowPurchaseModal(false);
       fetchKeys();
       navigate('/my-orders');
@@ -282,7 +358,11 @@ const Keys = () => {
           )}
 
           {/* Empty */}
+<<<<<<< HEAD
           {!loading && keyGroups.length === 0 && (
+=======
+          {!loading && filteredKeys.length === 0 && (
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
             <div className="text-center py-20">
               <Key className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-xl font-semibold mb-2">Không tìm thấy key</h3>
@@ -291,6 +371,7 @@ const Keys = () => {
           )}
 
           {/* Key Grid */}
+<<<<<<< HEAD
           {!loading && keyGroups.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {keyGroups.map((group, idx) => (
@@ -305,6 +386,22 @@ const Keys = () => {
                       <img
                         src={group.image_url}
                         alt={group.title}
+=======
+          {!loading && filteredKeys.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {filteredKeys.map((key) => (
+                <div
+                  key={key.id}
+                  className="group bg-card rounded-xl border border-border overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-300 cursor-pointer"
+                  onClick={() => handleOpenPurchase(key)}
+                >
+                  {/* Image */}
+                  <div className="aspect-[16/10] relative overflow-hidden bg-secondary/30">
+                    {key.image_url ? (
+                      <img
+                        src={key.image_url}
+                        alt={key.title}
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
@@ -317,6 +414,7 @@ const Keys = () => {
                         🔑 Key
                       </Badge>
                     </div>
+<<<<<<< HEAD
                     {/* Stock badge */}
                     {group.availableCount <= 5 && group.availableCount > 0 && (
                       <div className="absolute top-2 right-2">
@@ -332,11 +430,14 @@ const Keys = () => {
                         </Badge>
                       </div>
                     )}
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                   </div>
 
                   {/* Info */}
                   <div className="p-3">
                     <h3 className="text-sm font-medium text-foreground line-clamp-2 mb-2 min-h-[2.5rem]">
+<<<<<<< HEAD
                       {group.title}
                     </h3>
                     <div className="flex items-center justify-between">
@@ -355,6 +456,26 @@ const Keys = () => {
                     )}
                     {group.category && (
                       <Badge variant="secondary" className="text-[10px] mt-1">{group.category}</Badge>
+=======
+                      {key.title}
+                    </h3>
+                    <div className="flex items-center justify-between">
+                      <span className="text-primary font-bold text-sm">
+                        {formatPrice(key.price)}
+                      </span>
+                      <Badge variant="outline" className="text-[10px] text-orange-500 border-orange-500/30">
+                        <Coins className="h-2.5 w-2.5 mr-0.5" />
+                        {key.price} xu
+                      </Badge>
+                    </div>
+                    {key.sellers && (
+                      <p className="text-xs text-muted-foreground mt-1 truncate">
+                        {key.sellers.display_name}
+                      </p>
+                    )}
+                    {key.category && (
+                      <Badge variant="secondary" className="text-[10px] mt-1">{key.category}</Badge>
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                     )}
                   </div>
                 </div>
@@ -362,7 +483,11 @@ const Keys = () => {
             </div>
           )}
 
+<<<<<<< HEAD
           {/* Purchase Modal with Quantity */}
+=======
+          {/* Purchase Modal */}
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           <Dialog open={showPurchaseModal} onOpenChange={setShowPurchaseModal}>
             <DialogContent className="max-w-md">
               <DialogHeader>
@@ -370,6 +495,7 @@ const Keys = () => {
                   <Key className="h-5 w-5 text-primary" />
                   Mua Key
                 </DialogTitle>
+<<<<<<< HEAD
                 <DialogDescription>Chọn số lượng và xác nhận mua</DialogDescription>
               </DialogHeader>
 
@@ -379,12 +505,24 @@ const Keys = () => {
                   <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg">
                     {selectedGroup.image_url ? (
                       <img src={selectedGroup.image_url} alt={selectedGroup.title} className="w-12 h-12 rounded-lg object-cover" />
+=======
+                <DialogDescription>Xác nhận mua key</DialogDescription>
+              </DialogHeader>
+
+              {selectedKey && (
+                <div className="space-y-4">
+                  {/* Key info */}
+                  <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg">
+                    {selectedKey.image_url ? (
+                      <img src={selectedKey.image_url} alt={selectedKey.title} className="w-12 h-12 rounded-lg object-cover" />
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                     ) : (
                       <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
                         <Key className="h-6 w-6 text-primary" />
                       </div>
                     )}
                     <div>
+<<<<<<< HEAD
                       <p className="font-medium">{selectedGroup.title}</p>
                       <p className="text-sm text-primary font-bold">{formatPrice(selectedGroup.price)} / key</p>
                       <p className="text-xs text-muted-foreground">Còn {selectedGroup.availableCount} key</p>
@@ -414,6 +552,11 @@ const Keys = () => {
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
+=======
+                      <p className="font-medium">{selectedKey.title}</p>
+                      <p className="text-sm text-primary font-bold">{formatPrice(selectedKey.price)}</p>
+                      <p className="text-xs text-muted-foreground">{selectedKey.price} xu</p>
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                     </div>
                   </div>
 
@@ -421,6 +564,7 @@ const Keys = () => {
                   <div className="border border-border rounded-lg p-3 space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Đơn giá:</span>
+<<<<<<< HEAD
                       <span>{selectedGroup.price} xu</span>
                     </div>
                     <div className="flex justify-between">
@@ -440,6 +584,23 @@ const Keys = () => {
                   {userCoinBalance < selectedGroup.price * quantity && (
                     <p className="text-sm text-destructive">
                       ⚠️ Không đủ xu! Cần thêm {(selectedGroup.price * quantity - userCoinBalance).toLocaleString()} xu.
+=======
+                      <span>{selectedKey.price} xu</span>
+                    </div>
+                    <div className="flex justify-between font-bold text-base border-t border-border pt-2">
+                      <span>Tổng cộng:</span>
+                      <span className="text-primary">{selectedKey.price} xu</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Số dư hiện tại:</span>
+                      <span>{userCoinBalance} xu</span>
+                    </div>
+                  </div>
+
+                  {userCoinBalance < selectedKey.price && (
+                    <p className="text-sm text-destructive">
+                      ⚠️ Không đủ xu! Cần thêm {selectedKey.price - userCoinBalance} xu.
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                     </p>
                   )}
                 </div>
@@ -452,11 +613,19 @@ const Keys = () => {
                 <Button
                   variant="gradient"
                   onClick={handlePurchase}
+<<<<<<< HEAD
                   disabled={submitting || !selectedGroup || userCoinBalance < (selectedGroup ? selectedGroup.price * quantity : 0)}
                   className="gap-2"
                 >
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
                   MUA {quantity} KEY
+=======
+                  disabled={submitting || !selectedKey || userCoinBalance < (selectedKey?.price || 0)}
+                  className="gap-2"
+                >
+                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
+                  XÁC NHẬN MUA
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                 </Button>
               </DialogFooter>
             </DialogContent>

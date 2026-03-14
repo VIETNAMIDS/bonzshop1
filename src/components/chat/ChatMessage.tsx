@@ -3,7 +3,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
+<<<<<<< HEAD
 import { RotateCcw, UserPlus, MessageCircle, ExternalLink, Trash2, VolumeX, Volume2 } from 'lucide-react';
+=======
+import { RotateCcw, UserPlus, MessageCircle, ExternalLink } from 'lucide-react';
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 import { cn } from '@/lib/utils';
 
 // Rich gradient colors with more variety
@@ -70,7 +74,10 @@ interface ChatMessageProps {
   imageUrl?: string | null;
   isOwn: boolean;
   isRecalled?: boolean;
+<<<<<<< HEAD
   gradientColor?: string | null;
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   profile?: {
     display_name: string | null;
     avatar_url: string | null;
@@ -79,6 +86,7 @@ interface ChatMessageProps {
   createdAt: string;
   userId: string;
   currentUserId?: string;
+<<<<<<< HEAD
   isAdmin?: boolean;
   isMuted?: boolean;
   onRecall?: (id: string) => void;
@@ -87,6 +95,11 @@ interface ChatMessageProps {
   onAdminDelete?: (id: string) => void;
   onAdminMute?: (userId: string) => void;
   onAdminUnmute?: (userId: string) => void;
+=======
+  onRecall?: (id: string) => void;
+  onAddFriend?: (userId: string) => void;
+  onSendPrivateMessage?: (userId: string) => void;
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   showAnimation?: boolean;
 }
 
@@ -96,11 +109,15 @@ export function ChatMessage({
   imageUrl,
   isOwn,
   isRecalled,
+<<<<<<< HEAD
   gradientColor,
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   profile,
   createdAt,
   userId,
   currentUserId,
+<<<<<<< HEAD
   isAdmin = false,
   isMuted = false,
   onRecall,
@@ -112,6 +129,13 @@ export function ChatMessage({
   showAnimation = false,
 }: ChatMessageProps) {
   const isSystemBan = gradientColor === 'system-ban';
+=======
+  onRecall,
+  onAddFriend,
+  onSendPrivateMessage,
+  showAnimation = false,
+}: ChatMessageProps) {
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   const [showActions, setShowActions] = useState(false);
   const [sparkles, setSparkles] = useState<{ id: number; x: number; y: number; emoji: string }[]>([]);
   const gradient = getGradient(id);
@@ -132,6 +156,7 @@ export function ChatMessage({
     }
   }, [showAnimation]);
 
+<<<<<<< HEAD
   // System ban message - full width alert
   if (isSystemBan) {
     // Parse bold text
@@ -171,6 +196,8 @@ export function ChatMessage({
     );
   }
 
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   if (isRecalled) {
     return (
       <div className={cn("flex gap-3", isOwn && "flex-row-reverse")}>
@@ -314,6 +341,7 @@ export function ChatMessage({
             </Button>
           </div>
         )}
+<<<<<<< HEAD
 
         {/* Admin moderation buttons */}
         {showActions && isAdmin && !isOwn && (
@@ -356,6 +384,8 @@ export function ChatMessage({
             )}
           </div>
         )}
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       </div>
     </div>
   );

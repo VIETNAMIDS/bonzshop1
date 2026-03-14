@@ -14,6 +14,7 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /seller-
+<<<<<<< HEAD
 Disallow: /user-profile
 Disallow: /checkout
 Disallow: /my-orders
@@ -21,3 +22,7 @@ Disallow: /buy-coins
 Disallow: /coin-history
 
 Sitemap: https://bonzshop.site/sitemap.xml
+=======
+
+Sitemap: https://bonzshop.lovable.app/sitemap.xml
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af

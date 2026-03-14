@@ -13,7 +13,11 @@ import { Navbar } from '@/components/Navbar';
 import { PageWrapper } from '@/components/layout/PageWrapper';
 import {
   User, Mail, Lock, Store, Coins, Loader2,
+<<<<<<< HEAD
    ArrowLeft, Edit2, Save, X, CheckCircle, AlertCircle, Wallet, History, Phone, Camera
+=======
+   ArrowLeft, Edit2, Save, X, CheckCircle, AlertCircle, Wallet, History
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
  import { ReferralCodeInput } from '@/components/referral/ReferralCodeInput';
@@ -24,7 +28,11 @@ interface UserProfileData {
 }
 
 export default function UserProfile() {
+<<<<<<< HEAD
   const { user, isAdmin, sellerProfile, refreshSellerProfile, refreshUserProfile } = useAuth();
+=======
+  const { user, isAdmin, sellerProfile, refreshSellerProfile } = useAuth();
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   const navigate = useNavigate();
    
   const [loading, setLoading] = useState(true);
@@ -34,6 +42,7 @@ export default function UserProfile() {
   const [showSellerRegistration, setShowSellerRegistration] = useState(false);
   const [registeringSeller, setRegisteringSeller] = useState(false);
 
+<<<<<<< HEAD
   const [avatarUploading, setAvatarUploading] = useState(false);
    const [showEmailOtp, setShowEmailOtp] = useState(false);
   const [emailOtpStep, setEmailOtpStep] = useState<'old' | 'new'>('old');
@@ -47,6 +56,11 @@ export default function UserProfile() {
     email: '',
     phone: '',
     avatar_url: '',
+=======
+  const [formData, setFormData] = useState({
+    display_name: '',
+    email: '',
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
     current_password: '',
     new_password: '',
     confirm_password: '',
@@ -63,6 +77,7 @@ export default function UserProfile() {
 
   const fetchUserProfile = async () => {
     try {
+<<<<<<< HEAD
       const email = user?.email || '';
 
       // Fetch from profiles table
@@ -79,6 +94,15 @@ export default function UserProfile() {
         email: email,
         phone: profile?.phone || '',
         avatar_url: profile?.avatar_url || '',
+=======
+      // Get user metadata and profile data
+      const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || '';
+      const email = user?.email || '';
+
+      setFormData({
+        display_name: displayName,
+        email: email,
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         current_password: '',
         new_password: '',
         confirm_password: '',
@@ -126,6 +150,7 @@ export default function UserProfile() {
       return;
     }
 
+<<<<<<< HEAD
     // If email is changing, require OTP verification on old email first
     if (trimmedEmail !== user?.email) {
       setPendingEmailChange(trimmedEmail);
@@ -138,6 +163,8 @@ export default function UserProfile() {
   };
 
   const saveProfileData = async (displayName: string, newEmail: string, emailChanged = false) => {
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
     setSaving(true);
     try {
       const updatePayload: {
@@ -145,6 +172,7 @@ export default function UserProfile() {
         password?: string;
         data: Record<string, string>;
       } = {
+<<<<<<< HEAD
         data: { display_name: displayName }
       };
 
@@ -171,6 +199,19 @@ export default function UserProfile() {
         console.error('Error updating profile table:', profileError);
       }
 
+=======
+        data: { display_name: trimmedDisplayName }
+      };
+
+      if (trimmedEmail !== user?.email) {
+        updatePayload.email = trimmedEmail;
+      }
+
+      // Update basic profile info (name/email)
+      const { error } = await supabase.auth.updateUser(updatePayload);
+      if (error) throw error;
+
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       // If changing password
       if (formData.new_password) {
         if (formData.new_password !== formData.confirm_password) {
@@ -192,6 +233,7 @@ export default function UserProfile() {
         if (passwordError) throw passwordError;
       }
 
+<<<<<<< HEAD
       toast.success(emailChanged ? 'Đã cập nhật hồ sơ! Email mới sẽ được cập nhật sau khi xác nhận.' : 'Đã cập nhật hồ sơ!');
       setEditing(false);
       await refreshUserProfile();
@@ -200,6 +242,16 @@ export default function UserProfile() {
         ...prev,
         display_name: displayName,
         email: emailChanged ? user?.email || '' : newEmail,
+=======
+      toast.success(updatePayload.email ? 'Đã cập nhật hồ sơ! Vui lòng kiểm tra email để xác nhận thay đổi.' : 'Đã cập nhật hồ sơ!');
+      setEditing(false);
+       
+       
+      setFormData(prev => ({
+        ...prev,
+        display_name: trimmedDisplayName,
+        email: trimmedEmail,
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         current_password: '',
         new_password: '',
         confirm_password: '',
@@ -212,6 +264,7 @@ export default function UserProfile() {
     }
   };
 
+<<<<<<< HEAD
   const handleSendEmailOtp = async () => {
     const targetEmail = emailOtpStep === 'old' ? user?.email : pendingEmailChange;
     if (!targetEmail) return;
@@ -288,11 +341,14 @@ export default function UserProfile() {
     }
   };
 
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   const handleCancel = () => {
     fetchUserProfile(); // Reset form data
     setEditing(false);
   };
 
+<<<<<<< HEAD
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -327,6 +383,8 @@ export default function UserProfile() {
     }
   };
 
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   const handleSellerRegistration = async () => {
     const SELLER_REGISTRATION_COST = 10;
 
@@ -449,18 +507,30 @@ export default function UserProfile() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <PageWrapper>
+<<<<<<< HEAD
       <div className="container mx-auto px-4 py-6 relative z-10">
+=======
+      <div className="container mx-auto px-4 py-6">
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
+<<<<<<< HEAD
           <div className="flex-1 min-w-0">
+=======
+          <div className="flex-1">
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
             <h1 className="text-xl md:text-2xl font-bold">Hồ sơ của tôi</h1>
             <p className="text-sm text-muted-foreground">Quản lý thông tin cá nhân và tài khoản</p>
           </div>
           {!editing && (
+<<<<<<< HEAD
             <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="shrink-0">
+=======
+            <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
               <Edit2 className="h-4 w-4 mr-2" />
               Chỉnh sửa
             </Button>
@@ -472,6 +542,7 @@ export default function UserProfile() {
           <Card className="glass border-border/50">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
+<<<<<<< HEAD
                 <div className="relative">
                   {formData.avatar_url ? (
                     <img src={formData.avatar_url} alt="Avatar" className="h-16 w-16 rounded-full object-cover border-2 border-primary/30" />
@@ -486,6 +557,10 @@ export default function UserProfile() {
                       <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={avatarUploading} />
                     </label>
                   )}
+=======
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                  <User className="h-8 w-8 text-primary" />
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                 </div>
                 <div className="flex-1">
                   <h2 className="text-xl font-bold">{formData.display_name || 'Người dùng'}</h2>
@@ -553,6 +628,7 @@ export default function UserProfile() {
                       Hệ thống sẽ gửi email xác nhận khi bạn thay đổi địa chỉ đăng nhập.
                     </p>
                   </div>
+<<<<<<< HEAD
                   <div className="space-y-2">
                     <Label htmlFor="phone">Số điện thoại</Label>
                     <Input
@@ -562,6 +638,8 @@ export default function UserProfile() {
                       placeholder="Nhập số điện thoại"
                     />
                   </div>
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                   <div className="border-t border-border pt-4">
                     <h4 className="font-medium mb-3">Đổi mật khẩu (tùy chọn)</h4>
                     <div className="space-y-3">
@@ -605,6 +683,7 @@ export default function UserProfile() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
+<<<<<<< HEAD
                     <Phone className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="text-sm text-muted-foreground">Số điện thoại</p>
@@ -612,6 +691,8 @@ export default function UserProfile() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                     <Lock className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="text-sm text-muted-foreground">Mật khẩu</p>
@@ -811,6 +892,7 @@ export default function UserProfile() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+<<<<<<< HEAD
 
       {/* Email Change OTP Dialog */}
       <Dialog open={showEmailOtp} onOpenChange={setShowEmailOtp}>
@@ -907,6 +989,8 @@ export default function UserProfile() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       </PageWrapper>
     </div>
   );

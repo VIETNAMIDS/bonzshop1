@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+<<<<<<< HEAD
 import { LogOut, Shield, User, FolderOpen, Gift, Menu, X, ShoppingBag, Coins, Store, FileText, Sparkles, MessageCircle, Skull, History, ChevronLeft, ChevronRight, Home, Globe, Code, ScanLine, Crown, CalendarCheck, Key, Download } from 'lucide-react';
+=======
+import { LogOut, Shield, User, FolderOpen, Gift, Menu, X, ShoppingBag, Coins, Store, FileText, Sparkles, MessageCircle, Skull, History, ChevronLeft, ChevronRight, Home, Globe, Code, ScanLine, Crown, CalendarCheck, Key } from 'lucide-react';
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -67,7 +71,10 @@ export function Navbar() {
     { to: '/top-deposit', label: 'Top Nạp Xu', icon: Crown },
     { to: '/rewards', label: 'Phần thưởng', icon: CalendarCheck, requireAuth: true },
     { to: '/api', label: 'API', icon: Code },
+<<<<<<< HEAD
     { to: '/install', label: 'Tải app', icon: Download },
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
     { to: '/contact', label: 'Liên hệ', icon: MessageCircle },
   ];
 
@@ -238,7 +245,11 @@ export function Navbar() {
   // Desktop vertical sidebar
   return (
     <aside className={cn(
+<<<<<<< HEAD
       "fixed left-0 top-0 h-screen z-40 transition-all duration-300 bg-background border-r-2 border-border",
+=======
+      "fixed left-0 top-0 h-screen z-50 transition-all duration-300 bg-background border-r-2 border-border",
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       sidebarCollapsed ? "w-16" : "w-60"
     )}>
       <div className="flex flex-col h-full p-3">
@@ -328,6 +339,7 @@ export function Navbar() {
                     <span className="font-semibold text-sm">{coinBalance !== null ? `${coinBalance} xu` : '...'}</span>
                     <div className="flex items-center gap-1">
                       <Sparkles className="h-3 w-3 text-primary/50" />
+<<<<<<< HEAD
                       <button
                         type="button"
                         onClick={(e) => {
@@ -339,6 +351,11 @@ export function Navbar() {
                       >
                         Lịch sử
                       </button>
+=======
+                      <Link to="/coin-history" className="text-xs text-muted-foreground hover:text-primary">
+                        Lịch sử
+                      </Link>
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                     </div>
                   </div>
                 )}

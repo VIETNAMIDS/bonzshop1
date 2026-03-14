@@ -4,8 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, MessageCircle, Sparkles, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+<<<<<<< HEAD
 import { motion } from 'framer-motion';
 import { GlitchText, GradientText, Typewriter, FloatingParticles, AnimatedCounter, WordReveal } from '@/components/motion/TextEffects';
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
 interface SiteSettings {
   hero_video_url?: string;
@@ -113,6 +116,7 @@ export function HeroSection() {
 
       {/* Brutalist background — raw grid */}
       <div className="absolute inset-0 grid-pattern opacity-30" />
+<<<<<<< HEAD
       <FloatingParticles count={25} />
       <div className="absolute inset-0 pointer-events-none">
         <motion.div 
@@ -129,11 +133,17 @@ export function HeroSection() {
           transition={{ duration: 1.5, delay: 0.3, ease: 'easeOut' }}
           style={{ transformOrigin: 'right' }}
         />
+=======
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-1 bg-primary/60" />
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-primary/30" />
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       </div>
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 text-center">
         {/* Badge */}
+<<<<<<< HEAD
         <motion.div 
           className="inline-flex items-center gap-2 px-4 py-2 rounded-none bg-primary text-primary-foreground border-2 border-primary mb-8"
           initial={{ opacity: 0, y: -30, scale: 0.8 }}
@@ -239,6 +249,68 @@ export function HeroSection() {
               <p className="text-sm text-muted-foreground font-mono uppercase tracking-wider">{stat.label}</p>
             </motion.div>
           ))}
+=======
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-none bg-primary text-primary-foreground border-2 border-primary mb-8 animate-scale-in">
+          <Sparkles className="h-4 w-4" />
+          <span className="text-sm font-black uppercase tracking-widest">Nền tảng #1 Việt Nam</span>
+        </div>
+
+        {/* Title */}
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 animate-scale-in uppercase tracking-tight leading-[0.9]">
+          <span className="block text-foreground">
+            {settings.hero_title || 'Chào mừng đến với'}
+          </span>
+          <span className="block mt-2 text-primary">
+            BonzShop
+          </span>
+        </h1>
+
+        {/* Subtitle */}
+        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-scale-in animation-delay-200 font-mono">
+          {settings.hero_subtitle || 'Nền tảng mua bán tài khoản game và sản phẩm số uy tín nhất'}
+        </p>
+
+        {/* CTAs */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center animate-scale-in animation-delay-200">
+          <Button 
+            asChild 
+            size="lg" 
+            variant="gradient"
+            className="text-lg px-8"
+          >
+            <Link to="/categories">
+              <ShoppingBag className="mr-2 h-5 w-5" />
+              Khám phá ngay
+            </Link>
+          </Button>
+          <Button 
+            asChild 
+            variant="outline" 
+            size="lg"
+            className="text-lg px-8"
+          >
+            <Link to="/chat">
+              <MessageCircle className="mr-2 h-5 w-5" />
+              Chat cộng đồng
+            </Link>
+          </Button>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-4 md:gap-8 max-w-2xl mx-auto mt-16 animate-scale-in animation-delay-200">
+          <div className="stats-card p-4 rounded-none">
+            <p className="text-3xl md:text-4xl font-black text-primary">1000+</p>
+            <p className="text-sm text-muted-foreground font-mono uppercase tracking-wider">Sản phẩm</p>
+          </div>
+          <div className="stats-card p-4 rounded-none">
+            <p className="text-3xl md:text-4xl font-black text-primary">500+</p>
+            <p className="text-sm text-muted-foreground font-mono uppercase tracking-wider">Người bán</p>
+          </div>
+          <div className="stats-card p-4 rounded-none">
+            <p className="text-3xl md:text-4xl font-black text-primary">99%</p>
+            <p className="text-sm text-muted-foreground font-mono uppercase tracking-wider">Hài lòng</p>
+          </div>
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         </div>
 
         {/* Scroll indicator */}

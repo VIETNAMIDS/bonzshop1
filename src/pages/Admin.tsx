@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+<<<<<<< HEAD
 import { ArrowLeft, Plus, Trash2, Edit, Save, X, Loader2, Users, FolderOpen, Gift, User, ShoppingCart, Store, Coins, Package, Upload, FileText, Settings, Skull, Ticket, Globe, Key, Bot } from 'lucide-react';
+=======
+import { ArrowLeft, Plus, Trash2, Edit, Save, X, Loader2, Users, FolderOpen, Gift, User, ShoppingCart, Store, Coins, Package, Upload, FileText, Settings, Skull, Ticket, Globe, Key } from 'lucide-react';
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -429,12 +433,15 @@ export default function Admin() {
                 Up Key
               </Button>
             </Link>
+<<<<<<< HEAD
             <Link to="/admin/bot-keys" className="contents">
               <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm border-cyan-500/30 hover:bg-cyan-500/10">
                 <Bot className="h-4 w-4 text-cyan-500" />
                 Bot AI Keys
               </Button>
             </Link>
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
             <Link to="/seller-profile" className="contents">
               <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
                 <Store className="h-4 w-4" />

@@ -72,8 +72,11 @@ export default function AdminAccounts() {
     seller_id: '',
     requires_buyer_email: false,
   });
+<<<<<<< HEAD
   const [isBulkMode, setIsBulkMode] = useState(false);
   const [bulkCredentials, setBulkCredentials] = useState('');
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
   // Verify admin status via backend - SECURE
   useEffect(() => {
@@ -205,8 +208,11 @@ export default function AdminAccounts() {
       requires_buyer_email: false,
     });
     setEditingAccount(null);
+<<<<<<< HEAD
     setIsBulkMode(false);
     setBulkCredentials('');
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
     setShowForm(false);
   };
 
@@ -255,6 +261,7 @@ export default function AdminAccounts() {
       }
 
       const isActivationType = formData.requires_buyer_email;
+<<<<<<< HEAD
 
       // Bulk mode for non-activation, non-editing
       if (isBulkMode && !editingAccount && !isActivationType) {
@@ -299,6 +306,8 @@ export default function AdminAccounts() {
         return;
       }
 
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       const accountData = {
         title: formData.title.trim(),
         description: formData.description.trim() || undefined,
@@ -451,6 +460,7 @@ export default function AdminAccounts() {
                   />
                 </div>
 
+<<<<<<< HEAD
                 {!formData.requires_buyer_email && !editingAccount && (
                   <label 
                     className="flex items-center gap-3 p-3 rounded-lg border border-border bg-secondary/30 cursor-pointer select-none"
@@ -484,6 +494,9 @@ export default function AdminAccounts() {
                     )}
                   </div>
                 ) : !formData.requires_buyer_email ? (
+=======
+                {!formData.requires_buyer_email && (
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                   <>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
@@ -530,7 +543,11 @@ export default function AdminAccounts() {
                       </div>
                     </div>
                   </>
+<<<<<<< HEAD
                 ) : null}
+=======
+                )}
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
@@ -655,7 +672,11 @@ export default function AdminAccounts() {
                     ) : (
                       <>
                         <Save className="h-5 w-5 mr-2" />
+<<<<<<< HEAD
                         {editingAccount ? 'Cập nhật' : isBulkMode ? `Thêm ${bulkCredentials.split('\n').filter(l => l.trim()).length} TK` : 'Thêm'}
+=======
+                        {editingAccount ? 'Cập nhật' : 'Thêm'}
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                       </>
                     )}
                   </Button>

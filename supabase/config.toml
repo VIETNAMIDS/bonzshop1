@@ -50,6 +50,7 @@ verify_jwt = false
 
 [functions.public-api]
 verify_jwt = false
+<<<<<<< HEAD
 
 [functions.check-ban]
 verify_jwt = false
@@ -65,3 +66,5 @@ verify_jwt = false
 
 [functions.chat-bot]
 verify_jwt = false
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af

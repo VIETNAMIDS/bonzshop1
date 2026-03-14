@@ -39,8 +39,11 @@ export default function AdminKeys() {
   // Form
   const [showForm, setShowForm] = useState(false);
   const [editingKey, setEditingKey] = useState<KeyItem | null>(null);
+<<<<<<< HEAD
   const [isBulkMode, setIsBulkMode] = useState(false);
   const [bulkKeyValues, setBulkKeyValues] = useState('');
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   const [formData, setFormData] = useState({
     title: '', key_value: '', description: '', category: 'other', price: '0', image_url: ''
   });
@@ -78,8 +81,11 @@ export default function AdminKeys() {
   const resetForm = () => {
     setFormData({ title: '', key_value: '', description: '', category: 'other', price: '0', image_url: '' });
     setEditingKey(null);
+<<<<<<< HEAD
     setIsBulkMode(false);
     setBulkKeyValues('');
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
     setShowForm(false);
   };
 
@@ -97,6 +103,7 @@ export default function AdminKeys() {
   };
 
   const handleSubmit = async () => {
+<<<<<<< HEAD
     if (!formData.title) {
       toast.error('Vui lòng nhập tên key');
       return;
@@ -139,6 +146,10 @@ export default function AdminKeys() {
     // Single mode
     if (!formData.key_value) {
       toast.error('Vui lòng nhập giá trị key');
+=======
+    if (!formData.title || !formData.key_value) {
+      toast.error('Vui lòng nhập tên key và giá trị key');
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       return;
     }
     setSubmitting(true);
@@ -252,6 +263,7 @@ export default function AdminKeys() {
 
         {/* Form Dialog */}
         <Dialog open={showForm} onOpenChange={setShowForm}>
+<<<<<<< HEAD
           <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingKey ? 'Sửa Key' : 'Thêm Key'}</DialogTitle>
@@ -273,10 +285,18 @@ export default function AdminKeys() {
                 </label>
               )}
 
+=======
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>{editingKey ? 'Sửa Key' : 'Thêm Key Mới'}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
               <div>
                 <Label>Tên Key *</Label>
                 <Input value={formData.title} onChange={e => setFormData(f => ({ ...f, title: e.target.value }))} placeholder="VD: Windows 11 Pro Key" />
               </div>
+<<<<<<< HEAD
 
               {isBulkMode && !editingKey ? (
                 <div>
@@ -301,6 +321,12 @@ export default function AdminKeys() {
                 </div>
               )}
 
+=======
+              <div>
+                <Label>Giá trị Key *</Label>
+                <Input value={formData.key_value} onChange={e => setFormData(f => ({ ...f, key_value: e.target.value }))} placeholder="VD: XXXXX-XXXXX-XXXXX" />
+              </div>
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
               <div>
                 <Label>Mô tả</Label>
                 <Textarea value={formData.description} onChange={e => setFormData(f => ({ ...f, description: e.target.value }))} placeholder="Mô tả chi tiết..." />
@@ -328,7 +354,11 @@ export default function AdminKeys() {
               <Button variant="outline" onClick={resetForm}>Hủy</Button>
               <Button onClick={handleSubmit} disabled={submitting}>
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+<<<<<<< HEAD
                 {editingKey ? 'Cập nhật' : isBulkMode ? `Thêm ${bulkKeyValues.split('\n').filter(l => l.trim()).length} key` : 'Thêm'}
+=======
+                {editingKey ? 'Cập nhật' : 'Thêm'}
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
               </Button>
             </DialogFooter>
           </DialogContent>

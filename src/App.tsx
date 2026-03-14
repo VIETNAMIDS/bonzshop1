@@ -40,8 +40,11 @@ import MyWebsites from "./pages/MyWebsites";
 import ChildWebsiteRouter from "./pages/ChildWebsiteRouter";
 
 import About from "./pages/About";
+<<<<<<< HEAD
 import Terms from "./pages/Terms";
 import Guide from "./pages/Guide";
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 import Welcome from "./pages/Welcome";
 import NotFound from "./pages/NotFound";
 import ApiDocs from "./pages/ApiDocs";
@@ -50,10 +53,13 @@ import QrScanner from "./pages/QrScanner";
 import TopDeposit from "./pages/TopDeposit";
 import Rewards from "./pages/Rewards";
 import AdminDashboard from "./pages/AdminDashboard";
+<<<<<<< HEAD
 import AdminBotKeys from "./pages/AdminBotKeys";
 import Install from "./pages/Install";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import { InstallAppButton } from "./components/InstallAppButton";
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
 const queryClient = new QueryClient();
 
@@ -109,6 +115,7 @@ const App = () => (
               <Route path="/top-deposit" element={<TopDeposit />} />
               <Route path="/rewards" element={<Rewards />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
+<<<<<<< HEAD
               <Route path="/admin/bot-keys" element={<AdminBotKeys />} />
               <Route path="/install" element={<Install />} />
               
@@ -118,6 +125,11 @@ const App = () => (
             </Routes>
             <PWAInstallPrompt />
             <InstallAppButton />
+=======
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           </GeoProtection>
         </AuthProvider>
       </BrowserRouter>

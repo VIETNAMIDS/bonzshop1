@@ -9,12 +9,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+<<<<<<< HEAD
 import { Send, Image as ImageIcon, AlertTriangle, Loader2, X, Ban, Shield, Bot, Pin, ChevronDown, ChevronUp } from 'lucide-react';
+=======
+import { Send, Image as ImageIcon, AlertTriangle, Loader2, X, Ban, Shield } from 'lucide-react';
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 import { ChatMessage } from '@/components/chat/ChatMessage';
 import { EmojiPicker } from '@/components/chat/EmojiPicker';
 import { FriendsList } from '@/components/chat/FriendsList';
 import { PrivateChat } from '@/components/chat/PrivateChat';
+<<<<<<< HEAD
 import { BotChat } from '@/components/chat/BotChat';
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
 interface ChatMessageData {
   id: string;
@@ -34,6 +41,7 @@ interface ChatMessageData {
   };
 }
 
+<<<<<<< HEAD
 // Content moderation - check message text for violations
 function checkMessageContent(message: string): string | null {
   if (!message || message.trim().length === 0) return null;
@@ -160,6 +168,8 @@ function PinnedAnnouncement() {
   );
 }
 
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 export default function Chat() {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
@@ -169,10 +179,14 @@ export default function Chat() {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+<<<<<<< HEAD
   const [botThinking, setBotThinking] = useState(false);
   const [isBanned, setIsBanned] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [mutedUserIds, setMutedUserIds] = useState<Set<string>>(new Set());
+=======
+  const [isBanned, setIsBanned] = useState(false);
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   const [uploadingImage, setUploadingImage] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -186,7 +200,10 @@ export default function Chat() {
     name: string;
     avatar?: string;
   } | null>(null);
+<<<<<<< HEAD
   const [botChatOpen, setBotChatOpen] = useState(false);
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -200,10 +217,15 @@ export default function Chat() {
   useEffect(() => {
     if (user) {
       checkBanStatus();
+<<<<<<< HEAD
       checkAdminStatus();
       fetchMessages();
       fetchAdminId();
       fetchMutedUsers();
+=======
+      fetchMessages();
+      fetchAdminId();
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       const unsubscribe = subscribeToMessages();
       return unsubscribe;
     }
@@ -219,11 +241,16 @@ export default function Chat() {
 
   const checkBanStatus = async () => {
     if (!user) return;
+<<<<<<< HEAD
     const { data: banData } = await supabase
+=======
+    const { data } = await supabase
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       .from('banned_users')
       .select('id')
       .eq('user_id', user.id)
       .single();
+<<<<<<< HEAD
     
     const { data: muteData } = await supabase
       .from('chat_muted_users')
@@ -254,6 +281,9 @@ export default function Chat() {
     if (data) {
       setMutedUserIds(new Set(data.map(d => d.user_id)));
     }
+=======
+    setIsBanned(!!data);
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   };
 
   const fetchAdminId = async () => {
@@ -306,6 +336,7 @@ export default function Chat() {
           if (payload.eventType === 'INSERT') {
             const newMsg = payload.new as ChatMessageData;
             
+<<<<<<< HEAD
             // Avoid duplicates
             if (newMsg.is_deleted) return;
 
@@ -325,16 +356,23 @@ export default function Chat() {
             }
 
             // Fetch profile then add message
+=======
+            // Fetch profile for new message
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
             const { data: profile } = await supabase
               .from('profiles')
               .select('user_id, display_name, avatar_url')
               .eq('user_id', newMsg.user_id)
               .single();
 
+<<<<<<< HEAD
             setMessages(prev => {
               if (prev.some(m => m.id === newMsg.id)) return prev;
               return [...prev, { ...newMsg, profile: profile || undefined }];
             });
+=======
+            setMessages(prev => [...prev, { ...newMsg, profile: profile || undefined }]);
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
             
             // Mark as new for animation
             setNewMessageIds(prev => new Set(prev).add(newMsg.id));
@@ -347,6 +385,7 @@ export default function Chat() {
             }, 1000);
           } else if (payload.eventType === 'UPDATE') {
             const updatedMsg = payload.new as ChatMessageData;
+<<<<<<< HEAD
             if (updatedMsg.is_deleted) {
               // Remove deleted messages from UI
               setMessages(prev => prev.filter(m => m.id !== updatedMsg.id));
@@ -355,6 +394,11 @@ export default function Chat() {
                 m.id === updatedMsg.id ? { ...m, ...updatedMsg } : m
               ));
             }
+=======
+            setMessages(prev => prev.map(m => 
+              m.id === updatedMsg.id ? { ...m, ...updatedMsg } : m
+            ));
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           }
         }
       )
@@ -365,6 +409,7 @@ export default function Chat() {
     };
   };
 
+<<<<<<< HEAD
   const handleBotQuery = async (query: string) => {
     setBotThinking(true);
     try {
@@ -434,12 +479,15 @@ export default function Chat() {
     }
   };
 
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   const handleSendMessage = async () => {
     if (!user || isBanned) return;
     
     const trimmedMessage = newMessage.trim();
     if (!trimmedMessage && !selectedImage) return;
 
+<<<<<<< HEAD
     // === CONTENT MODERATION (skip for admin) ===
     if (!isAdmin && trimmedMessage) {
       const violation = checkMessageContent(trimmedMessage);
@@ -481,6 +529,8 @@ export default function Chat() {
       return;
     }
 
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
     setSending(true);
     try {
       let imageUrl = null;
@@ -488,6 +538,7 @@ export default function Chat() {
       // Upload image if selected
       if (selectedImage) {
         setUploadingImage(true);
+<<<<<<< HEAD
 
         // === IMAGE MODERATION: check for 18+ content via AI ===
         if (!isAdmin) {
@@ -506,6 +557,8 @@ export default function Chat() {
           }
         }
 
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         const fileExt = selectedImage.name.split('.').pop();
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
         const filePath = `chat-images/${fileName}`;
@@ -537,11 +590,14 @@ export default function Chat() {
       setNewMessage('');
       setSelectedImage(null);
       setPreviewUrl(null);
+<<<<<<< HEAD
 
       // If it's a bot command, query the bot after sending
       if (botMatch) {
         handleBotQuery(botMatch[1]);
       }
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
     } catch (error: any) {
       console.error('Error sending message:', error);
       toast({
@@ -576,6 +632,7 @@ export default function Chat() {
     }
   };
 
+<<<<<<< HEAD
   const handleAdminDeleteMessage = async (messageId: string) => {
     try {
       const { error } = await supabase
@@ -632,6 +689,8 @@ export default function Chat() {
     }
   };
 
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   const handleAddFriend = async (friendId: string) => {
     if (!user || friendId === user.id) return;
 
@@ -769,6 +828,7 @@ export default function Chat() {
                 <Button
                   variant="outline"
                   size="sm"
+<<<<<<< HEAD
                   onClick={() => setBotChatOpen(true)}
                   className="gap-1 border-cyan-500/30 hover:bg-cyan-500/10"
                 >
@@ -778,6 +838,8 @@ export default function Chat() {
                 <Button
                   variant="outline"
                   size="sm"
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                   onClick={handleContactAdmin}
                   className="gap-1"
                 >
@@ -802,9 +864,12 @@ export default function Chat() {
             </div>
           )}
 
+<<<<<<< HEAD
           {/* Pinned Announcement */}
           <PinnedAnnouncement />
 
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           {/* Messages */}
           <div className="h-[500px] overflow-y-auto p-4 space-y-4">
             {messages.length === 0 ? (
@@ -822,11 +887,15 @@ export default function Chat() {
                   imageUrl={msg.image_url}
                   isOwn={msg.user_id === user?.id}
                   isRecalled={msg.is_recalled}
+<<<<<<< HEAD
                   gradientColor={msg.gradient_color}
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                   profile={msg.profile}
                   createdAt={msg.created_at}
                   userId={msg.user_id}
                   currentUserId={user?.id}
+<<<<<<< HEAD
                    onRecall={handleRecallMessage}
                    onAddFriend={handleAddFriend}
                    onSendPrivateMessage={handleOpenPrivateChat}
@@ -858,6 +927,15 @@ export default function Chat() {
                 </div>
               </div>
             )}
+=======
+                  onRecall={handleRecallMessage}
+                  onAddFriend={handleAddFriend}
+                  onSendPrivateMessage={handleOpenPrivateChat}
+                  showAnimation={newMessageIds.has(msg.id)}
+                />
+              ))
+            )}
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
             <div ref={messagesEndRef} />
           </div>
 
@@ -906,7 +984,11 @@ export default function Chat() {
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
+<<<<<<< HEAD
                   placeholder="Nhập tin nhắn... (gõ @bot để hỏi AI)"
+=======
+                  placeholder="Nhập tin nhắn... (hỗ trợ link)"
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
                   disabled={sending}
                   className="flex-1"
                 />
@@ -924,8 +1006,13 @@ export default function Chat() {
               </div>
 
               <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+<<<<<<< HEAD
                 <Bot className="h-3 w-3" />
                 Gõ <span className="font-medium text-primary">@bot</span> + câu hỏi để hỏi AI (VD: @bot tìm tài khoản Netflix)
+=======
+                <AlertTriangle className="h-3 w-3" />
+                Nhấn vào avatar để kết bạn hoặc nhắn riêng
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
               </p>
             </div>
           )}
@@ -945,9 +1032,12 @@ export default function Chat() {
           }}
         />
       )}
+<<<<<<< HEAD
 
       {/* Bot Chat Modal */}
       <BotChat isOpen={botChatOpen} onClose={() => setBotChatOpen(false)} />
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       </PageWrapper>
     </div>
   );

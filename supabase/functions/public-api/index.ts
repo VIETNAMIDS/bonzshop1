@@ -104,7 +104,11 @@ function jsonResponse(data: unknown, status = 200) {
 }
 
 async function handleEndpoint(
+<<<<<<< HEAD
   supabase: ReturnType<typeof createClient>,
+=======
+  supabase: any,
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   endpoint: string,
   params: Record<string, unknown>,
   searchParams: URLSearchParams,

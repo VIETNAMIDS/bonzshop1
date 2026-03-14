@@ -121,6 +121,7 @@ export const adminUsersApi = {
   async deleteUser(userId: string) {
     return callAdminFunction('admin-users', { action: 'deleteUser', data: { userId } });
   },
+<<<<<<< HEAD
 
   async banUser(userId: string, reason: string) {
     return callAdminFunction('admin-users', { action: 'banUser', data: { userId, reason } });
@@ -129,6 +130,8 @@ export const adminUsersApi = {
   async unbanUser(userId: string) {
     return callAdminFunction('admin-users', { action: 'unbanUser', data: { userId } });
   },
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 };
 
 // Accounts API - All logic runs on backend

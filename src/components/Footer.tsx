@@ -1,5 +1,9 @@
 import { Link } from 'react-router-dom';
+<<<<<<< HEAD
 import { MessageCircle, ShoppingBag, Shield, FileText, Gift, FolderOpen, BookOpen, Scale } from 'lucide-react';
+=======
+import { MessageCircle, ShoppingBag, Shield, FileText, Gift, FolderOpen } from 'lucide-react';
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 import bonzshopLogo from '@/assets/bonzshop-logo.png';
 
 const footerLinks = [
@@ -19,6 +23,7 @@ const footerLinks = [
       { to: '/scam-reports', label: 'Báo cáo Scam', icon: Shield },
     ],
   },
+<<<<<<< HEAD
   {
     title: 'HỖ TRỢ',
     links: [
@@ -26,6 +31,8 @@ const footerLinks = [
       { to: '/terms', label: 'Điều khoản sử dụng', icon: Scale },
     ],
   },
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 ];
 
 export function Footer() {
@@ -34,7 +41,11 @@ export function Footer() {
       <div className="absolute inset-0 grid-pattern opacity-10 pointer-events-none" />
       
       <div className="container mx-auto px-4 py-12 relative z-10">
+<<<<<<< HEAD
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+=======
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           {/* Brand */}
           <div>
             <img src={bonzshopLogo} alt="BonzShop" className="h-16 w-auto mb-4" />

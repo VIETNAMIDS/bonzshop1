@@ -14,6 +14,7 @@ export type Database = {
   }
   public: {
     Tables: {
+<<<<<<< HEAD
       accounts: {
         Row: {
           account_email: string | null
@@ -41,6 +42,68 @@ export type Database = {
           price: number
           requires_buyer_email: boolean
           seller_id: string
+=======
+      account_credentials: {
+        Row: {
+          account_email: string | null
+          account_id: string
+          account_password: string
+          account_phone: string | null
+          created_at: string
+          id: string
+        }
+        Insert: {
+          account_email?: string | null
+          account_id: string
+          account_password: string
+          account_phone?: string | null
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          account_email?: string | null
+          account_id?: string
+          account_password?: string
+          account_phone?: string | null
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_credentials_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: true
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_credentials_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: true
+            referencedRelation: "accounts_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      accounts: {
+        Row: {
+          account_email: string | null
+          account_password: string
+          account_phone: string | null
+          account_username: string
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          image_url: string | null
+          is_free: boolean
+          is_sold: boolean
+          original_price: number | null
+          price: number
+          seller_id: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           sold_at: string | null
           sold_to: string | null
           title: string
@@ -48,6 +111,7 @@ export type Database = {
         }
         Insert: {
           account_email?: string | null
+<<<<<<< HEAD
           account_password?: string | null
           account_phone?: string | null
           account_type: string
@@ -72,6 +136,23 @@ export type Database = {
           price?: number
           requires_buyer_email?: boolean
           seller_id: string
+=======
+          account_password: string
+          account_phone?: string | null
+          account_username: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          is_free?: boolean
+          is_sold?: boolean
+          original_price?: number | null
+          price?: number
+          seller_id?: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           sold_at?: string | null
           sold_to?: string | null
           title: string
@@ -79,6 +160,7 @@ export type Database = {
         }
         Update: {
           account_email?: string | null
+<<<<<<< HEAD
           account_password?: string | null
           account_phone?: string | null
           account_type?: string
@@ -103,6 +185,23 @@ export type Database = {
           price?: number
           requires_buyer_email?: boolean
           seller_id?: string
+=======
+          account_password?: string
+          account_phone?: string | null
+          account_username?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          is_free?: boolean
+          is_sold?: boolean
+          original_price?: number | null
+          price?: number
+          seller_id?: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           sold_at?: string | null
           sold_to?: string | null
           title?: string
@@ -125,6 +224,7 @@ export type Database = {
           },
         ]
       }
+<<<<<<< HEAD
       api_keys: {
         Row: {
           api_key: string
@@ -303,6 +403,28 @@ export type Database = {
           created_at?: string
           id?: string
           role?: string
+=======
+      banned_users: {
+        Row: {
+          banned_by: string | null
+          created_at: string
+          id: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          banned_by?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          banned_by?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           user_id?: string
         }
         Relationships: []
@@ -314,7 +436,11 @@ export type Database = {
           created_at: string
           id: string
           receipt_url: string | null
+<<<<<<< HEAD
           status: string | null
+=======
+          status: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           updated_at: string
           user_id: string
         }
@@ -324,7 +450,11 @@ export type Database = {
           created_at?: string
           id?: string
           receipt_url?: string | null
+<<<<<<< HEAD
           status?: string | null
+=======
+          status?: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           updated_at?: string
           user_id: string
         }
@@ -334,7 +464,11 @@ export type Database = {
           created_at?: string
           id?: string
           receipt_url?: string | null
+<<<<<<< HEAD
           status?: string | null
+=======
+          status?: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           updated_at?: string
           user_id?: string
         }
@@ -348,6 +482,7 @@ export type Database = {
           },
         ]
       }
+<<<<<<< HEAD
       bot_violations: {
         Row: {
           created_at: string
@@ -471,16 +606,25 @@ export type Database = {
         }
         Relationships: []
       }
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       categories: {
         Row: {
           created_at: string
           description: string | null
           icon: string | null
           id: string
+<<<<<<< HEAD
           is_active: boolean | null
           name: string
           slug: string
           sort_order: number | null
+=======
+          is_active: boolean
+          name: string
+          slug: string | null
+          sort_order: number
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           updated_at: string
         }
         Insert: {
@@ -488,10 +632,17 @@ export type Database = {
           description?: string | null
           icon?: string | null
           id?: string
+<<<<<<< HEAD
           is_active?: boolean | null
           name: string
           slug?: string
           sort_order?: number | null
+=======
+          is_active?: boolean
+          name: string
+          slug?: string | null
+          sort_order?: number
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           updated_at?: string
         }
         Update: {
@@ -499,14 +650,48 @@ export type Database = {
           description?: string | null
           icon?: string | null
           id?: string
+<<<<<<< HEAD
           is_active?: boolean | null
           name?: string
           slug?: string
           sort_order?: number | null
+=======
+          is_active?: boolean
+          name?: string
+          slug?: string | null
+          sort_order?: number
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           updated_at?: string
         }
         Relationships: []
       }
+<<<<<<< HEAD
+=======
+      chat_bans: {
+        Row: {
+          banned_by: string | null
+          created_at: string
+          id: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          banned_by?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          banned_by?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       chat_messages: {
         Row: {
           content: string
@@ -546,6 +731,7 @@ export type Database = {
         }
         Relationships: []
       }
+<<<<<<< HEAD
       chat_muted_users: {
         Row: {
           id: string
@@ -573,36 +759,51 @@ export type Database = {
         }
         Relationships: []
       }
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       child_website_products: {
         Row: {
           account_id: string | null
           created_at: string
           id: string
+<<<<<<< HEAD
           is_featured: boolean | null
           product_id: string | null
           sort_order: number | null
+=======
+          product_id: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           website_id: string
         }
         Insert: {
           account_id?: string | null
           created_at?: string
           id?: string
+<<<<<<< HEAD
           is_featured?: boolean | null
           product_id?: string | null
           sort_order?: number | null
+=======
+          product_id?: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           website_id: string
         }
         Update: {
           account_id?: string | null
           created_at?: string
           id?: string
+<<<<<<< HEAD
           is_featured?: boolean | null
           product_id?: string | null
           sort_order?: number | null
+=======
+          product_id?: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           website_id?: string
         }
         Relationships: [
           {
+<<<<<<< HEAD
             foreignKeyName: "child_website_products_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: false
@@ -624,6 +825,8 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
             foreignKeyName: "child_website_products_website_id_fkey"
             columns: ["website_id"]
             isOneToOne: false
@@ -640,6 +843,7 @@ export type Database = {
           bank_qr_url: string | null
           banner_url: string | null
           created_at: string
+<<<<<<< HEAD
           custom_domain: string | null
           description: string | null
           id: string
@@ -648,6 +852,16 @@ export type Database = {
           owner_id: string
           primary_color: string | null
           secondary_color: string | null
+=======
+          description: string | null
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          owner_id: string
+          primary_color: string
+          secondary_color: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           slug: string
           updated_at: string
         }
@@ -658,6 +872,7 @@ export type Database = {
           bank_qr_url?: string | null
           banner_url?: string | null
           created_at?: string
+<<<<<<< HEAD
           custom_domain?: string | null
           description?: string | null
           id?: string
@@ -666,6 +881,16 @@ export type Database = {
           owner_id: string
           primary_color?: string | null
           secondary_color?: string | null
+=======
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          owner_id: string
+          primary_color?: string
+          secondary_color?: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           slug: string
           updated_at?: string
         }
@@ -676,6 +901,7 @@ export type Database = {
           bank_qr_url?: string | null
           banner_url?: string | null
           created_at?: string
+<<<<<<< HEAD
           custom_domain?: string | null
           description?: string | null
           id?: string
@@ -684,6 +910,16 @@ export type Database = {
           owner_id?: string
           primary_color?: string | null
           secondary_color?: string | null
+=======
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          owner_id?: string
+          primary_color?: string
+          secondary_color?: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           slug?: string
           updated_at?: string
         }
@@ -727,7 +963,11 @@ export type Database = {
           approved_by: string | null
           created_at: string
           id: string
+<<<<<<< HEAD
           receipt_url: string | null
+=======
+          receipt_url: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           status: string
           updated_at: string
           user_id: string
@@ -739,7 +979,11 @@ export type Database = {
           approved_by?: string | null
           created_at?: string
           id?: string
+<<<<<<< HEAD
           receipt_url?: string | null
+=======
+          receipt_url: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           status?: string
           updated_at?: string
           user_id: string
@@ -751,7 +995,11 @@ export type Database = {
           approved_by?: string | null
           created_at?: string
           id?: string
+<<<<<<< HEAD
           receipt_url?: string | null
+=======
+          receipt_url?: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           status?: string
           updated_at?: string
           user_id?: string
@@ -761,6 +1009,7 @@ export type Database = {
       coin_transactions: {
         Row: {
           amount: number
+<<<<<<< HEAD
           approved_at: string | null
           approved_by: string | null
           created_at: string
@@ -770,11 +1019,18 @@ export type Database = {
           proof_image: string | null
           status: string
           transaction_code: string | null
+=======
+          created_at: string
+          description: string | null
+          id: string
+          reference_id: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           type: string
           user_id: string
         }
         Insert: {
           amount: number
+<<<<<<< HEAD
           approved_at?: string | null
           approved_by?: string | null
           created_at?: string
@@ -784,11 +1040,18 @@ export type Database = {
           proof_image?: string | null
           status?: string
           transaction_code?: string | null
+=======
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           type: string
           user_id: string
         }
         Update: {
           amount?: number
+<<<<<<< HEAD
           approved_at?: string | null
           approved_by?: string | null
           created_at?: string
@@ -798,6 +1061,12 @@ export type Database = {
           proof_image?: string | null
           status?: string
           transaction_code?: string | null
+=======
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           type?: string
           user_id?: string
         }
@@ -805,29 +1074,48 @@ export type Database = {
       }
       daily_action_progress: {
         Row: {
+<<<<<<< HEAD
           action_count: number | null
+=======
+          action_count: number
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           action_date: string
           action_type: string
           created_at: string
           id: string
+<<<<<<< HEAD
           updated_at: string
           user_id: string
         }
         Insert: {
           action_count?: number | null
+=======
+          user_id: string
+        }
+        Insert: {
+          action_count?: number
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           action_date?: string
           action_type: string
           created_at?: string
           id?: string
+<<<<<<< HEAD
           updated_at?: string
           user_id: string
         }
         Update: {
           action_count?: number | null
+=======
+          user_id: string
+        }
+        Update: {
+          action_count?: number
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           action_date?: string
           action_type?: string
           created_at?: string
           id?: string
+<<<<<<< HEAD
           updated_at?: string
           user_id?: string
         }
@@ -856,19 +1144,26 @@ export type Database = {
           created_at?: string
           id?: string
           streak?: number
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           user_id?: string
         }
         Relationships: []
       }
       daily_tasks: {
         Row: {
+<<<<<<< HEAD
           action_type: string | null
+=======
+          action_type: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           action_url: string | null
           coin_reward: number
           created_at: string
           description: string | null
           icon: string | null
           id: string
+<<<<<<< HEAD
           is_active: boolean | null
           required_count: number | null
           sort_order: number | null
@@ -879,12 +1174,24 @@ export type Database = {
         }
         Insert: {
           action_type?: string | null
+=======
+          is_active: boolean
+          required_count: number
+          sort_order: number
+          task_type: string
+          title: string
+          tracked_action: string | null
+        }
+        Insert: {
+          action_type: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           action_url?: string | null
           coin_reward?: number
           created_at?: string
           description?: string | null
           icon?: string | null
           id?: string
+<<<<<<< HEAD
           is_active?: boolean | null
           required_count?: number | null
           sort_order?: number | null
@@ -895,12 +1202,24 @@ export type Database = {
         }
         Update: {
           action_type?: string | null
+=======
+          is_active?: boolean
+          required_count?: number
+          sort_order?: number
+          task_type?: string
+          title: string
+          tracked_action?: string | null
+        }
+        Update: {
+          action_type?: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           action_url?: string | null
           coin_reward?: number
           created_at?: string
           description?: string | null
           icon?: string | null
           id?: string
+<<<<<<< HEAD
           is_active?: boolean | null
           required_count?: number | null
           sort_order?: number | null
@@ -941,11 +1260,20 @@ export type Database = {
           registered_at?: string
           user_agent?: string | null
           user_id?: string
+=======
+          is_active?: boolean
+          required_count?: number
+          sort_order?: number
+          task_type?: string
+          title?: string
+          tracked_action?: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         }
         Relationships: []
       }
       discount_code_uses: {
         Row: {
+<<<<<<< HEAD
           code_id: string
           id: string
           order_id: string | null
@@ -964,6 +1292,29 @@ export type Database = {
           id?: string
           order_id?: string | null
           used_at?: string
+=======
+          code_id: string | null
+          created_at: string
+          discount_code_id: string
+          id: string
+          order_id: string | null
+          user_id: string
+        }
+        Insert: {
+          code_id?: string | null
+          created_at?: string
+          discount_code_id: string
+          id?: string
+          order_id?: string | null
+          user_id: string
+        }
+        Update: {
+          code_id?: string | null
+          created_at?: string
+          discount_code_id?: string
+          id?: string
+          order_id?: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           user_id?: string
         }
         Relationships: [
@@ -975,10 +1326,17 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+<<<<<<< HEAD
             foreignKeyName: "discount_code_uses_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+=======
+            foreignKeyName: "discount_code_uses_discount_code_id_fkey"
+            columns: ["discount_code_id"]
+            isOneToOne: false
+            referencedRelation: "discount_codes"
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
             referencedColumns: ["id"]
           },
         ]
@@ -995,7 +1353,10 @@ export type Database = {
           is_active: boolean
           max_uses: number | null
           min_order_amount: number | null
+<<<<<<< HEAD
           target_user_id: string | null
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           updated_at: string
           used_count: number
         }
@@ -1010,7 +1371,10 @@ export type Database = {
           is_active?: boolean
           max_uses?: number | null
           min_order_amount?: number | null
+<<<<<<< HEAD
           target_user_id?: string | null
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           updated_at?: string
           used_count?: number
         }
@@ -1025,7 +1389,10 @@ export type Database = {
           is_active?: boolean
           max_uses?: number | null
           min_order_amount?: number | null
+<<<<<<< HEAD
           target_user_id?: string | null
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           updated_at?: string
           used_count?: number
         }
@@ -1033,6 +1400,7 @@ export type Database = {
       }
       free_resources: {
         Row: {
+<<<<<<< HEAD
           account_email: string | null
           account_name: string | null
           account_password: string | null
@@ -1085,6 +1453,54 @@ export type Database = {
           is_active?: boolean | null
           title?: string
           type?: string
+=======
+          category: string | null
+          claim_limit: number | null
+          claimed_count: number
+          content: string | null
+          created_at: string
+          description: string | null
+          download_url: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          max_claims: number | null
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          claim_limit?: number | null
+          claimed_count?: number
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          download_url?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          max_claims?: number | null
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          claim_limit?: number | null
+          claimed_count?: number
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          download_url?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          max_claims?: number | null
+          title?: string
+          type?: string
+          updated_at?: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         }
         Relationships: []
       }
@@ -1115,6 +1531,7 @@ export type Database = {
         }
         Relationships: []
       }
+<<<<<<< HEAD
       keys: {
         Row: {
           buyer_id: string | null
@@ -1187,6 +1604,8 @@ export type Database = {
           },
         ]
       }
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       notifications: {
         Row: {
           created_at: string
@@ -1226,6 +1645,7 @@ export type Database = {
           amount: number
           approved_at: string | null
           approved_by: string | null
+<<<<<<< HEAD
           buyer_email: string | null
           buyer_id: string
           created_at: string
@@ -1256,12 +1676,39 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string | null
+=======
+          buyer_id: string | null
+          created_at: string
+          id: string
+          login_credentials: Json | null
+          payment_note: string | null
+          product_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          buyer_id?: string | null
+          created_at?: string
+          id?: string
+          login_credentials?: Json | null
+          payment_note?: string | null
+          product_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         }
         Update: {
           account_id?: string | null
           amount?: number
           approved_at?: string | null
           approved_by?: string | null
+<<<<<<< HEAD
           buyer_email?: string | null
           buyer_id?: string
           created_at?: string
@@ -1274,6 +1721,17 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string | null
+=======
+          buyer_id?: string | null
+          created_at?: string
+          id?: string
+          login_credentials?: Json | null
+          payment_note?: string | null
+          product_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         }
         Relationships: [
           {
@@ -1297,6 +1755,7 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+<<<<<<< HEAD
           {
             foreignKeyName: "orders_seller_id_fkey"
             columns: ["seller_id"]
@@ -1311,29 +1770,49 @@ export type Database = {
             referencedRelation: "sellers_public"
             referencedColumns: ["id"]
           },
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         ]
       }
       otp_codes: {
         Row: {
+<<<<<<< HEAD
           attempts: number | null
           code: string
           created_at: string | null
+=======
+          attempts: number
+          code: string
+          created_at: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           email: string
           expires_at: string
           id: string
         }
         Insert: {
+<<<<<<< HEAD
           attempts?: number | null
           code: string
           created_at?: string | null
+=======
+          attempts?: number
+          code: string
+          created_at?: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           email: string
           expires_at: string
           id?: string
         }
         Update: {
+<<<<<<< HEAD
           attempts?: number | null
           code?: string
           created_at?: string | null
+=======
+          attempts?: number
+          code?: string
+          created_at?: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           email?: string
           expires_at?: string
           id?: string
@@ -1345,7 +1824,10 @@ export type Database = {
           content: string
           created_at: string
           id: string
+<<<<<<< HEAD
           is_deleted: boolean
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           post_id: string
           user_id: string
         }
@@ -1353,7 +1835,10 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+<<<<<<< HEAD
           is_deleted?: boolean
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           post_id: string
           user_id: string
         }
@@ -1361,7 +1846,10 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+<<<<<<< HEAD
           is_deleted?: boolean
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           post_id?: string
           user_id?: string
         }
@@ -1478,9 +1966,13 @@ export type Database = {
       }
       products: {
         Row: {
+<<<<<<< HEAD
           badge: string | null
           category: string
           category_id: string | null
+=======
+          category: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           created_at: string
           created_by: string | null
           description: string | null
@@ -1488,21 +1980,32 @@ export type Database = {
           icon: string | null
           id: string
           image_url: string | null
+<<<<<<< HEAD
           is_active: boolean | null
           is_free: boolean | null
           original_price: number | null
           price: number
           rating: number | null
           sales: number | null
+=======
+          is_active: boolean
+          is_free: boolean
+          original_price: number | null
+          price: number
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           seller_id: string | null
           tech_stack: string[] | null
           title: string
           updated_at: string
         }
         Insert: {
+<<<<<<< HEAD
           badge?: string | null
           category?: string
           category_id?: string | null
+=======
+          category?: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -1510,21 +2013,32 @@ export type Database = {
           icon?: string | null
           id?: string
           image_url?: string | null
+<<<<<<< HEAD
           is_active?: boolean | null
           is_free?: boolean | null
           original_price?: number | null
           price?: number
           rating?: number | null
           sales?: number | null
+=======
+          is_active?: boolean
+          is_free?: boolean
+          original_price?: number | null
+          price?: number
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           seller_id?: string | null
           tech_stack?: string[] | null
           title: string
           updated_at?: string
         }
         Update: {
+<<<<<<< HEAD
           badge?: string | null
           category?: string
           category_id?: string | null
+=======
+          category?: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -1532,12 +2046,19 @@ export type Database = {
           icon?: string | null
           id?: string
           image_url?: string | null
+<<<<<<< HEAD
           is_active?: boolean | null
           is_free?: boolean | null
           original_price?: number | null
           price?: number
           rating?: number | null
           sales?: number | null
+=======
+          is_active?: boolean
+          is_free?: boolean
+          original_price?: number | null
+          price?: number
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           seller_id?: string | null
           tech_stack?: string[] | null
           title?: string
@@ -1545,6 +2066,7 @@ export type Database = {
         }
         Relationships: [
           {
+<<<<<<< HEAD
             foreignKeyName: "products_category_id_fkey"
             columns: ["category_id"]
             isOneToOne: false
@@ -1552,6 +2074,8 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
             foreignKeyName: "products_seller_id_fkey"
             columns: ["seller_id"]
             isOneToOne: false
@@ -1575,7 +2099,10 @@ export type Database = {
           id: string
           phone: string | null
           referral_code: string | null
+<<<<<<< HEAD
           updated_at: string
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           user_id: string
         }
         Insert: {
@@ -1585,7 +2112,10 @@ export type Database = {
           id?: string
           phone?: string | null
           referral_code?: string | null
+<<<<<<< HEAD
           updated_at?: string
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           user_id: string
         }
         Update: {
@@ -1595,11 +2125,15 @@ export type Database = {
           id?: string
           phone?: string | null
           referral_code?: string | null
+<<<<<<< HEAD
           updated_at?: string
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           user_id?: string
         }
         Relationships: []
       }
+<<<<<<< HEAD
       qr_login_sessions: {
         Row: {
           confirmed_at: string | null
@@ -1639,26 +2173,48 @@ export type Database = {
           created_at: string
           id: string
           is_rewarded: boolean | null
+=======
+      referrals: {
+        Row: {
+          coins_rewarded: number
+          created_at: string
+          id: string
+          is_rewarded: boolean
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           referral_code: string
           referred_id: string
           referrer_id: string
           rewarded_at: string | null
         }
         Insert: {
+<<<<<<< HEAD
           coins_rewarded?: number | null
           created_at?: string
           id?: string
           is_rewarded?: boolean | null
+=======
+          coins_rewarded?: number
+          created_at?: string
+          id?: string
+          is_rewarded?: boolean
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           referral_code: string
           referred_id: string
           referrer_id: string
           rewarded_at?: string | null
         }
         Update: {
+<<<<<<< HEAD
           coins_rewarded?: number | null
           created_at?: string
           id?: string
           is_rewarded?: boolean | null
+=======
+          coins_rewarded?: number
+          created_at?: string
+          id?: string
+          is_rewarded?: boolean
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           referral_code?: string
           referred_id?: string
           referrer_id?: string
@@ -1668,19 +2224,31 @@ export type Database = {
       }
       resource_claims: {
         Row: {
+<<<<<<< HEAD
           claimed_at: string
+=======
+          created_at: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           id: string
           resource_id: string
           user_id: string
         }
         Insert: {
+<<<<<<< HEAD
           claimed_at?: string
+=======
+          created_at?: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           id?: string
           resource_id: string
           user_id: string
         }
         Update: {
+<<<<<<< HEAD
           claimed_at?: string
+=======
+          created_at?: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           id?: string
           resource_id?: string
           user_id?: string
@@ -1698,12 +2266,23 @@ export type Database = {
       scam_reports: {
         Row: {
           created_at: string
+<<<<<<< HEAD
           created_by: string | null
           description: string
           evidence_urls: string[] | null
           id: string
           image_url: string | null
           scammer_contact: string | null
+=======
+          description: string
+          evidence_url: string | null
+          evidence_urls: string[] | null
+          id: string
+          image_url: string | null
+          reported_by: string | null
+          scammer_contact: string | null
+          scammer_info: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           scammer_name: string | null
           severity: string
           status: string
@@ -1712,12 +2291,23 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+<<<<<<< HEAD
           created_by?: string | null
           description: string
           evidence_urls?: string[] | null
           id?: string
           image_url?: string | null
           scammer_contact?: string | null
+=======
+          description: string
+          evidence_url?: string | null
+          evidence_urls?: string[] | null
+          id?: string
+          image_url?: string | null
+          reported_by?: string | null
+          scammer_contact?: string | null
+          scammer_info?: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           scammer_name?: string | null
           severity?: string
           status?: string
@@ -1726,12 +2316,23 @@ export type Database = {
         }
         Update: {
           created_at?: string
+<<<<<<< HEAD
           created_by?: string | null
           description?: string
           evidence_urls?: string[] | null
           id?: string
           image_url?: string | null
           scammer_contact?: string | null
+=======
+          description?: string
+          evidence_url?: string | null
+          evidence_urls?: string[] | null
+          id?: string
+          image_url?: string | null
+          reported_by?: string | null
+          scammer_contact?: string | null
+          scammer_info?: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           scammer_name?: string | null
           severity?: string
           status?: string
@@ -1746,7 +2347,11 @@ export type Database = {
           created_at: string
           id: string
           seller_id: string
+<<<<<<< HEAD
           total_earned: number | null
+=======
+          total_earned: number
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           updated_at: string
         }
         Insert: {
@@ -1754,7 +2359,11 @@ export type Database = {
           created_at?: string
           id?: string
           seller_id: string
+<<<<<<< HEAD
           total_earned?: number | null
+=======
+          total_earned?: number
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           updated_at?: string
         }
         Update: {
@@ -1762,7 +2371,11 @@ export type Database = {
           created_at?: string
           id?: string
           seller_id?: string
+<<<<<<< HEAD
           total_earned?: number | null
+=======
+          total_earned?: number
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           updated_at?: string
         }
         Relationships: [
@@ -1782,6 +2395,7 @@ export type Database = {
           },
         ]
       }
+<<<<<<< HEAD
       seller_requests: {
         Row: {
           created_at: string
@@ -1821,6 +2435,8 @@ export type Database = {
         }
         Relationships: []
       }
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       sellers: {
         Row: {
           avatar_url: string | null
@@ -1829,11 +2445,17 @@ export type Database = {
           bank_name: string | null
           bank_qr_url: string | null
           created_at: string
+<<<<<<< HEAD
           description: string | null
           display_name: string
           id: string
           is_profile_complete: boolean
           is_verified: boolean
+=======
+          display_name: string
+          id: string
+          is_profile_complete: boolean
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           phone: string | null
           updated_at: string
           user_id: string
@@ -1845,11 +2467,17 @@ export type Database = {
           bank_name?: string | null
           bank_qr_url?: string | null
           created_at?: string
+<<<<<<< HEAD
           description?: string | null
           display_name: string
           id?: string
           is_profile_complete?: boolean
           is_verified?: boolean
+=======
+          display_name: string
+          id?: string
+          is_profile_complete?: boolean
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           phone?: string | null
           updated_at?: string
           user_id: string
@@ -1861,11 +2489,17 @@ export type Database = {
           bank_name?: string | null
           bank_qr_url?: string | null
           created_at?: string
+<<<<<<< HEAD
           description?: string | null
           display_name?: string
           id?: string
           is_profile_complete?: boolean
           is_verified?: boolean
+=======
+          display_name?: string
+          id?: string
+          is_profile_complete?: boolean
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           phone?: string | null
           updated_at?: string
           user_id?: string
@@ -1896,6 +2530,7 @@ export type Database = {
         }
         Relationships: []
       }
+<<<<<<< HEAD
       social_accounts: {
         Row: {
           account_type: string
@@ -1941,6 +2576,8 @@ export type Database = {
         }
         Relationships: []
       }
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       task_completions: {
         Row: {
           coins_earned: number
@@ -2002,6 +2639,7 @@ export type Database = {
       }
       user_onboarding: {
         Row: {
+<<<<<<< HEAD
           completed_at: string | null
           created_at: string
           id: string
@@ -2020,6 +2658,23 @@ export type Database = {
           created_at?: string
           id?: string
           skipped?: boolean
+=======
+          completed: boolean
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          id?: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           user_id?: string
         }
         Relationships: []
@@ -2028,26 +2683,36 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+<<<<<<< HEAD
           protected: boolean | null
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+<<<<<<< HEAD
           protected?: boolean | null
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           role?: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+<<<<<<< HEAD
           protected?: boolean | null
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
         Relationships: []
       }
+<<<<<<< HEAD
       user_sessions: {
         Row: {
           browser: string | null
@@ -2165,6 +2830,8 @@ export type Database = {
         }
         Relationships: []
       }
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       withdrawal_requests: {
         Row: {
           admin_note: string | null
@@ -2176,9 +2843,15 @@ export type Database = {
           created_at: string
           id: string
           processed_at: string | null
+<<<<<<< HEAD
           processed_by: string | null
           seller_id: string
           status: string
+=======
+          seller_id: string
+          status: string
+          updated_at: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         }
         Insert: {
           admin_note?: string | null
@@ -2190,9 +2863,15 @@ export type Database = {
           created_at?: string
           id?: string
           processed_at?: string | null
+<<<<<<< HEAD
           processed_by?: string | null
           seller_id: string
           status?: string
+=======
+          seller_id: string
+          status?: string
+          updated_at?: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         }
         Update: {
           admin_note?: string | null
@@ -2204,9 +2883,15 @@ export type Database = {
           created_at?: string
           id?: string
           processed_at?: string | null
+<<<<<<< HEAD
           processed_by?: string | null
           seller_id?: string
           status?: string
+=======
+          seller_id?: string
+          status?: string
+          updated_at?: string
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         }
         Relationships: [
           {
@@ -2230,6 +2915,7 @@ export type Database = {
           created_at: string
           description: string | null
           duration: string | null
+<<<<<<< HEAD
           features: string[] | null
           icon: string | null
           id: string
@@ -2237,6 +2923,16 @@ export type Database = {
           name: string
           price: number
           sort_order: number | null
+=======
+          duration_days: number
+          features: string[] | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          sort_order: number
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           updated_at: string
           zalo_number: string | null
         }
@@ -2244,6 +2940,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration?: string | null
+<<<<<<< HEAD
           features?: string[] | null
           icon?: string | null
           id?: string
@@ -2251,6 +2948,16 @@ export type Database = {
           name: string
           price?: number
           sort_order?: number | null
+=======
+          duration_days?: number
+          features?: string[] | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          price?: number
+          sort_order?: number
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           updated_at?: string
           zalo_number?: string | null
         }
@@ -2258,6 +2965,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration?: string | null
+<<<<<<< HEAD
           features?: string[] | null
           icon?: string | null
           id?: string
@@ -2265,6 +2973,16 @@ export type Database = {
           name?: string
           price?: number
           sort_order?: number | null
+=======
+          duration_days?: number
+          features?: string[] | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          sort_order?: number
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           updated_at?: string
           zalo_number?: string | null
         }
@@ -2279,21 +2997,37 @@ export type Database = {
           created_at: string | null
           description: string | null
           features: string[] | null
+<<<<<<< HEAD
+=======
+          icon: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
           id: string | null
           image_url: string | null
           is_active: boolean | null
           is_free: boolean | null
           is_sold: boolean | null
+<<<<<<< HEAD
           platform: string | null
           price: number | null
           seller_id: string | null
           title: string | null
+=======
+          original_price: number | null
+          platform: string | null
+          price: number | null
+          seller_id: string | null
+          sold_at: string | null
+          sold_to: string | null
+          title: string | null
+          updated_at: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         }
         Insert: {
           account_type?: string | null
           category?: string | null
           created_at?: string | null
           description?: string | null
+<<<<<<< HEAD
           features?: string[] | null
           id?: string | null
           image_url?: string | null
@@ -2304,12 +3038,30 @@ export type Database = {
           price?: number | null
           seller_id?: string | null
           title?: string | null
+=======
+          features?: never
+          icon?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: never
+          is_free?: boolean | null
+          is_sold?: boolean | null
+          original_price?: number | null
+          platform?: string | null
+          price?: number | null
+          seller_id?: string | null
+          sold_at?: string | null
+          sold_to?: string | null
+          title?: string | null
+          updated_at?: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         }
         Update: {
           account_type?: string | null
           category?: string | null
           created_at?: string | null
           description?: string | null
+<<<<<<< HEAD
           features?: string[] | null
           id?: string | null
           image_url?: string | null
@@ -2320,6 +3072,23 @@ export type Database = {
           price?: number | null
           seller_id?: string | null
           title?: string | null
+=======
+          features?: never
+          icon?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: never
+          is_free?: boolean | null
+          is_sold?: boolean | null
+          original_price?: number | null
+          platform?: string | null
+          price?: number | null
+          seller_id?: string | null
+          sold_at?: string | null
+          sold_to?: string | null
+          title?: string | null
+          updated_at?: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         }
         Relationships: [
           {
@@ -2338,6 +3107,7 @@ export type Database = {
           },
         ]
       }
+<<<<<<< HEAD
       keys_public: {
         Row: {
           category: string | null
@@ -2437,11 +3207,56 @@ export type Database = {
           display_name?: string | null
           id?: string | null
           is_verified?: boolean | null
+=======
+      sellers_public: {
+        Row: {
+          avatar_url: string | null
+          bank_account_name: string | null
+          bank_account_number: string | null
+          bank_name: string | null
+          bank_qr_url: string | null
+          created_at: string | null
+          display_name: string | null
+          id: string | null
+          is_profile_complete: boolean | null
+          phone: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
+          bank_qr_url?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string | null
+          is_profile_complete?: boolean | null
+          phone?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
+          bank_qr_url?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string | null
+          is_profile_complete?: boolean | null
+          phone?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
         }
         Relationships: []
       }
     }
     Functions: {
+<<<<<<< HEAD
       check_device_count: { Args: { p_fingerprint: string }; Returns: number }
       get_public_seller_info: {
         Args: { p_seller_id: string }
@@ -2453,6 +3268,8 @@ export type Database = {
           is_verified: boolean
         }[]
       }
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2460,11 +3277,17 @@ export type Database = {
         }
         Returns: boolean
       }
+<<<<<<< HEAD
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       reset_api_daily_counts: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "seller" | "user"
+=======
+    }
+    Enums: {
+      app_role: "admin" | "user"
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2592,7 +3415,11 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+<<<<<<< HEAD
       app_role: ["admin", "seller", "user"],
+=======
+      app_role: ["admin", "user"],
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
     },
   },
 } as const

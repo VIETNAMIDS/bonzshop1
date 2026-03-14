@@ -1,5 +1,8 @@
 import { useEffect, useState, useCallback, lazy, Suspense } from 'react';
+<<<<<<< HEAD
 import { SEOHead, buildFAQSchema } from '@/components/seo/SEOHead';
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Footer } from '@/components/Footer';
 import { Search, Filter, Sparkles, ShoppingCart, QrCode, CheckCircle, Loader2, Clock, XCircle, Download, TrendingUp, Users, Package, Star, ArrowRight, Zap, Shield, Rocket } from 'lucide-react';
@@ -25,7 +28,10 @@ import { toast } from 'sonner';
 import bonzshopLogo from '@/assets/bonzshop-logo.png';
 import { ScrollReveal, StaggerContainer, StaggerItem, CountUp, FloatingElement } from '@/components/motion';
 import { AdvancedSearch } from '@/components/search/AdvancedSearch';
+<<<<<<< HEAD
 import { FloatingBotButton } from '@/components/chat/FloatingBotButton';
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
 // 3D components disabled due to React duplicate instance issue with @react-three/fiber
 
@@ -363,6 +369,7 @@ export default function Index() {
 
   if (!user) return null;
 
+<<<<<<< HEAD
   const homeFaqs = buildFAQSchema([
     { question: 'BonzShop là gì?', answer: 'BonzShop là nền tảng mua bán tài khoản, key bản quyền, source code uy tín hàng đầu Việt Nam.' },
     { question: 'Làm sao để mua tài khoản trên BonzShop?', answer: 'Đăng ký tài khoản, nạp xu và chọn sản phẩm bạn muốn mua. Giao dịch tự động, nhận hàng ngay.' },
@@ -378,6 +385,10 @@ export default function Index() {
         canonicalPath="/"
         structuredData={homeFaqs}
       />
+=======
+  return (
+    <div className="min-h-screen bg-background">
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       <Navbar />
       <div className={cn("transition-all duration-300", !isMobile && "ml-60")}>
 
@@ -811,7 +822,10 @@ export default function Index() {
 
       {/* Footer */}
       <Footer />
+<<<<<<< HEAD
       <FloatingBotButton />
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       </div>
     </div>
   );

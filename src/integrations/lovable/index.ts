@@ -2,6 +2,10 @@
 
 import { createLovableAuth } from "@lovable.dev/cloud-auth-js";
 import { supabase } from "../supabase/client";
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 const lovableAuth = createLovableAuth({});
 
 type SignInOptions = {

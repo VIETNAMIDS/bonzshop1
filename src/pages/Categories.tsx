@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
+<<<<<<< HEAD
 import { SEOHead, buildBreadcrumbSchema } from '@/components/seo/SEOHead';
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Navbar } from '@/components/Navbar';
@@ -73,6 +76,7 @@ export default function Categories() {
 
   return (
     <div className="min-h-screen bg-background">
+<<<<<<< HEAD
       <SEOHead
         title="Danh Mục Sản Phẩm"
         description="Khám phá danh mục sản phẩm tại BonzShop: tài khoản game, key bản quyền, source code, templates và nhiều hơn nữa."
@@ -83,6 +87,8 @@ export default function Categories() {
           { name: 'Danh mục', url: '/categories' },
         ])}
       />
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       <Navbar />
       <PageWrapper>
       <main className="container mx-auto px-4 py-8">

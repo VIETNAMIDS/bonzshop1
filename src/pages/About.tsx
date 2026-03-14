@@ -1,14 +1,22 @@
 import { Navbar } from "@/components/Navbar";
 import { AboutSection } from "@/components/home/AboutSection";
+<<<<<<< HEAD
+=======
+import { HeroSection } from "@/components/home/HeroSection";
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Mail, Phone, MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
+<<<<<<< HEAD
 import { SEOHead, buildBreadcrumbSchema, buildFAQSchema } from '@/components/seo/SEOHead';
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
 
 export default function About() {
   return (
     <div className="min-h-screen bg-background">
+<<<<<<< HEAD
       <SEOHead
         title="Về BonzShop"
         description="Tìm hiểu về BonzShop - nền tảng mua bán tài khoản, key bản quyền, source code uy tín hàng đầu Việt Nam."
@@ -19,6 +27,8 @@ export default function About() {
           { question: 'Làm sao để liên hệ BonzShop?', answer: 'Bạn có thể liên hệ qua email support@bonzshop.com hoặc chat trực tiếp trên website.' },
         ])}
       />
+=======
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       <Navbar />
 
       {/* Hero */}

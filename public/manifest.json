@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "name": "BonzShop - Marketplace Tài Khoản & Source Code",
+=======
+  "name": "BonzShop - Marketplace",
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
   "short_name": "BonzShop",
   "description": "Marketplace Source Code & Tài Khoản #1 Việt Nam",
   "start_url": "/",
@@ -7,6 +11,7 @@
   "background_color": "#0a0a0a",
   "theme_color": "#8b5cf6",
   "orientation": "portrait-primary",
+<<<<<<< HEAD
   "scope": "/",
   "icons": [
     {
@@ -28,14 +33,23 @@
       "purpose": "any"
     },
     {
+=======
+  "icons": [
+    {
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
       "src": "/favicon.ico",
       "sizes": "64x64",
       "type": "image/x-icon"
     }
   ],
+<<<<<<< HEAD
   "screenshots": [],
   "categories": ["shopping", "business"],
   "lang": "vi",
   "dir": "ltr",
   "prefer_related_applications": false
 }
+=======
+  "categories": ["shopping", "business"]
+}
+>>>>>>> 9cd903c3ca04fa175ffba717c8f15f218c9091af
