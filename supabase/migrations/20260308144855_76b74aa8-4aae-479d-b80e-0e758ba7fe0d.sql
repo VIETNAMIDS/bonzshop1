@@ -1,0 +1,1 @@
+DELETE FROM banned_users WHERE user_id = 'cb36ab29-ee7d-4031-81ff-e6e02c936d53';

@@ -1,0 +1,954 @@
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+ 
+import { Navbar } from '@/components/Navbar';
+import { PageWrapper } from '@/components/layout/PageWrapper';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { Send, Image as ImageIcon, AlertTriangle, Loader2, X, Ban, Shield, Bot, Pin, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChatMessage } from '@/components/chat/ChatMessage';
+import { EmojiPicker } from '@/components/chat/EmojiPicker';
+import { FriendsList } from '@/components/chat/FriendsList';
+import { PrivateChat } from '@/components/chat/PrivateChat';
+import { BotChat } from '@/components/chat/BotChat';
+
+interface ChatMessageData {
+  id: string;
+  user_id: string;
+  content: string;
+  image_url: string | null;
+  file_url: string | null;
+  file_name: string | null;
+  created_at: string;
+  is_deleted: boolean;
+  is_recalled?: boolean;
+  gradient_color?: string | null;
+  profile?: {
+    display_name: string | null;
+    avatar_url: string | null;
+    user_id?: string;
+  };
+}
+
+// Content moderation - check message text for violations
+function checkMessageContent(message: string): string | null {
+  if (!message || message.trim().length === 0) return null;
+  if (/\b(sex|porn|xxx|nude|nud[eê]|kh[iỉ]êu\s*d[aâ]m|d[aâ]m\s*d[uụ]c|th[uủ]\s*d[aâ]m|l[oồ]n|c[aặ]c|đ[iị]t|đ[uụ]|ch[iị]ch|s[uứ]c\s*v[aậ]t|lo[aạ]n\s*lu[aâ]n|h[ií]p\s*d[aâ]m|onlyfan|nsfw|h[eề]ntai|javhd|jav)\b/gi.test(message)) return "nội dung 18+";
+  if (/\b(gi[eế]t\s*ng[uư][oờ]i|m[aạ]i\s*d[aâ]m|ma\s*t[uú]y|c[aầ]n\s*sa|thu[oố]c\s*l[aắ]c|heroin|cocaine|ketamine|ecstasy)\b/gi.test(message)) return "bạo lực/ma túy";
+  if (/\b(hack|ddos|dos|c[aạ]rd|carding|scam|l[uừ]a\s*đ[aả]o|phish|keylog|trojan|malware|ransomware|brute\s*force|exploit|inject|bypass|crack|ch[eế]at|b[oẻ]\s*kh[oó]a|fake\s*login|rat\s*tool)\b/gi.test(message)) return "hack/lừa đảo";
+  if (/(.)\1{10,}/gi.test(message)) return "spam";
+  return null;
+}
+
+// Image moderation using AI vision
+async function moderateImage(file: File): Promise<boolean> {
+  try {
+    const base64 = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (!token) return true;
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-bot`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ action: 'moderate_image', image_base64: base64 }),
+      }
+    );
+    if (!response.ok) return true;
+    const data = await response.json();
+    return data.safe !== false;
+  } catch {
+    return true;
+  }
+}
+
+function PinnedAnnouncement() {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="border-b border-amber-500/20 bg-gradient-to-r from-amber-500/10 via-yellow-500/5 to-amber-500/10">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full p-3 flex items-center gap-2 text-left hover:bg-amber-500/5 transition-colors"
+      >
+        <Pin className="h-4 w-4 text-amber-500 shrink-0" />
+        <span className="text-sm font-bold text-amber-400 truncate">
+          📌 💎🔥 BẢNG DỊCH VỤ VIP – SIÊU RẺ – UY TÍN 🔥💎
+        </span>
+        {expanded ? (
+          <ChevronUp className="h-4 w-4 text-amber-500 shrink-0 ml-auto" />
+        ) : (
+          <ChevronDown className="h-4 w-4 text-amber-500 shrink-0 ml-auto" />
+        )}
+      </button>
+      {expanded && (
+        <div className="px-4 pb-4 text-sm text-foreground/90 space-y-3 max-h-[400px] overflow-y-auto">
+          <p className="text-muted-foreground">
+            Link Web Shop: <a href="https://bonzshop.site/" target="_blank" rel="noopener" className="text-primary underline">bonzshop.site</a>
+            {' | '}
+            <a href="https://zalo.me/g/urdqse600" target="_blank" rel="noopener" className="text-primary underline">Nhóm Zalo 1</a>
+            {' | '}
+            <a href="https://zalo.me/g/chpafn970" target="_blank" rel="noopener" className="text-primary underline">Nhóm Zalo 2</a>
+            {' | '}
+            <a href="https://zalo.me/g/lqsosk574" target="_blank" rel="noopener" className="text-primary underline">Nhóm Zalo 3</a>
+          </p>
+
+          <div>
+            <p className="font-bold text-amber-400">🤖 I. DỊCH VỤ BOT ZALO – FACEBOOK</p>
+            <p>• Bot nhiều chức năng VIP: <b>100K</b></p>
+            <p>• Bot Zalo ngẫu nhiên: <b>50K</b></p>
+            <p>• Thuê Bot: 1 tháng <b>30K</b> | 2 tháng <b>60K</b> | 3 tháng <b>90K</b></p>
+            <p>• Thuê Group Zalo: 200TV <b>20K/ngày</b> | 300TV <b>30K</b> | 500TV <b>45K</b> | 600TV <b>60K</b> | 1000TV <b>100K</b></p>
+            <p>• Xác thực Zalo: <b>100K/tài khoản</b></p>
+          </div>
+
+          <div>
+            <p className="font-bold text-amber-400">👥 II. BÁN GROUP & CỘNG ĐỒNG</p>
+            <p>• 200TV <b>50K</b> | 400TV <b>100K</b> | 600TV <b>200K</b> | 800TV <b>250K</b></p>
+            <p>• Group Mem Ảo: <b>10K - 40K</b> (Có bảo hành)</p>
+          </div>
+
+          <div>
+            <p className="font-bold text-amber-400">💖 III. BUFF MXH</p>
+            <p>• Buff tim, View, Yêu thích, Share, Mắt live — Chỉ từ <b>5K</b></p>
+          </div>
+
+          <div>
+            <p className="font-bold text-amber-400">🚀 IV. PR BẰNG BOT (600+ nhóm Zalo)</p>
+            <p>• 1 ngày <b>10K</b> | 7 ngày <b>70K</b> (tặng 1 ngày) | 30 ngày <b>250K</b></p>
+          </div>
+
+          <div>
+            <p className="font-bold text-amber-400">🌐 V. LÀM WEB</p>
+            <p>• Giá từ <b>300K</b> — Web cá nhân, Landing page, Bán hàng, Mini game...</p>
+          </div>
+
+          <div>
+            <p className="font-bold text-amber-400">💻 VI. TOOL, TÀI KHOẢN & SIM</p>
+            <p>• Tool buff MXH, Tool spam, Tool quản lý tiện ích</p>
+            <p>• Tài khoản Zalo mới <b>50K</b> | Zalo Trust <b>100K</b> | Sim <b>50K</b></p>
+            <p>• ChatGPT Plus/Pro, Canva Pro, Windsurf, Cursor — Dưới <b>100K</b></p>
+            <p>• Kho tài liệu THCS – THPT vô hạn</p>
+          </div>
+
+          <div>
+            <p className="font-bold text-amber-400">🏖️ VII. VILLA VŨNG TÀU VIEW BIỂN</p>
+            <p>• Gói cơ bản từ <b>1.000.000đ</b> | VIP giảm sâu | Luxury <b>10.000.000đ</b></p>
+          </div>
+
+          <div>
+            <p className="font-bold text-amber-400">🔥 VIII. VPS SIÊU TIẾT KIỆM</p>
+            <p>• 1CPU/1GB RAM <b>50K/tháng</b> | 1CPU/2GB <b>70K</b> | 2CPU/4GB <b>120K</b></p>
+          </div>
+
+          <p className="text-center font-bold text-amber-400 pt-2 border-t border-amber-500/20">
+            ☎️ Zalo/Hotline: <span className="text-primary">0785.000.270</span>
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function Chat() {
+  const navigate = useNavigate();
+  const { user, isLoading: authLoading } = useAuth();
+  const { toast } = useToast();
+   
+  const [messages, setMessages] = useState<ChatMessageData[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [botThinking, setBotThinking] = useState(false);
+  const [isBanned, setIsBanned] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [mutedUserIds, setMutedUserIds] = useState<Set<string>>(new Set());
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set());
+  const [adminId, setAdminId] = useState<string | null>(null);
+  
+  // Private chat state
+  const [privateChatOpen, setPrivateChatOpen] = useState(false);
+  const [privateChatReceiver, setPrivateChatReceiver] = useState<{
+    id: string;
+    name: string;
+    avatar?: string;
+  } | null>(null);
+  const [botChatOpen, setBotChatOpen] = useState(false);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    if (user) {
+      checkBanStatus();
+      checkAdminStatus();
+      fetchMessages();
+      fetchAdminId();
+      fetchMutedUsers();
+      const unsubscribe = subscribeToMessages();
+      return unsubscribe;
+    }
+  }, [user]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const checkBanStatus = async () => {
+    if (!user) return;
+    const { data: banData } = await supabase
+      .from('banned_users')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+    
+    const { data: muteData } = await supabase
+      .from('chat_muted_users')
+      .select('id')
+      .eq('user_id', user.id)
+      .is('unmuted_at', null)
+      .maybeSingle();
+    
+    setIsBanned(!!banData || !!muteData);
+  };
+
+  const checkAdminStatus = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+    setIsAdmin(!!data);
+  };
+
+  const fetchMutedUsers = async () => {
+    const { data } = await supabase
+      .from('chat_muted_users')
+      .select('user_id')
+      .is('unmuted_at', null);
+    if (data) {
+      setMutedUserIds(new Set(data.map(d => d.user_id)));
+    }
+  };
+
+  const fetchAdminId = async () => {
+    // Hardcode admin user id since RLS may block query
+    // Admin email: adminvip@gmail.com
+    const ADMIN_USER_ID = 'cb36ab29-ee7d-4031-81ff-e6e02c936d53';
+    setAdminId(ADMIN_USER_ID);
+  };
+
+  const fetchMessages = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('is_deleted', false)
+        .order('created_at', { ascending: true })
+        .limit(100);
+
+      if (error) throw error;
+
+      // Fetch profiles for users
+      const userIds = [...new Set(data?.map(m => m.user_id) || [])];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url')
+        .in('user_id', userIds);
+
+      const profileMap = new Map(profiles?.map(p => [p.user_id, { ...p }]));
+
+      const messagesWithProfiles = data?.map(msg => ({
+        ...msg,
+        profile: profileMap.get(msg.user_id) || null
+      })) || [];
+
+      setMessages(messagesWithProfiles);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const subscribeToMessages = () => {
+    const channel = supabase
+      .channel('chat-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'chat_messages' },
+        async (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const newMsg = payload.new as ChatMessageData;
+            
+            // Avoid duplicates
+            if (newMsg.is_deleted) return;
+
+            // Auto-moderate: if message contains violations, soft-delete it
+            const violation = checkMessageContent(newMsg.content || '');
+            if (violation && newMsg.user_id !== 'bot') {
+              // Auto-delete the violating message (using service-side via edge or direct)
+              supabase
+                .from('chat_messages')
+                .update({ is_deleted: true })
+                .eq('id', newMsg.id)
+                .then(() => {
+                  console.log(`Auto-deleted message ${newMsg.id} for: ${violation}`);
+                });
+              // Don't add to UI
+              return;
+            }
+
+            // Fetch profile then add message
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('user_id, display_name, avatar_url')
+              .eq('user_id', newMsg.user_id)
+              .single();
+
+            setMessages(prev => {
+              if (prev.some(m => m.id === newMsg.id)) return prev;
+              return [...prev, { ...newMsg, profile: profile || undefined }];
+            });
+            
+            // Mark as new for animation
+            setNewMessageIds(prev => new Set(prev).add(newMsg.id));
+            setTimeout(() => {
+              setNewMessageIds(prev => {
+                const next = new Set(prev);
+                next.delete(newMsg.id);
+                return next;
+              });
+            }, 1000);
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedMsg = payload.new as ChatMessageData;
+            if (updatedMsg.is_deleted) {
+              // Remove deleted messages from UI
+              setMessages(prev => prev.filter(m => m.id !== updatedMsg.id));
+            } else {
+              setMessages(prev => prev.map(m => 
+                m.id === updatedMsg.id ? { ...m, ...updatedMsg } : m
+              ));
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
+
+  const handleBotQuery = async (query: string) => {
+    setBotThinking(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      
+      if (!token) {
+        toast({ title: 'Bot lỗi', description: 'Bạn cần đăng nhập để sử dụng bot', variant: 'destructive' });
+        setBotThinking(false);
+        return;
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-bot`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ message: query }),
+        }
+      );
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Bot error');
+      }
+
+      const data = await response.json();
+      
+      // Insert bot reply as a special message
+      const botMessage: ChatMessageData = {
+        id: `bot-${Date.now()}`,
+        user_id: 'bot',
+        content: data.reply,
+        image_url: null,
+        file_url: null,
+        file_name: null,
+        created_at: new Date().toISOString(),
+        is_deleted: false,
+        is_recalled: false,
+        gradient_color: null,
+        profile: {
+          display_name: '🤖 BonzBot',
+          avatar_url: null,
+        },
+      };
+      
+      setMessages(prev => [...prev, botMessage]);
+      setNewMessageIds(prev => new Set(prev).add(botMessage.id));
+      setTimeout(() => {
+        setNewMessageIds(prev => {
+          const next = new Set(prev);
+          next.delete(botMessage.id);
+          return next;
+        });
+      }, 1000);
+    } catch (error: any) {
+      toast({
+        title: 'Bot lỗi',
+        description: error.message || 'Không thể lấy phản hồi từ bot',
+        variant: 'destructive',
+      });
+    } finally {
+      setBotThinking(false);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!user || isBanned) return;
+    
+    const trimmedMessage = newMessage.trim();
+    if (!trimmedMessage && !selectedImage) return;
+
+    // === CONTENT MODERATION (skip for admin) ===
+    if (!isAdmin && trimmedMessage) {
+      const violation = checkMessageContent(trimmedMessage);
+      if (violation) {
+        toast({
+          title: '⚠️ Cảnh báo',
+          description: `Tin nhắn vi phạm quy định (${violation}). Không được gửi nội dung nhạy cảm!`,
+          variant: 'destructive',
+        });
+        setNewMessage('');
+        setSelectedImage(null);
+        setPreviewUrl(null);
+        return;
+      }
+    }
+
+    // Check for bot command
+    const botMatch = trimmedMessage.match(/^@bot\s+(.+)/i);
+
+    // === ADMIN COMMAND: @bot xoa all ===
+    if (isAdmin && botMatch && /^xoa\s+all$/i.test(botMatch[1].trim())) {
+      setSending(true);
+      try {
+        const { error } = await supabase
+          .from('chat_messages')
+          .update({ is_deleted: true })
+          .neq('is_deleted', true);
+
+        if (error) throw error;
+        setMessages([]);
+        setNewMessage('');
+        toast({ title: '🗑️ Đã xóa tất cả tin nhắn', description: 'Toàn bộ tin nhắn đã bị xóa bởi Admin.' });
+      } catch (error: any) {
+        console.error('Error deleting all messages:', error);
+        toast({ title: 'Lỗi', description: 'Không thể xóa tất cả tin nhắn', variant: 'destructive' });
+      } finally {
+        setSending(false);
+      }
+      return;
+    }
+
+    setSending(true);
+    try {
+      let imageUrl = null;
+
+      // Upload image if selected
+      if (selectedImage) {
+        setUploadingImage(true);
+
+        // === IMAGE MODERATION: check for 18+ content via AI ===
+        if (!isAdmin) {
+          const isImageSafe = await moderateImage(selectedImage);
+          if (!isImageSafe) {
+            toast({
+              title: '⛔ Ảnh bị chặn',
+              description: 'Ảnh chứa nội dung không phù hợp (18+/bạo lực). Tin nhắn đã bị hủy.',
+              variant: 'destructive',
+            });
+            setSending(false);
+            setUploadingImage(false);
+            setSelectedImage(null);
+            setPreviewUrl(null);
+            return;
+          }
+        }
+
+        const fileExt = selectedImage.name.split('.').pop();
+        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+        const filePath = `chat-images/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('chat-files')
+          .upload(filePath, selectedImage);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from('chat-files')
+          .getPublicUrl(filePath);
+
+        imageUrl = urlData.publicUrl;
+        setUploadingImage(false);
+      }
+
+      const { error } = await supabase
+        .from('chat_messages')
+        .insert({
+          user_id: user.id,
+          content: trimmedMessage || '📷 Ảnh',
+          image_url: imageUrl
+        });
+
+      if (error) throw error;
+
+      setNewMessage('');
+      setSelectedImage(null);
+      setPreviewUrl(null);
+
+      // If it's a bot command, query the bot after sending
+      if (botMatch) {
+        handleBotQuery(botMatch[1]);
+      }
+    } catch (error: any) {
+      console.error('Error sending message:', error);
+      toast({
+        title: 'Lỗi',
+        description: 'Không thể gửi tin nhắn',
+        variant: 'destructive'
+      });
+    } finally {
+      setSending(false);
+      setUploadingImage(false);
+    }
+  };
+
+  const handleRecallMessage = async (messageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('chat_messages')
+        .update({ is_recalled: true })
+        .eq('id', messageId)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+      
+      toast({ title: 'Đã thu hồi tin nhắn' });
+    } catch (error) {
+      console.error('Error recalling message:', error);
+      toast({
+        title: 'Lỗi',
+        description: 'Không thể thu hồi tin nhắn',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleAdminDeleteMessage = async (messageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('chat_messages')
+        .update({ is_deleted: true })
+        .eq('id', messageId);
+
+      if (error) throw error;
+      setMessages(prev => prev.filter(m => m.id !== messageId));
+      toast({ title: '🗑️ Đã xóa tin nhắn' });
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      toast({ title: 'Lỗi', description: 'Không thể xóa tin nhắn', variant: 'destructive' });
+    }
+  };
+
+  const handleAdminMute = async (userId: string) => {
+    if (userId === 'bot') {
+      toast({ title: 'Không thể cấm bot' });
+      return;
+    }
+    try {
+      const { error } = await supabase
+        .from('chat_muted_users')
+        .insert({ user_id: userId, muted_by: user?.id });
+
+      if (error) throw error;
+      setMutedUserIds(prev => new Set(prev).add(userId));
+      toast({ title: '🔇 Đã cấm người dùng chat' });
+    } catch (error) {
+      console.error('Error muting user:', error);
+      toast({ title: 'Lỗi', description: 'Không thể cấm người dùng', variant: 'destructive' });
+    }
+  };
+
+  const handleAdminUnmute = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('chat_muted_users')
+        .update({ unmuted_at: new Date().toISOString() })
+        .eq('user_id', userId)
+        .is('unmuted_at', null);
+
+      if (error) throw error;
+      setMutedUserIds(prev => {
+        const next = new Set(prev);
+        next.delete(userId);
+        return next;
+      });
+      toast({ title: '🔊 Đã bỏ cấm người dùng' });
+    } catch (error) {
+      console.error('Error unmuting user:', error);
+      toast({ title: 'Lỗi', description: 'Không thể bỏ cấm', variant: 'destructive' });
+    }
+  };
+
+  const handleAddFriend = async (friendId: string) => {
+    if (!user || friendId === user.id) return;
+
+    try {
+      // Check if friendship already exists
+      const { data: existing } = await supabase
+        .from('friendships')
+        .select('id, status')
+        .or(`and(user_id.eq.${user.id},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${user.id})`)
+        .single();
+
+      if (existing) {
+        toast({
+          title: existing.status === 'pending' ? 'Đã gửi lời mời trước đó' : 'Đã là bạn bè',
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('friendships')
+        .insert({
+          user_id: user.id,
+          friend_id: friendId,
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      toast({ title: '✅ Đã gửi lời mời kết bạn!' });
+    } catch (error) {
+      console.error('Error adding friend:', error);
+      toast({
+        title: 'Lỗi',
+        description: 'Không thể gửi lời mời kết bạn',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleOpenPrivateChat = async (userId: string) => {
+    // Get user profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_id, display_name, avatar_url')
+      .eq('user_id', userId)
+      .single();
+
+    setPrivateChatReceiver({
+      id: userId,
+      name: profile?.display_name || 'Người dùng',
+      avatar: profile?.avatar_url || undefined
+    });
+    setPrivateChatOpen(true);
+  };
+
+  const handleContactAdmin = async () => {
+    if (!adminId) {
+      toast({
+        title: 'Không tìm thấy admin',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_id, display_name, avatar_url')
+      .eq('user_id', adminId)
+      .single();
+
+    setPrivateChatReceiver({
+      id: adminId,
+      name: profile?.display_name || 'Admin',
+      avatar: profile?.avatar_url || undefined
+    });
+    setPrivateChatOpen(true);
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: 'Ảnh quá lớn',
+          description: 'Kích thước tối đa là 5MB',
+          variant: 'destructive'
+        });
+        return;
+      }
+      setSelectedImage(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const addEmoji = (emoji: string) => {
+    setNewMessage(prev => prev + emoji);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <PageWrapper>
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
+        <Card className="glass-strong border-primary/20 overflow-hidden">
+          {/* Header */}
+          <div className="p-4 border-b border-border/50 bg-gradient-to-r from-primary/10 to-accent/10">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-xl font-bold flex items-center gap-2">
+                  💬 Chat Cộng Đồng
+                  <span className="text-xs font-normal text-muted-foreground">
+                    • {messages.length} tin nhắn
+                  </span>
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Chat với mọi người, kết bạn và chia sẻ
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setBotChatOpen(true)}
+                  className="gap-1 border-cyan-500/30 hover:bg-cyan-500/10"
+                >
+                  <Bot className="h-4 w-4 text-cyan-500" />
+                  <span className="hidden sm:inline">BonzBot</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleContactAdmin}
+                  className="gap-1"
+                >
+                  <Shield className="h-4 w-4" />
+                  <span className="hidden sm:inline">Chat Admin</span>
+                </Button>
+                <FriendsList onSelectFriend={handleOpenPrivateChat} />
+              </div>
+            </div>
+          </div>
+
+          {/* Ban Notice */}
+          {isBanned && (
+            <div className="p-4 bg-destructive/10 border-b border-destructive/20 flex items-center gap-3">
+              <Ban className="h-5 w-5 text-destructive" />
+              <div>
+                <p className="font-medium text-destructive">Bạn đã bị cấm chat</p>
+                <p className="text-sm text-muted-foreground">
+                  Liên hệ admin để được hỗ trợ.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Pinned Announcement */}
+          <PinnedAnnouncement />
+
+          {/* Messages */}
+          <div className="h-[500px] overflow-y-auto p-4 space-y-4">
+            {messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                <div className="text-6xl mb-4">💬</div>
+                <p>Chưa có tin nhắn nào</p>
+                <p className="text-sm">Hãy là người đầu tiên chat!</p>
+              </div>
+            ) : (
+              messages.map((msg) => (
+                <ChatMessage
+                  key={msg.id}
+                  id={msg.id}
+                  content={msg.content}
+                  imageUrl={msg.image_url}
+                  isOwn={msg.user_id === user?.id}
+                  isRecalled={msg.is_recalled}
+                  gradientColor={msg.gradient_color}
+                  profile={msg.profile}
+                  createdAt={msg.created_at}
+                  userId={msg.user_id}
+                  currentUserId={user?.id}
+                   onRecall={handleRecallMessage}
+                   onAddFriend={handleAddFriend}
+                   onSendPrivateMessage={handleOpenPrivateChat}
+                   isAdmin={isAdmin}
+                   isMuted={mutedUserIds.has(msg.user_id)}
+                   onAdminDelete={handleAdminDeleteMessage}
+                   onAdminMute={handleAdminMute}
+                   onAdminUnmute={handleAdminUnmute}
+                   showAnimation={newMessageIds.has(msg.id)}
+                 />
+              ))
+            )}
+            {/* Bot thinking indicator */}
+            {botThinking && (
+              <div className="flex gap-3">
+                <div className="h-8 w-8 shrink-0 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center ring-2 ring-primary/20">
+                  <Bot className="h-4 w-4 text-white" />
+                </div>
+                <div className="max-w-[70%]">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-medium text-accent">🤖 BonzBot</span>
+                  </div>
+                  <div className="inline-block px-4 py-3 rounded-2xl rounded-tl-none bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm">Đang suy nghĩ...</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input Area */}
+          {!isBanned && (
+            <div className="p-4 border-t border-border/50 bg-card/50">
+              {/* Image Preview */}
+              {previewUrl && (
+                <div className="mb-3 relative inline-block">
+                  <img 
+                    src={previewUrl} 
+                    alt="Preview" 
+                    className="h-20 rounded-lg object-cover"
+                  />
+                  <button
+                    onClick={() => {
+                      setSelectedImage(null);
+                      setPreviewUrl(null);
+                    }}
+                    className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+
+              <div className="flex gap-2 items-end">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  className="hidden"
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={sending}
+                  className="shrink-0"
+                >
+                  <ImageIcon className="h-5 w-5" />
+                </Button>
+                <EmojiPicker onSelect={addEmoji} disabled={sending} />
+                <Input
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Nhập tin nhắn... (gõ @bot để hỏi AI)"
+                  disabled={sending}
+                  className="flex-1"
+                />
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={sending || (!newMessage.trim() && !selectedImage)}
+                  className="shrink-0 bg-gradient-to-r from-primary to-accent hover:opacity-90"
+                >
+                  {sending ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Send className="h-5 w-5" />
+                  )}
+                </Button>
+              </div>
+
+              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                <Bot className="h-3 w-3" />
+                Gõ <span className="font-medium text-primary">@bot</span> + câu hỏi để hỏi AI (VD: @bot tìm tài khoản Netflix)
+              </p>
+            </div>
+          )}
+        </Card>
+      </div>
+
+      {/* Private Chat Modal */}
+      {privateChatReceiver && (
+        <PrivateChat
+          receiverId={privateChatReceiver.id}
+          receiverName={privateChatReceiver.name}
+          receiverAvatar={privateChatReceiver.avatar}
+          isOpen={privateChatOpen}
+          onClose={() => {
+            setPrivateChatOpen(false);
+            setPrivateChatReceiver(null);
+          }}
+        />
+      )}
+
+      {/* Bot Chat Modal */}
+      <BotChat isOpen={botChatOpen} onClose={() => setBotChatOpen(false)} />
+      </PageWrapper>
+    </div>
+  );
+}
