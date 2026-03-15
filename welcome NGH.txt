@@ -1,4 +1,4 @@
-import os
+import oss
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageFilter, ImageChops
 import requests
